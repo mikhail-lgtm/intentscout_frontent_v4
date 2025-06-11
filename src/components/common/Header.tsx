@@ -25,7 +25,7 @@ export const Header = ({ activeTab, setActiveTab }: HeaderProps) => {
     <header className="bg-white border-b border-gray-200 py-4 px-6 flex items-center justify-between sticky top-0 z-30 shadow-sm">
       <div className="flex items-center">
         <div className="flex items-center mr-4 flex-col">
-          <img src="/IntentSpy.png" alt="IntentSpy Logo" className="h-auto w-auto max-h-10 max-w-full mb-1" />
+          <img src="/IntentScout.png" alt="IntentScout Logo" className="h-auto w-auto max-h-10 max-w-full mb-1" />
           <p className="text-xs text-gray-500 leading-tight">AI-Powered Sales Intelligence</p>
         </div>
       </div>

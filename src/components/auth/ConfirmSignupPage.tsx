@@ -58,8 +58,8 @@ export const ConfirmSignupPage = () => {
         <div className="text-center">
           <img
             className="mx-auto h-20 w-auto"
-            src="/IntentSpy.png"
-            alt="IntentSpy"
+            src="/IntentScout.png"
+            alt="IntentScout"
           />
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
             Account Confirmation
@@ -88,7 +88,7 @@ export const ConfirmSignupPage = () => {
             </div>
           ) : success ? (
             <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-6">
-              <h3 className="text-lg font-medium text-green-800 mb-2">Welcome to IntentSpy!</h3>
+              <h3 className="text-lg font-medium text-green-800 mb-2">Welcome to IntentScout!</h3>
               <p className="text-green-600 mb-2">{success}</p>
               <p className="text-sm text-gray-600">
                 You can now access all features. Redirecting to the application...

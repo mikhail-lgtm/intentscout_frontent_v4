@@ -63,8 +63,8 @@ export const ReauthPage = () => {
         <div className="text-center">
           <img
             className="mx-auto h-20 w-auto"
-            src="/IntentSpy.png"
-            alt="IntentSpy"
+            src="/IntentScout.png"
+            alt="IntentScout"
           />
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
             Confirm Your Identity

@@ -38,7 +38,7 @@ const fetchOrganization = async (): Promise<Organization | null> => {
         console.error('Organization API error:', response.error)
         organizationCache = {
           id: 'unknown',
-          name: 'IntentSpy User',
+          name: 'IntentScout User',
           logoUrl: undefined,
         }
         return organizationCache
@@ -47,7 +47,7 @@ const fetchOrganization = async (): Promise<Organization | null> => {
       console.error('Failed to load organization:', error)
       organizationCache = {
         id: 'unknown',
-        name: 'IntentSpy User',
+        name: 'IntentScout User',
         logoUrl: undefined,
       }
       return organizationCache

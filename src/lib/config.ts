@@ -2,7 +2,7 @@
 export const config = {
   // API Configuration
   api: {
-    baseUrl: import.meta.env.VITE_API_BASE_URL || 'https://api.intentscout.ai/api',
+    baseUrl: import.meta.env.VITE_API_BASE_URL || 'https://api-ic-v1.yazvinski.com/api',
     timeout: 30000, // 30 seconds
     retryAttempts: 3,
   },
