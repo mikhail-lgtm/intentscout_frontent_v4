@@ -46,11 +46,12 @@ export const useLinkedInScraping = (signalId?: string) => {
     const pollInterval = setInterval(async () => {
       try {
         const response = await api.linkedInScraping.getStatus(scrapingStatus.scraping_id)
-        if (response.data) {
-          setScrapingStatus(response.data)
+        if (response.data && typeof response.data === 'object') {
+          const data = response.data as ScrapingStatus
+          setScrapingStatus(data)
           
           // Stop polling if completed or failed
-          if (response.data.status === 'completed' || response.data.status === 'failed') {
+          if (data.status === 'completed' || data.status === 'failed') {
             clearInterval(pollInterval)
           }
         }
@@ -79,9 +80,10 @@ export const useLinkedInScraping = (signalId?: string) => {
         throw new Error(response.error)
       }
       
-      if (response.data) {
-        setScrapingStatus(response.data)
-        return response.data.scraping_id
+      if (response.data && typeof response.data === 'object') {
+        const data = response.data as ScrapingStatus
+        setScrapingStatus(data)
+        return data.scraping_id
       }
       
       return null

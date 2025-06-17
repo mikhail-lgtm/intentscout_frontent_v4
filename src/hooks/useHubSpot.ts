@@ -37,7 +37,7 @@ export const useHubSpot = (): UseHubSpotReturn => {
         return
       }
       
-      setStatus(response.data)
+      setStatus(response.data as HubSpotStatus)
     } catch (err) {
       console.error('Failed to fetch HubSpot status:', err)
       setError('Failed to load HubSpot integration status')
@@ -58,7 +58,7 @@ export const useHubSpot = (): UseHubSpotReturn => {
       }
       
       // Redirect to HubSpot OAuth
-      window.location.href = response.data.auth_url
+      window.location.href = (response.data as any).auth_url
     } catch (err) {
       console.error('Failed to start HubSpot connection:', err)
       setError('Failed to connect to HubSpot')

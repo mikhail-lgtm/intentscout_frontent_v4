@@ -58,8 +58,11 @@ export const IndividualEmailPopup: React.FC<IndividualEmailPopupProps> = ({
     
     try {
       const response = await api.emails.getByContact(contact.id)
-      if (response.data && response.data.generated_emails) {
-        setEmails(response.data.generated_emails)
+      if (response.data && typeof response.data === 'object') {
+        const data = response.data as any
+        if (data.generated_emails && Array.isArray(data.generated_emails)) {
+          setEmails(data.generated_emails)
+        }
       }
     } catch (err: any) {
       console.error('Failed to load existing emails:', err)
@@ -99,7 +102,7 @@ export const IndividualEmailPopup: React.FC<IndividualEmailPopupProps> = ({
         throw new Error(generateResponse.error)
       }
 
-      const generationId = generateResponse.data.generation_id
+      const generationId = (generateResponse.data as any).generation_id
 
       // Poll for completion with extended timeout
       let completed = false
@@ -121,21 +124,24 @@ export const IndividualEmailPopup: React.FC<IndividualEmailPopupProps> = ({
             throw new Error(statusResponse.error)
           }
 
-          const status = statusResponse.data.status
+          const status = (statusResponse.data as any).status
           console.log(`Generation ${generationId} status: ${status}`)
 
           if (status === 'completed') {
             completed = true
             // Load the latest emails for this contact using the contact endpoint
             const emailResponse = await api.emails.getByContact(contact.id)
-            if (emailResponse.data && emailResponse.data.generated_emails) {
-              console.log(`Found ${emailResponse.data.generated_emails.length} emails for contact ${contact.id}`)
-              setEmails(emailResponse.data.generated_emails)
+            if (emailResponse.data && typeof emailResponse.data === 'object') {
+              const data = emailResponse.data as any
+              if (data.generated_emails && Array.isArray(data.generated_emails)) {
+                console.log(`Found ${data.generated_emails.length} emails for contact ${contact.id}`)
+                setEmails(data.generated_emails)
+              }
             }
             // Notify parent that emails were generated
             onEmailGenerated()
           } else if (status === 'failed') {
-            throw new Error(statusResponse.data.error_message || 'Email generation failed')
+            throw new Error((statusResponse.data as any).error_message || 'Email generation failed')
           }
           // If status is 'in_progress', continue polling
         } catch (pollError) {

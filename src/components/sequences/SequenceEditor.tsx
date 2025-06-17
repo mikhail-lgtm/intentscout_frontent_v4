@@ -104,7 +104,10 @@ export const SequenceEditor: React.FC<SequenceEditorProps> = ({ isOpen, onClose,
       name: template.name || 'New Block',
       delay_value: template.delay_value || 0,
       delay_unit: template.delay_unit || SequenceDelayUnit.DAYS,
-      config: template.config || {}
+      config: {
+        data_sources: [],
+        ...template.config
+      }
     }
 
     setFormData(prev => ({

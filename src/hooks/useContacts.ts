@@ -52,7 +52,7 @@ export const useContacts = (signalId: string | null | undefined) => {
 
       setState(prev => ({
         ...prev,
-        contacts: response.data || [],
+        contacts: Array.isArray(response.data) ? response.data : [],
         isLoading: false,
         error: null
       }))
@@ -101,7 +101,7 @@ export const useContacts = (signalId: string | null | undefined) => {
       setState(prev => ({
         ...prev,
         contacts: prev.contacts.map(c => 
-          c.id === contactId ? { ...c, ...response.data } : c
+          c.id === contactId ? { ...c, ...(response.data as Contact) } : c
         )
       }))
 

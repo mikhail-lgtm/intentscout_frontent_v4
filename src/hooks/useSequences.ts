@@ -27,7 +27,7 @@ export const useSequences = (status?: SequenceStatus) => {
       }
 
       setState({
-        sequences: response.data || [],
+        sequences: Array.isArray(response.data) ? response.data : [],
         isLoading: false,
         error: null
       })

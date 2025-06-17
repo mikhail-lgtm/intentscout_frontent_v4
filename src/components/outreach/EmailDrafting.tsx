@@ -25,9 +25,9 @@ export const EmailDrafting = ({
       try {
         const response = await api.signalNotes.get(signalId)
         if (response.data) {
-          setEmailFooterName(response.data.email_footer_name || '')
-          setEmailFooterCompany(response.data.email_footer_company || '')
-          setOtherNotes(response.data.other_notes || '')
+          setEmailFooterName((response.data as any).email_footer_name || '')
+          setEmailFooterCompany((response.data as any).email_footer_company || '')
+          setOtherNotes((response.data as any).other_notes || '')
         }
       } catch (error) {
         console.error('Failed to load notes:', error)

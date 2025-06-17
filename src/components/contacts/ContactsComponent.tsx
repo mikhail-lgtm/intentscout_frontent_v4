@@ -79,12 +79,15 @@ export const ContactsComponent: React.FC<ContactsComponentProps> = ({
   const checkExistingEmails = async () => {
     try {
       const response = await api.emails.getBySignal(signalId)
-      if (response.data && response.data.generated_emails) {
-        const emailsByContact: {[contactId: string]: boolean} = {}
-        response.data.generated_emails.forEach((email: any) => {
-          emailsByContact[email.contact_id] = true
-        })
-        setExistingEmails(emailsByContact)
+      if (response.data && typeof response.data === 'object') {
+        const data = response.data as any
+        if (data.generated_emails && Array.isArray(data.generated_emails)) {
+          const emailsByContact: {[contactId: string]: boolean} = {}
+          data.generated_emails.forEach((email: any) => {
+            emailsByContact[email.contact_id] = true
+          })
+          setExistingEmails(emailsByContact)
+        }
       }
     } catch (err) {
       console.error('Failed to check existing emails:', err)
@@ -98,8 +101,11 @@ export const ContactsComponent: React.FC<ContactsComponentProps> = ({
       // Check each contact for existing LinkedIn profile
       for (const contact of contacts) {
         const response = await api.linkedInScraping.getContactProfile(contact.id)
-        if (response.data && response.data.status === 'found') {
-          profilesByContact[contact.id] = true
+        if (response.data && typeof response.data === 'object') {
+          const data = response.data as any
+          if (data.status === 'found') {
+            profilesByContact[contact.id] = true
+          }
         }
       }
       

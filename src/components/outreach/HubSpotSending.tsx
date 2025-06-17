@@ -94,8 +94,8 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
   // Notify parent of configuration status
   useEffect(() => {
     const isConfigured = hubspotConfig.is_connected && 
-                        hubspotConfig.sender_email && 
-                        hubspotConfig.selected_sequence_id
+                        !!hubspotConfig.sender_email && 
+                        !!hubspotConfig.selected_sequence_id
     onConfigurationChange?.(isConfigured, hubspotConfig)
   }, [hubspotConfig, onConfigurationChange])
 
@@ -126,8 +126,8 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
       let connectionStatus = 'disconnected'
       let isConnected = false
       
-      if (statusResponse.data) {
-        isConnected = statusResponse.data.connected
+      if (statusResponse.data && typeof statusResponse.data === 'object' && 'connected' in statusResponse.data) {
+        isConnected = (statusResponse.data as any).connected
         connectionStatus = isConnected ? 'connected' : 'disconnected'
       }
       
@@ -142,11 +142,12 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
         try {
           const settingsResponse = await api.settings.getSignalHubSpot(signalId)
           
-          if (settingsResponse.data) {
+          if (settingsResponse.data && typeof settingsResponse.data === 'object') {
+            const data = settingsResponse.data as any
             settingsConfig = {
-              sender_email: settingsResponse.data.sender_email,
-              selected_sequence_id: settingsResponse.data.selected_sequence_id,
-              selected_sequence_name: settingsResponse.data.selected_sequence_name
+              sender_email: data.sender_email || null,
+              selected_sequence_id: data.selected_sequence_id || null,
+              selected_sequence_name: data.selected_sequence_name || null
             }
           }
         } catch (settingsError) {
@@ -183,9 +184,10 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
       // Fetch ALL sequences with NO step counts (backend paginates to get ALL)
       const response = await api.settings.getHubSpotSequences()
       
-      if (response.data) {
-        setAvailableSequences(response.data.sequences || [])
-        console.log(`Loaded ${response.data.total_count} HubSpot sequences`)
+      if (response.data && typeof response.data === 'object') {
+        const data = response.data as any
+        setAvailableSequences(data.sequences || [])
+        console.log(`Loaded ${data.total_count || 0} HubSpot sequences`)
       }
     } catch (error) {
       console.error('Failed to load HubSpot sequences:', error)
@@ -205,8 +207,8 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
         selected_sequence_name: selectedSequence.name
       })
       
-      if (response.data) {
-        setHubspotConfig(response.data)
+      if (response.data && typeof response.data === 'object') {
+        setHubspotConfig(response.data as HubSpotConfig)
       }
     } catch (error) {
       console.error('Failed to save HubSpot config:', error)
@@ -223,20 +225,21 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
     if (sequence.total_step_count === 0) {
       try {
         const response = await api.settings.getHubSpotSequenceDetails(sequence.id)
-        if (response.data) {
+        if (response.data && typeof response.data === 'object') {
+          const data = response.data as any
           // Update the sequence in the list with step counts
           setAvailableSequences(prev => 
             prev.map(seq => 
               seq.id === sequence.id 
-                ? { ...seq, email_step_count: response.data.email_step_count, total_step_count: response.data.total_step_count }
+                ? { ...seq, email_step_count: data.email_step_count || 0, total_step_count: data.total_step_count || 0 }
                 : seq
             )
           )
           // Update selected sequence with step counts
           setSelectedSequence({
             ...sequence,
-            email_step_count: response.data.email_step_count,
-            total_step_count: response.data.total_step_count
+            email_step_count: data.email_step_count || 0,
+            total_step_count: data.total_step_count || 0
           })
         }
       } catch (error) {
@@ -250,8 +253,13 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
     
     try {
       const response = await api.settings.getCompanyImportStatus(signalId)
-      if (response.data) {
-        setCompanyImportStatus(response.data)
+      if (response.data && typeof response.data === 'object') {
+        const data = response.data as any
+        setCompanyImportStatus({
+          imported: data.imported || false,
+          hubspot_company_id: data.hubspot_company_id || null,
+          imported_at: data.imported_at || null
+        })
       }
     } catch (error) {
       console.error('Failed to check company import status:', error)

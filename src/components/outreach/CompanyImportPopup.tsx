@@ -32,6 +32,7 @@ interface HubSpotProperties {
   state: string
   country: string
   linkedin_company_page: string
+  [key: string]: string
 }
 
 export const CompanyImportPopup: React.FC<CompanyImportPopupProps> = ({
@@ -59,10 +60,11 @@ export const CompanyImportPopup: React.FC<CompanyImportPopupProps> = ({
     
     try {
       const response = await api.settings.previewCompany(signalId)
-      if (response.data) {
-        setCompanyData(response.data.company_data)
-        setHubspotProperties(response.data.hubspot_properties)
-        setEditedProperties(response.data.hubspot_properties)
+      if (response.data && typeof response.data === 'object') {
+        const data = response.data as any
+        setCompanyData(data.company_data)
+        setHubspotProperties(data.hubspot_properties)
+        setEditedProperties(data.hubspot_properties)
       }
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to load company data')
@@ -81,9 +83,12 @@ export const CompanyImportPopup: React.FC<CompanyImportPopupProps> = ({
       const response = await api.settings.importCompany(signalId, {
         properties: editedProperties
       })
-      if (response.data && response.data.success) {
-        onImportSuccess()
-        onClose()
+      if (response.data && typeof response.data === 'object') {
+        const data = response.data as any
+        if (data.success) {
+          onImportSuccess()
+          onClose()
+        }
       }
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to import company')

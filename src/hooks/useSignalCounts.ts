@@ -46,7 +46,7 @@ export const useSignalCounts = (
       }
 
       setState({
-        signalCounts: response.data || [],
+        signalCounts: Array.isArray(response.data) ? response.data : [],
         isLoading: false,
         error: null,
       })

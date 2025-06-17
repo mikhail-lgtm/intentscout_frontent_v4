@@ -39,7 +39,7 @@ export const useOrganizationMembers = (): UseOrganizationMembersReturn => {
         throw new Error(response.error)
       }
 
-      setMembers(response.data || [])
+      setMembers(Array.isArray(response.data) ? response.data : [])
     } catch (err) {
       console.error('Failed to fetch organization members:', err)
       setError('Failed to load organization members')
