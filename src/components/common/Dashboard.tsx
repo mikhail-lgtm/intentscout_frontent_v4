@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import { Header } from './Header'
 import { SignalsPage } from '../signals/SignalsPage'
 import { OutreachPage } from '../outreach/OutreachPage'
+import { SettingsPage } from '../settings'
 import type { TabKey } from '../../types'
 
 export const Dashboard = () => {
@@ -13,6 +14,8 @@ export const Dashboard = () => {
   useEffect(() => {
     if (location.pathname === '/outreach') {
       setActiveTab('outreach')
+    } else if (location.pathname === '/settings') {
+      setActiveTab('settings')
     } else {
       setActiveTab('signals')
     }
@@ -26,6 +29,7 @@ export const Dashboard = () => {
           <Route path="/" element={<SignalsPage />} />
           <Route path="/signals" element={<SignalsPage />} />
           <Route path="/outreach" element={<OutreachPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </main>
     </div>

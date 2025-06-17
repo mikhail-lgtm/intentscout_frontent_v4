@@ -1,18 +1,21 @@
 import React, { useState } from 'react'
-import { TrendingUp, Building, Calendar, Users, ExternalLink, Linkedin, Briefcase, ChevronDown, ChevronUp, ThumbsUp, ThumbsDown } from 'lucide-react'
+import { TrendingUp, Building, Calendar, Users, ExternalLink, Linkedin, Briefcase, ChevronDown, ChevronUp, ThumbsUp, ThumbsDown, Minus } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { Signal } from '../../hooks/useSignals'
+import { api } from '../../lib/apiClient'
+import { ConfirmationModal } from '../ui/ConfirmationModal'
 
 interface IntentCardProps {
   signal: Signal | null
-  onApprove: () => void
-  onReject: () => void
+  onApprove?: () => void
+  onReject?: () => void
+  onRemoveDecision?: () => void
   isLoading?: boolean
 }
 
 const SkeletonIntentCard: React.FC = () => {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse min-h-[600px]">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse h-full min-h-[600px]">
       {/* Header Banner Skeleton */}
       <div className="h-32 bg-gray-200"></div>
       
@@ -193,8 +196,127 @@ const JobCitationCard: React.FC<{ job: any; citationIndex: number; isExpanded: b
   )
 }
 
-export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onReject, isLoading = false }) => {
+export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onReject, onRemoveDecision, isLoading = false }) => {
   const [expandedJobs, setExpandedJobs] = useState<Set<number>>(new Set())
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [confirmationModal, setConfirmationModal] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    action: () => void
+    variant?: 'warning' | 'danger' | 'info' | 'success'
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    action: () => {},
+    variant: 'warning'
+  })
+
+  const handleApprove = async () => {
+    if (!signal?.id || isUpdating) return
+    
+    // Show confirmation if signal already has a decision
+    if (signal.decision && signal.decision !== 'approve') {
+      setConfirmationModal({
+        isOpen: true,
+        title: 'Change Signal Status',
+        message: `This signal is currently ${signal.decision}d. Are you sure you want to approve it?`,
+        action: executeApprove,
+        variant: 'success'
+      })
+      return
+    }
+    
+    executeApprove()
+  }
+
+  const executeApprove = async () => {
+    if (!signal?.id || isUpdating) return
+    
+    setIsUpdating(true)
+    try {
+      const response = await api.signals.updateDecision(signal.id, 'approve')
+      if (response.error) {
+        throw new Error(response.error)
+      }
+      onApprove?.()
+    } catch (err) {
+      console.error('Failed to approve signal:', err)
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handleReject = async () => {
+    if (!signal?.id || isUpdating) return
+    
+    // Show confirmation if signal already has a decision
+    if (signal.decision && signal.decision !== 'reject') {
+      setConfirmationModal({
+        isOpen: true,
+        title: 'Change Signal Status',
+        message: `This signal is currently ${signal.decision === 'approve' ? 'approved' : signal.decision}. Are you sure you want to reject it?`,
+        action: executeReject,
+        variant: 'danger'
+      })
+      return
+    }
+    
+    executeReject()
+  }
+
+  const executeReject = async () => {
+    if (!signal?.id || isUpdating) return
+    
+    setIsUpdating(true)
+    try {
+      const response = await api.signals.updateDecision(signal.id, 'reject')
+      if (response.error) {
+        throw new Error(response.error)
+      }
+      onReject?.()
+    } catch (err) {
+      console.error('Failed to reject signal:', err)
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handleRemoveDecision = async () => {
+    if (!signal?.id || isUpdating) return
+    
+    // Show confirmation if signal has a decision
+    if (signal.decision) {
+      setConfirmationModal({
+        isOpen: true,
+        title: 'Remove Decision',
+        message: `This signal is currently ${signal.decision === 'approve' ? 'approved' : 'rejected'}. Are you sure you want to remove this decision?`,
+        action: executeRemoveDecision,
+        variant: 'warning'
+      })
+      return
+    }
+    
+    executeRemoveDecision()
+  }
+
+  const executeRemoveDecision = async () => {
+    if (!signal?.id || isUpdating) return
+    
+    setIsUpdating(true)
+    try {
+      const response = await api.signals.updateDecision(signal.id, 'remove')
+      if (response.error) {
+        throw new Error(response.error)
+      }
+      onRemoveDecision?.()
+    } catch (err) {
+      console.error('Failed to remove decision:', err)
+    } finally {
+      setIsUpdating(false)
+    }
+  }
 
   const toggleJobExpansion = (index: number) => {
     setExpandedJobs(prev => {
@@ -216,8 +338,19 @@ export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onRej
     }, 100)
   }
 
-  if (isLoading || !signal) {
+  if (isLoading) {
     return <SkeletonIntentCard />
+  }
+
+  if (!signal) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-gray-500 h-full flex items-center justify-center">
+        <div>
+          <div className="text-2xl mb-2">📊</div>
+          <div className="text-sm">Select a signal to view details</div>
+        </div>
+      </div>
+    )
   }
 
   const company = signal.company
@@ -449,25 +582,83 @@ export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onRej
         </div>
       )}
 
-      {/* Actions */}
-      <div className="flex justify-center space-x-4 sm:space-x-5">
-        {/* Reject Button */}
-        <button
-          onClick={onReject}
-          className="w-14 h-14 sm:w-16 sm:h-16 bg-white border-2 text-red-500 rounded-full flex items-center justify-center shadow-md hover:bg-red-50 transition-all duration-150 ease-in-out transform hover:scale-105"
-        >
-          <ThumbsDown size={20} />
-        </button>
-        
-        {/* Approve Button */}
-        <button
-          onClick={onApprove}
-          className="w-14 h-14 sm:w-16 sm:h-16 bg-white border-2 text-green-500 rounded-full flex items-center justify-center shadow-md hover:bg-green-50 transition-all duration-150 ease-in-out transform hover:scale-105"
-        >
-          <ThumbsUp size={20} />
-        </button>
+      {/* Decision Slider */}
+      <div className="flex justify-center">
+        <div className="relative bg-gray-100 rounded-full p-1 shadow-inner backdrop-blur-sm">
+          {/* Sliding Background Indicator */}
+          <div 
+            className={`absolute top-2 bottom-2 left-2 right-2 w-[76px] rounded-full transition-all duration-300 ease-out shadow-inner ${
+              signal?.decision === 'reject' 
+                ? 'translate-x-0 bg-red-500 shadow-md' 
+                : signal?.decision === 'approve' 
+                ? 'translate-x-[160px] bg-green-500 shadow-md'
+                : 'translate-x-[80px] bg-gray-300 shadow-sm'
+            }`}
+          />
+          
+          {/* Three State Buttons */}
+          <div className="relative flex">
+            {/* Reject State */}
+            <button
+              onClick={signal?.decision === 'reject' ? handleRemoveDecision : handleReject}
+              disabled={isUpdating}
+              className={`group relative z-10 w-20 h-12 rounded-full flex items-center justify-center transition-all duration-200 disabled:opacity-50 ${
+                signal?.decision === 'reject'
+                  ? 'text-white'
+                  : 'text-red-500 hover:text-red-700'
+              }`}
+            >
+              {/* Red-tinted glass hover effect */}
+              <div className="absolute inset-1 rounded-full bg-red-500/15 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-inner" />
+              <ThumbsDown size={18} className="relative z-10" />
+            </button>
+            
+            {/* Neutral State */}
+            <button
+              onClick={handleRemoveDecision}
+              disabled={isUpdating}
+              className={`group relative z-10 w-20 h-12 rounded-full flex items-center justify-center transition-all duration-200 disabled:opacity-50 ${
+                !signal?.decision
+                  ? 'text-white'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {/* Neutral gray-tinted glass hover effect */}
+              <div className="absolute inset-1 rounded-full bg-gray-200/25 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-inner" />
+              <Minus size={18} className="relative z-10" />
+            </button>
+            
+            {/* Approve State */}
+            <button
+              onClick={signal?.decision === 'approve' ? handleRemoveDecision : handleApprove}
+              disabled={isUpdating}
+              className={`group relative z-10 w-20 h-12 rounded-full flex items-center justify-center transition-all duration-200 disabled:opacity-50 ${
+                signal?.decision === 'approve'
+                  ? 'text-white'
+                  : 'text-green-500 hover:text-green-700'
+              }`}
+            >
+              {/* Green-tinted glass hover effect */}
+              <div className="absolute inset-1 rounded-full bg-green-500/15 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-inner" />
+              <ThumbsUp size={18} className="relative z-10" />
+            </button>
+          </div>
+        </div>
       </div>
+
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmationModal.isOpen}
+        onClose={() => setConfirmationModal({ ...confirmationModal, isOpen: false })}
+        onConfirm={confirmationModal.action}
+        title={confirmationModal.title}
+        message={confirmationModal.message}
+        variant={confirmationModal.variant}
+        confirmText="Yes, Continue"
+        cancelText="Cancel"
+      />
     </div>
   )
 }

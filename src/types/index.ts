@@ -18,4 +18,4 @@ export interface AuthState {
   error: string | null;
 }
 
-export type TabKey = "signals" | "outreach";
+export type TabKey = "signals" | "outreach" | "settings";

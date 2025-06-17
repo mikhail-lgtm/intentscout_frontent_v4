@@ -1,4 +1,4 @@
-import { LogOut } from 'lucide-react'
+import { LogOut, Settings } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { cn } from '../../utils/cn'
@@ -25,7 +25,7 @@ export const Header = ({ activeTab, setActiveTab }: HeaderProps) => {
     <header className="bg-white border-b border-gray-200 py-4 px-6 flex items-center justify-between sticky top-0 z-30 shadow-sm">
       <div className="flex items-center">
         <div className="flex items-center mr-4 flex-col">
-          <img src="/IntentScout.png" alt="IntentScout Logo" className="h-auto w-auto max-h-10 max-w-full mb-1" />
+          <img src="/IntentScoutFull.png" alt="IntentScout Logo" className="h-auto w-auto max-h-10 max-w-full mb-1" />
           <p className="text-xs text-gray-500 leading-tight">AI-Powered Sales Intelligence</p>
         </div>
       </div>
@@ -74,6 +74,18 @@ export const Header = ({ activeTab, setActiveTab }: HeaderProps) => {
                 </div>
               )}
             </div>
+            
+            {/* Settings Button */}
+            <button
+              onClick={() => {
+                setActiveTab("settings")
+                navigate("/settings")
+              }}
+              className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-200"
+              title="Settings"
+            >
+              <Settings size={18} />
+            </button>
             
             {/* Sign Out Button */}
             <button

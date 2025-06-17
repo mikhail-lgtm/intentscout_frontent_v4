@@ -131,7 +131,7 @@ export const ResetPasswordPage = () => {
           <div className="text-center">
             <img
               className="mx-auto h-20 w-auto"
-              src="/IntentScout.png"
+              src="/IntentScoutFull.png"
               alt="IntentScout"
             />
             <h2 className="mt-6 text-3xl font-bold text-gray-900">
@@ -229,7 +229,7 @@ export const ResetPasswordPage = () => {
         <div className="text-center">
           <img
             className="mx-auto h-20 w-auto"
-            src="/IntentScout.png"
+            src="/IntentScoutFull.png"
             alt="IntentScout"
           />
           <h2 className="mt-6 text-3xl font-bold text-gray-900">

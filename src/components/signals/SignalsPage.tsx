@@ -39,7 +39,8 @@ export const SignalsPage = () => {
     isJobsLoading,
     error, 
     refetch,
-    markSignal
+    markSignal,
+    removeDecision
   } = useSignals(selectedDate, filters)
 
   const currentSignal = signals[currentIndex] || null
@@ -71,6 +72,11 @@ export const SignalsPage = () => {
     }
   }, [currentSignal, markSignal, currentIndex, signals.length])
 
+  const handleRemoveDecision = useCallback(async () => {
+    if (!currentSignal) return
+    await removeDecision(currentSignal.id)
+  }, [currentSignal, removeDecision])
+
   // Filter status
   const hasActiveFilters = filters.minScore > 3 || filters.vertical
 
@@ -78,17 +84,12 @@ export const SignalsPage = () => {
   const isAnyLoading = isLoading || isIntentScoresLoading || isCompaniesLoading || isJobsLoading
 
   return (
-    <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
-      {/* Fixed Header */}
-      <div className="flex-shrink-0 bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-2 z-10">
-        <div className="max-w-7xl mx-auto">
-          {/* Main Header Row */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2">
-            <div className="mb-2 sm:mb-0">
-              <h1 className="text-xl font-bold text-gray-900">
-                Intent Signals
-              </h1>
-            </div>
+    <div className="h-full bg-gray-50 overflow-hidden flex flex-col">
+      {/* Sticky Header */}
+      <div className="flex-shrink-0 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 bg-gray-50 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <h1 className="text-xl font-bold text-gray-900">Intent Signals</h1>
             
             <div className="flex items-center gap-2">
               <ProductSelector
@@ -114,33 +115,32 @@ export const SignalsPage = () => {
               <DateSelector
                 selectedDate={selectedDate}
                 onChange={handleDateChange}
+                productId={filters.product}
+                minScore={filters.minScore}
               />
             </div>
           </div>
+          
+          {/* Filters Text */}
+          <div className="flex items-center gap-3 text-xs text-gray-500">
+            <span>Filters:</span>
+            <span>Product: {filters.product}</span>
+            {filters.minScore > 3 && <span>Min Score: {filters.minScore}</span>}
+            {filters.vertical && <span>Vertical: {filters.vertical}</span>}
+            {!hasActiveFilters && <span className="text-gray-400">Default</span>}
+          </div>
+        </div>
+      </div>
 
-          {/* Stats Row */}
-          {signals.length > 0 && !isIntentScoresLoading && (
-            <div className="flex items-center gap-6 mb-2">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-600">Total:</span>
-                <span className="text-sm font-semibold text-gray-900">{signals.length}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-600">Position:</span>
-                <span className="text-sm font-semibold text-gray-900">{currentIndex + 1}</span>
-              </div>
-              {currentSignal && (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-600">Score:</span>
-                  <span className="text-sm font-semibold text-orange-600">{currentSignal.intentScore.toFixed(1)}</span>
-                </div>
-              )}
-            </div>
-          )}
+      {/* Main Content Area */}
+      <div className="flex-1 max-w-7xl mx-auto flex gap-6 px-4 sm:px-6 lg:px-8 min-h-0 pb-6 pt-6">
+        {/* Main Content */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar" style={{ height: 'calc(100% - 2rem)' }}>
+          {/* Content moved from header */}
 
           {/* Loading Status */}
           {isAnyLoading && (
-            <div className="mb-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
+            <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
               <div className="flex items-center gap-2">
                 <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></div>
                 <div className="text-blue-700">
@@ -152,25 +152,6 @@ export const SignalsPage = () => {
               </div>
             </div>
           )}
-
-          {/* Active Filters - Always visible in small grey text */}
-          <div className="mb-2">
-            <div className="flex items-center gap-3 text-xs text-gray-500">
-              <span>Filters:</span>
-              <span>Product: {filters.product}</span>
-              {filters.minScore > 3 && <span>Min Score: {filters.minScore}</span>}
-              {filters.vertical && <span>Vertical: {filters.vertical}</span>}
-              {!hasActiveFilters && <span className="text-gray-400">Default</span>}
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      {/* Main Content Area */}
-      <div className="flex-1 max-w-7xl mx-auto flex gap-6 px-4 sm:px-6 lg:px-8 py-6 min-h-0">
-        {/* Main Content */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
 
           {/* Error State */}
           {error && (
@@ -224,12 +205,15 @@ export const SignalsPage = () => {
 
           {/* Intent Card */}
           {(currentSignal || isAnyLoading) && (
-            <IntentCard
-              signal={currentSignal}
-              onApprove={handleApprove}
-              onReject={handleReject}
-              isLoading={isAnyLoading}
-            />
+            <div className="h-full">
+              <IntentCard
+                signal={currentSignal}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                onRemoveDecision={handleRemoveDecision}
+                isLoading={isAnyLoading}
+              />
+            </div>
           )}
 
           {/* Completion State */}
@@ -259,7 +243,7 @@ export const SignalsPage = () => {
           </div>
 
         {/* Sidebar */}
-        <div className="w-80 flex-shrink-0 min-h-0">
+        <div className="w-80 flex-shrink-0 min-h-0" style={{ height: 'calc(100% - 2rem)' }}>
           <QueueSidebar 
             signals={signals}
             currentIndex={currentIndex}

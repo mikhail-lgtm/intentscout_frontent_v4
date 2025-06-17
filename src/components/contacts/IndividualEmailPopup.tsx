@@ -1,0 +1,434 @@
+import React, { useState, useEffect } from 'react'
+import { X, Mail, RefreshCw, Edit3, Send, Copy, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import { api } from '../../lib/apiClient'
+import { useSequences } from '../../hooks/useSequences'
+
+interface IndividualEmailPopupProps {
+  isOpen: boolean
+  onClose: () => void
+  signalId: string
+  companyName: string
+  contact: any
+  onLoadingChange: (contactId: string, isLoading: boolean) => void
+  onEmailGenerated: () => void
+}
+
+interface GeneratedEmail {
+  contact_id: string
+  sequence_step: number
+  block_id: string
+  block_name: string
+  subject: string
+  body: string
+  status: string
+}
+
+export const IndividualEmailPopup: React.FC<IndividualEmailPopupProps> = ({
+  isOpen,
+  onClose,
+  signalId,
+  companyName,
+  contact,
+  onLoadingChange,
+  onEmailGenerated
+}) => {
+  const [emails, setEmails] = useState<GeneratedEmail[]>([])
+  const [selectedSequence, setSelectedSequence] = useState<string>('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [editingEmailIndex, setEditingEmailIndex] = useState<number | null>(null)
+  const [editedSubject, setEditedSubject] = useState('')
+  const [editedBody, setEditedBody] = useState('')
+  const [copySuccess, setCopySuccess] = useState<number | null>(null)
+
+  // Use sequences hook to get available sequences
+  const { sequences, isLoading: sequencesLoading } = useSequences()
+
+  // Load existing emails when popup opens
+  useEffect(() => {
+    if (isOpen && signalId && contact) {
+      loadExistingEmails()
+    }
+  }, [isOpen, signalId, contact])
+
+  const loadExistingEmails = async () => {
+    setIsLoading(true)
+    setError(null)
+    
+    try {
+      const response = await api.emails.getByContact(contact.id)
+      if (response.data && response.data.generated_emails) {
+        setEmails(response.data.generated_emails)
+      }
+    } catch (err: any) {
+      console.error('Failed to load existing emails:', err)
+      setError('Failed to load existing emails')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const generateEmail = async () => {
+    if (!contact || !signalId || !selectedSequence) return
+
+    setIsGenerating(true)
+    setError(null)
+    onLoadingChange(contact.id, true)
+
+    try {
+      // Convert contact to the format expected by the API (same as EmailGenerationPopup)
+      const contactData = {
+        id: contact.id,
+        name: `${contact.first_name} ${contact.last_name}`,
+        first_name: contact.first_name,
+        last_name: contact.last_name,
+        email: contact.email_address || '',
+        title: contact.job_title,
+        company: companyName
+      }
+
+      // Start email generation
+      const generateResponse = await api.emails.generate({
+        sequence_id: selectedSequence,
+        contacts: [contactData],
+        signal_id: signalId
+      })
+
+      if (generateResponse.error) {
+        throw new Error(generateResponse.error)
+      }
+
+      const generationId = generateResponse.data.generation_id
+
+      // Poll for completion with extended timeout
+      let completed = false
+      let attempts = 0
+      const maxAttempts = 120 // 10 minutes at 5-second intervals
+      
+      console.log(`Starting to poll for generation ${generationId}`)
+
+      while (!completed && attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 5000)) // Wait 5 seconds
+        attempts++
+        
+        console.log(`Polling attempt ${attempts}/${maxAttempts} for generation ${generationId}`)
+
+        try {
+          const statusResponse = await api.emails.getGeneration(generationId)
+          if (statusResponse.error) {
+            console.error('Status check error:', statusResponse.error)
+            throw new Error(statusResponse.error)
+          }
+
+          const status = statusResponse.data.status
+          console.log(`Generation ${generationId} status: ${status}`)
+
+          if (status === 'completed') {
+            completed = true
+            // Load the latest emails for this contact using the contact endpoint
+            const emailResponse = await api.emails.getByContact(contact.id)
+            if (emailResponse.data && emailResponse.data.generated_emails) {
+              console.log(`Found ${emailResponse.data.generated_emails.length} emails for contact ${contact.id}`)
+              setEmails(emailResponse.data.generated_emails)
+            }
+            // Notify parent that emails were generated
+            onEmailGenerated()
+          } else if (status === 'failed') {
+            throw new Error(statusResponse.data.error_message || 'Email generation failed')
+          }
+          // If status is 'in_progress', continue polling
+        } catch (pollError) {
+          console.error(`Polling error on attempt ${attempts}:`, pollError)
+          // Don't throw immediately, try a few more times
+          if (attempts >= maxAttempts - 5) {
+            throw pollError
+          }
+        }
+      }
+
+      if (!completed) {
+        throw new Error('Email generation timed out after 10 minutes')
+      }
+
+    } catch (err: any) {
+      console.error('Failed to generate email:', err)
+      setError(err.message || 'Failed to generate email')
+    } finally {
+      setIsGenerating(false)
+      onLoadingChange(contact.id, false)
+    }
+  }
+
+  const handleEdit = (index: number) => {
+    const email = emails[index]
+    setEditingEmailIndex(index)
+    setEditedSubject(email.subject)
+    setEditedBody(email.body)
+  }
+
+  const saveEdit = () => {
+    if (editingEmailIndex !== null) {
+      const updatedEmails = [...emails]
+      updatedEmails[editingEmailIndex] = {
+        ...updatedEmails[editingEmailIndex],
+        subject: editedSubject,
+        body: editedBody,
+        status: 'edited'
+      }
+      setEmails(updatedEmails)
+      setEditingEmailIndex(null)
+    }
+  }
+
+  const cancelEdit = () => {
+    setEditingEmailIndex(null)
+    setEditedSubject('')
+    setEditedBody('')
+  }
+
+  const copyToClipboard = async (text: string, index: number) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopySuccess(index)
+      setTimeout(() => setCopySuccess(null), 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
+  }
+
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <Mail className="w-6 h-6 text-blue-600" />
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">
+                Email for {contact?.first_name} {contact?.last_name}
+              </h2>
+              <p className="text-sm text-gray-500">{contact?.job_title} at {companyName}</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-3" />
+                <p className="text-gray-600">Loading existing emails...</p>
+              </div>
+            </div>
+          ) : error ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-3" />
+                <p className="text-red-600 mb-4">{error}</p>
+                <button
+                  onClick={generateEmail}
+                  disabled={isGenerating}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Try Again
+                </button>
+              </div>
+            </div>
+          ) : emails.length === 0 ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center max-w-md">
+                <Mail className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No emails generated yet</h3>
+                <p className="text-gray-600 mb-6">Generate personalized emails for this contact</p>
+                
+                {/* Sequence selection */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Select Email Sequence
+                  </label>
+                  <select
+                    value={selectedSequence}
+                    onChange={(e) => setSelectedSequence(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    disabled={sequencesLoading}
+                  >
+                    <option value="">Choose a sequence...</option>
+                    {sequences.map(sequence => (
+                      <option key={sequence.id} value={sequence.id}>
+                        {sequence.name} ({sequence.blocks?.filter(b => b.block_type === 'email').length || 0} emails)
+                      </option>
+                    ))}
+                  </select>
+                  {sequencesLoading && (
+                    <p className="text-xs text-gray-500 mt-2">Loading sequences...</p>
+                  )}
+                </div>
+                
+                <button
+                  onClick={generateEmail}
+                  disabled={isGenerating || !selectedSequence}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Mail className="w-4 h-4" />
+                      Generate Email
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Action buttons */}
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Generated Emails ({emails.length})
+                </h3>
+                <div className="flex items-center gap-3">
+                  {/* Sequence selector for regeneration */}
+                  <div className="flex flex-col">
+                    <label className="text-xs text-gray-600 mb-1">Sequence:</label>
+                    <select
+                      value={selectedSequence}
+                      onChange={(e) => setSelectedSequence(e.target.value)}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      disabled={sequencesLoading}
+                    >
+                      <option value="">Choose a sequence...</option>
+                      {sequences.map(sequence => (
+                        <option key={sequence.id} value={sequence.id}>
+                          {sequence.name} ({sequence.blocks?.filter(b => b.block_type === 'email').length || 0} emails)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <button
+                    onClick={generateEmail}
+                    disabled={isGenerating || !selectedSequence}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Regenerating...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="w-4 h-4" />
+                        Regenerate
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Email list */}
+              {emails.map((email, index) => (
+                <div key={index} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-medium text-gray-900">{email.block_name}</h4>
+                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                        Step {email.sequence_step}
+                      </span>
+                      {email.status === 'edited' && (
+                        <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded">
+                          Edited
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => copyToClipboard(`Subject: ${email.subject}\n\n${email.body}`, index)}
+                        className="flex items-center justify-center w-8 h-8 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                        title="Copy email"
+                      >
+                        {copySuccess === index ? (
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                        ) : (
+                          <Copy className="w-4 h-4" />
+                        )}
+                      </button>
+                      <button
+                        onClick={() => handleEdit(index)}
+                        className="flex items-center justify-center w-8 h-8 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded transition-colors"
+                        title="Edit email"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {editingEmailIndex === index ? (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                        <input
+                          type="text"
+                          value={editedSubject}
+                          onChange={(e) => setEditedSubject(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Body</label>
+                        <textarea
+                          value={editedBody}
+                          onChange={(e) => setEditedBody(e.target.value)}
+                          rows={12}
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={saveEdit}
+                          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                        >
+                          Save Changes
+                        </button>
+                        <button
+                          onClick={cancelEdit}
+                          className="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div>
+                        <div className="text-sm font-medium text-gray-700 mb-1">Subject:</div>
+                        <div className="bg-gray-50 rounded p-3 text-sm">{email.subject}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-gray-700 mb-1">Body:</div>
+                        <div className="bg-gray-50 rounded p-3 text-sm whitespace-pre-wrap">{email.body}</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

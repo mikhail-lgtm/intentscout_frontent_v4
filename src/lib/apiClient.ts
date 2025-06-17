@@ -165,6 +165,10 @@ class ApiClient {
         
         if (config.features.enableDebugLogs) {
           console.error(`❌ API Error ${response.status}:`, error)
+          // Log full response data for debugging validation errors
+          if (response.status === 422 && responseData) {
+            console.error('Full 422 error details:', responseData)
+          }
         }
 
         // If we get a 401 and haven't already retried, force token refresh and retry
@@ -225,6 +229,11 @@ class ApiClient {
     return this.makeRequest<T>(endpoint, { method: 'GET', requireAuth })
   }
 
+  // GET request with custom timeout
+  async getWithTimeout<T>(endpoint: string, timeoutMs: number, requireAuth = true): Promise<ApiResponse<T>> {
+    return this.makeRequest<T>(endpoint, { method: 'GET', requireAuth, timeout: timeoutMs })
+  }
+
   // POST request
   async post<T>(endpoint: string, body?: any, requireAuth = true): Promise<ApiResponse<T>> {
     return this.makeRequest<T>(endpoint, { method: 'POST', body, requireAuth })
@@ -282,26 +291,230 @@ export const api = {
   // Organization  
   organization: {
     current: () => apiClient.get(endpoints.organization.current),
+    members: () => apiClient.get(endpoints.organization.members),
   },
   
   // Signals
   signals: {
     list: () => apiClient.get(endpoints.signals.list),
     create: (data: any) => apiClient.post(endpoints.signals.create, data),
-    getById: (id: string) => apiClient.get(endpoints.signals.byId(id)),
     getProducts: () => apiClient.get('/signals/products'),
+    // New composite endpoint - replaces need for 3 separate API calls
+    getComplete: (params: { date: string; product_id: string; min_score: number }) =>
+      apiClient.get(`/signals/complete?date=${params.date}&product_id=${params.product_id}&min_score=${params.min_score}`),
+    // Legacy endpoints - consider deprecating these in favor of getComplete
     getIntentScores: (params: { date: string; product_id: string; min_score: number }) => 
       apiClient.get(`/signals/intent-scores?date=${params.date}&product_id=${params.product_id}&min_score=${params.min_score}`),
     getCompanies: (companyIds: string[]) => 
       apiClient.get(`/signals/companies?company_ids=${companyIds.join(',')}`),
     getJobs: (jobIds: string[]) => 
       apiClient.get(`/signals/jobs?job_ids=${jobIds.join(',')}`),
+    updateDecision: (signalId: string, action: 'approve' | 'reject' | 'remove') =>
+      apiClient.post('/signals/update-decision', { signalId, action }),
+    getSignalCounts: (params: { start_date: string; end_date: string; product_id: string; min_score: number; decision_filter?: string }) => {
+      const searchParams = new URLSearchParams({
+        start_date: params.start_date,
+        end_date: params.end_date,
+        product_id: params.product_id,
+        min_score: params.min_score.toString()
+      })
+      
+      if (params.decision_filter) searchParams.append('decision_filter', params.decision_filter)
+      
+      return apiClient.get(`/signals/signal-counts?${searchParams.toString()}`)
+    },
+    getApprovedSignals: (params: { product_id: string; min_score: number; search?: string; date_filter?: string; limit?: number; offset?: number }) => {
+      const searchParams = new URLSearchParams({
+        product_id: params.product_id,
+        min_score: params.min_score.toString(),
+        limit: (params.limit || 50).toString(),
+        offset: (params.offset || 0).toString()
+      })
+      
+      if (params.search) searchParams.append('search', params.search)
+      if (params.date_filter) searchParams.append('date_filter', params.date_filter)
+      
+      return apiClient.get(`/signals/approved?${searchParams.toString()}`)
+    },
   },
   
   // Outreach
   outreach: {
     getCampaigns: () => apiClient.get(endpoints.outreach.campaigns),
     getSequences: () => apiClient.get(endpoints.outreach.sequences),
+    getSignals: (params: { product_id: string; min_score: number; limit?: number }) => {
+      const searchParams = new URLSearchParams({
+        product_id: params.product_id,
+        min_score: params.min_score.toString(),
+        limit: (params.limit || 1).toString()
+      })
+      
+      return apiClient.get(`${endpoints.outreach.signals}?${searchParams.toString()}`)
+    },
+  },
+
+  // Decision Makers
+  decisionMakers: {
+    startSearch: (data: { 
+      signal_id: string; 
+      custom_guidance?: string;
+    }) => 
+      apiClient.post(endpoints.decisionMakers.startSearch, data),
+    getStatus: (searchId: string) => 
+      apiClient.getWithTimeout(endpoints.decisionMakers.getStatus(searchId), 200000), // 200 seconds
+    getBySignal: (signalId: string) => 
+      apiClient.get(endpoints.decisionMakers.getBySignal(signalId)),
+    restart: (searchId: string) => 
+      apiClient.post(endpoints.decisionMakers.restart(searchId)),
+  },
+
+  // Contacts  
+  contacts: {
+    getAll: (limit = 100, offset = 0) => 
+      apiClient.get(`${endpoints.contacts.create}?limit=${limit}&offset=${offset}`),
+    create: (data: any) => apiClient.post(endpoints.contacts.create, data),
+    getBySignal: (signalId: string) => 
+      apiClient.get(endpoints.contacts.getBySignal(signalId)),
+    getById: (contactId: string) => 
+      apiClient.get(endpoints.contacts.getById(contactId)),
+    update: (contactId: string, data: any) => 
+      apiClient.patch(endpoints.contacts.update(contactId), data),
+    delete: (contactId: string) => 
+      apiClient.delete(endpoints.contacts.delete(contactId)),
+    importDecisionMaker: (data: {
+      signal_id: string;
+      decision_maker_id: string;
+      first_name: string;
+      last_name: string;
+      job_title: string;
+      linkedin_url: string;
+      why_reach_out: string;
+    }) => 
+      apiClient.post('/contacts/import-decision-maker', data),
+  },
+
+  // Sequences
+  sequences: {
+    list: (status?: string, limit = 50, offset = 0) => {
+      const params = new URLSearchParams({
+        limit: limit.toString(),
+        offset: offset.toString()
+      })
+      if (status) params.append('status', status)
+      return apiClient.get(`/sequences?${params.toString()}`)
+    },
+    create: (data: {
+      name: string;
+      description?: string;
+      blocks?: any[];
+    }) => 
+      apiClient.post('/sequences', data),
+    getById: (sequenceId: string) => 
+      apiClient.get(`/sequences/${sequenceId}`),
+    update: (sequenceId: string, data: {
+      name?: string;
+      description?: string;
+      status?: string;
+      blocks?: any[];
+    }) => 
+      apiClient.patch(`/sequences/${sequenceId}`, data),
+    delete: (sequenceId: string) => 
+      apiClient.delete(`/sequences/${sequenceId}`),
+    duplicate: (sequenceId: string) => 
+      apiClient.post(`/sequences/${sequenceId}/duplicate`),
+    updateStatus: (sequenceId: string, status: string) => 
+      apiClient.patch(`/sequences/${sequenceId}/status?status=${status}`)
+  },
+
+  // HubSpot Integration
+  hubspot: {
+    getAuthUrl: () => apiClient.get(endpoints.hubspot.authUrl),
+    callback: (code: string, state: string) => 
+      apiClient.post(`${endpoints.hubspot.callback}?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`),
+    getStatus: () => apiClient.get(endpoints.hubspot.status),
+    disconnect: () => apiClient.delete(endpoints.hubspot.disconnect),
+    refreshToken: () => apiClient.post(endpoints.hubspot.refreshToken),
+  },
+
+  // Settings
+  settings: {
+    getHubSpot: () => apiClient.get(endpoints.settings.hubspot),
+    updateHubSpot: (data: any) => apiClient.post(endpoints.settings.hubspot, data),
+    getSignalHubSpot: (signalId: string) => 
+      apiClient.get(endpoints.settings.hubspotSignal(signalId)),
+    updateSignalHubSpot: (signalId: string, data: any) => 
+      apiClient.post(endpoints.settings.hubspotSignal(signalId), data),
+    getHubSpotSequences: () => 
+      apiClient.get(endpoints.settings.hubspotSequences),
+    getHubSpotSequenceDetails: (sequenceId: string) => 
+      apiClient.get(`${endpoints.settings.hubspotSequences}/${sequenceId}`),
+    validateSequence: (internalSequenceId: string, hubspotSequenceId: string) =>
+      apiClient.post(endpoints.settings.validateSequence, { 
+        internal_sequence_id: internalSequenceId, 
+        hubspot_sequence_id: hubspotSequenceId 
+      }),
+    previewCompany: (signalId: string) =>
+      apiClient.get(endpoints.settings.previewCompany(signalId)),
+    importCompany: (signalId: string, data: { properties: Record<string, string> }) =>
+      apiClient.post(endpoints.settings.importCompany(signalId), data),
+    getCompanyImportStatus: (signalId: string) =>
+      apiClient.get(endpoints.settings.companyImportStatus(signalId)),
+  },
+
+  // Email Generation
+  emails: {
+    generate: (data: {
+      sequence_id: string;
+      contacts: any[];
+      signal_id?: string;
+      company_data?: any;
+      custom_data?: any;
+    }) => apiClient.post(endpoints.emails.generate, data),
+    generateForContact: (data: {
+      sequence_id: string;
+      contact: any;
+      signal_id?: string;
+      company_data?: any;
+      custom_data?: any;
+    }) => apiClient.post(endpoints.emails.generate, {
+      sequence_id: data.sequence_id,
+      contacts: [data.contact],
+      signal_id: data.signal_id,
+      company_data: data.company_data,
+      custom_data: data.custom_data
+    }),
+    getGeneration: (generationId: string) => 
+      apiClient.get(endpoints.emails.getGeneration(generationId)),
+    getBySignal: (signalId: string) => 
+      apiClient.get(`/emails/signal/${signalId}`),
+    getByContact: (contactId: string) => 
+      apiClient.get(`/emails/contact/${contactId}`),
+    listGenerations: (limit = 20) => 
+      apiClient.get(`${endpoints.emails.listGenerations}?limit=${limit}`),
+  },
+
+  // Signal Notes
+  signalNotes: {
+    save: (data: {
+      signal_id: string;
+      email_footer_name?: string;
+      email_footer_company?: string;
+      other_notes?: string;
+    }) => apiClient.post('/signal-notes', data),
+    get: (signalId: string) => 
+      apiClient.get(`/signal-notes/${signalId}`),
+  },
+
+  // LinkedIn Scraping
+  linkedInScraping: {
+    scrape: (data: {
+      contacts: any[];
+      signal_id?: string;
+    }) => apiClient.post('/linkedin-scraping/scrape', data),
+    getStatus: (scrapingId: string) => 
+      apiClient.get(`/linkedin-scraping/status/${scrapingId}`),
+    getContactProfile: (contactId: string) => 
+      apiClient.get(`/linkedin-scraping/contact/${contactId}`),
   },
 
   // Generic methods for flexibility

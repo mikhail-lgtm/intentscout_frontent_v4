@@ -1,0 +1,475 @@
+import { useState, useEffect } from 'react'
+import { Settings, Wifi, WifiOff, Search, X, ExternalLink, Building, Users, CheckCircle, Loader2 } from 'lucide-react'
+import { api } from '../../lib/apiClient'
+import { CompanyImportPopup } from './CompanyImportPopup'
+
+interface HubSpotSequence {
+  id: string
+  name: string
+  created_at: string
+  updated_at: string
+  user_id: string
+  email_step_count: number
+  total_step_count: number
+}
+
+interface HubSpotConfig {
+  sender_email: string | null
+  selected_sequence_id: string | null
+  selected_sequence_name: string | null
+  is_connected: boolean
+  connection_status: string
+  last_updated: string | null
+}
+
+interface HubSpotSendingProps {
+  signalId?: string
+  companyName?: string
+  onConfigurationChange?: (isConfigured: boolean, config?: HubSpotConfig) => void
+}
+
+export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }: HubSpotSendingProps) => {
+  // State management
+  const [hubspotConfig, setHubspotConfig] = useState<HubSpotConfig>({
+    sender_email: null,
+    selected_sequence_id: null,
+    selected_sequence_name: null,
+    is_connected: false,
+    connection_status: 'disconnected',
+    last_updated: null
+  })
+  
+  const [senderEmail, setSenderEmail] = useState('')
+  const [selectedSequence, setSelectedSequence] = useState<HubSpotSequence | null>(null)
+  const [availableSequences, setAvailableSequences] = useState<HubSpotSequence[]>([])
+  const [showSequenceSearch, setShowSequenceSearch] = useState(false)
+  const [showCompanyImportPopup, setShowCompanyImportPopup] = useState(false)
+  
+  // Loading states
+  const [isLoadingConfig, setIsLoadingConfig] = useState(true)
+  const [isLoadingSequences, setIsLoadingSequences] = useState(false)
+  const [isSavingConfig, setIsSavingConfig] = useState(false)
+  const [isImportingCompany, setIsImportingCompany] = useState(false)
+
+  // Company import status
+  const [companyImportStatus, setCompanyImportStatus] = useState<{
+    imported: boolean
+    hubspot_company_id: string | null
+    imported_at: string | null
+  }>({
+    imported: false,
+    hubspot_company_id: null,
+    imported_at: null
+  })
+
+  // Search
+  const [sequenceSearch, setSequenceSearch] = useState('')
+
+  // Load HubSpot configuration on mount
+  useEffect(() => {
+    if (signalId) {
+      loadHubSpotConfig()
+    }
+  }, [signalId])
+
+  // Load sequences when connected
+  useEffect(() => {
+    if (hubspotConfig.is_connected) {
+      loadHubSpotSequences()
+    }
+  }, [hubspotConfig.is_connected])
+
+  // Check company import status
+  useEffect(() => {
+    if (signalId && hubspotConfig.is_connected) {
+      checkCompanyImportStatus()
+    }
+  }, [signalId, hubspotConfig.is_connected])
+
+  // Client-side filtering
+  const filteredSequences = availableSequences.filter(seq =>
+    seq.name.toLowerCase().includes(sequenceSearch.toLowerCase())
+  )
+
+  // Notify parent of configuration status
+  useEffect(() => {
+    const isConfigured = hubspotConfig.is_connected && 
+                        hubspotConfig.sender_email && 
+                        hubspotConfig.selected_sequence_id
+    onConfigurationChange?.(isConfigured, hubspotConfig)
+  }, [hubspotConfig, onConfigurationChange])
+
+  // Close sequence search when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setShowSequenceSearch(false)
+    }
+    
+    if (showSequenceSearch) {
+      document.addEventListener('click', handleClickOutside)
+    }
+    
+    return () => {
+      document.removeEventListener('click', handleClickOutside)
+    }
+  }, [showSequenceSearch])
+
+  const loadHubSpotConfig = async () => {
+    if (!signalId) return
+    
+    try {
+      setIsLoadingConfig(true)
+      
+      // Check HubSpot connection status
+      const statusResponse = await api.hubspot.getStatus()
+      
+      let connectionStatus = 'disconnected'
+      let isConnected = false
+      
+      if (statusResponse.data) {
+        isConnected = statusResponse.data.connected
+        connectionStatus = isConnected ? 'connected' : 'disconnected'
+      }
+      
+      // Get signal-specific settings
+      let settingsConfig = {
+        sender_email: null,
+        selected_sequence_id: null,
+        selected_sequence_name: null
+      }
+      
+      if (isConnected) {
+        try {
+          const settingsResponse = await api.settings.getSignalHubSpot(signalId)
+          
+          if (settingsResponse.data) {
+            settingsConfig = {
+              sender_email: settingsResponse.data.sender_email,
+              selected_sequence_id: settingsResponse.data.selected_sequence_id,
+              selected_sequence_name: settingsResponse.data.selected_sequence_name
+            }
+          }
+        } catch (settingsError) {
+          console.log('Signal settings not yet configured, using defaults')
+        }
+      }
+      
+      const config = {
+        ...settingsConfig,
+        is_connected: isConnected,
+        connection_status: connectionStatus,
+        last_updated: null
+      }
+      
+      setHubspotConfig(config)
+      setSenderEmail(config.sender_email || '')
+      
+      // Find and set selected sequence if available
+      if (config.selected_sequence_id && availableSequences.length > 0) {
+        const sequence = availableSequences.find(s => s.id === config.selected_sequence_id)
+        if (sequence) setSelectedSequence(sequence)
+      }
+      
+    } catch (error) {
+      console.error('Failed to load HubSpot config:', error)
+    } finally {
+      setIsLoadingConfig(false)
+    }
+  }
+
+  const loadHubSpotSequences = async () => {
+    try {
+      setIsLoadingSequences(true)
+      // Fetch ALL sequences with NO step counts (backend paginates to get ALL)
+      const response = await api.settings.getHubSpotSequences()
+      
+      if (response.data) {
+        setAvailableSequences(response.data.sequences || [])
+        console.log(`Loaded ${response.data.total_count} HubSpot sequences`)
+      }
+    } catch (error) {
+      console.error('Failed to load HubSpot sequences:', error)
+    } finally {
+      setIsLoadingSequences(false)
+    }
+  }
+
+  const saveHubSpotConfig = async () => {
+    if (!senderEmail || !selectedSequence || !signalId) return
+    
+    try {
+      setIsSavingConfig(true)
+      const response = await api.settings.updateSignalHubSpot(signalId, {
+        sender_email: senderEmail,
+        selected_sequence_id: selectedSequence.id,
+        selected_sequence_name: selectedSequence.name
+      })
+      
+      if (response.data) {
+        setHubspotConfig(response.data)
+      }
+    } catch (error) {
+      console.error('Failed to save HubSpot config:', error)
+    } finally {
+      setIsSavingConfig(false)
+    }
+  }
+
+  const handleSequenceSelect = async (sequence: HubSpotSequence) => {
+    setSelectedSequence(sequence)
+    setShowSequenceSearch(false)
+    
+    // Fetch step counts for the selected sequence if not already available
+    if (sequence.total_step_count === 0) {
+      try {
+        const response = await api.settings.getHubSpotSequenceDetails(sequence.id)
+        if (response.data) {
+          // Update the sequence in the list with step counts
+          setAvailableSequences(prev => 
+            prev.map(seq => 
+              seq.id === sequence.id 
+                ? { ...seq, email_step_count: response.data.email_step_count, total_step_count: response.data.total_step_count }
+                : seq
+            )
+          )
+          // Update selected sequence with step counts
+          setSelectedSequence({
+            ...sequence,
+            email_step_count: response.data.email_step_count,
+            total_step_count: response.data.total_step_count
+          })
+        }
+      } catch (error) {
+        console.error('Failed to fetch sequence details:', error)
+      }
+    }
+  }
+
+  const checkCompanyImportStatus = async () => {
+    if (!signalId) return
+    
+    try {
+      const response = await api.settings.getCompanyImportStatus(signalId)
+      if (response.data) {
+        setCompanyImportStatus(response.data)
+      }
+    } catch (error) {
+      console.error('Failed to check company import status:', error)
+    }
+  }
+
+  const handleCompanyImport = () => {
+    setShowCompanyImportPopup(true)
+  }
+
+  const handleCompanyImportSuccess = () => {
+    // Refresh import status after successful import
+    checkCompanyImportStatus()
+  }
+
+  const isFullyConfigured = hubspotConfig.is_connected && senderEmail && selectedSequence
+  const canSaveConfig = senderEmail && selectedSequence && !isSavingConfig
+
+  if (isLoadingConfig || !signalId) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+          <div className="text-xs text-gray-600">Loading...</div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="h-full flex flex-col">
+      {/* Header */}
+      <div className="flex-shrink-0 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-gray-900">HubSpot</h3>
+          <div className="flex items-center gap-1">
+            {hubspotConfig.is_connected ? (
+              <Wifi className="w-3 h-3 text-green-500" />
+            ) : (
+              <WifiOff className="w-3 h-3 text-red-500" />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 px-6 pb-6 space-y-3 overflow-y-auto">
+        {/* HubSpot Connection Status */}
+        {!hubspotConfig.is_connected ? (
+          <div className="bg-red-50 border border-red-200 rounded p-3 text-center">
+            <div className="text-sm text-red-900 mb-2">Not Connected</div>
+            <button
+              onClick={() => window.open('/settings', '_blank')}
+              className="px-3 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700"
+            >
+              Connect HubSpot
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Sender Email */}
+            <div>
+              <label className="text-xs font-medium text-gray-700 block mb-1">
+                Sender Email
+              </label>
+              <input
+                type="email"
+                value={senderEmail}
+                onChange={(e) => setSenderEmail(e.target.value)}
+                placeholder="Enter sender email"
+                className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs"
+              />
+            </div>
+
+            {/* HubSpot Sequence Selection */}
+            <div>
+              <label className="text-xs font-medium text-gray-700 block mb-1">
+                HubSpot Sequence
+              </label>
+              <div className="relative">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setShowSequenceSearch(true)
+                  }}
+                  className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-left bg-white hover:bg-gray-50"
+                >
+                  {selectedSequence ? selectedSequence.name : 'Select sequence...'}
+                </button>
+                
+                {/* Sequence Search Popup */}
+                {showSequenceSearch && (
+                  <div 
+                    className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded shadow-lg z-20 max-h-48 overflow-y-auto"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="p-2 border-b">
+                      <div className="relative">
+                        <Search className="w-3 h-3 absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                        <input
+                          type="text"
+                          value={sequenceSearch}
+                          onChange={(e) => setSequenceSearch(e.target.value)}
+                          placeholder="Search sequences..."
+                          className="w-full pl-7 pr-7 py-1 text-xs border border-gray-300 rounded"
+                          autoFocus
+                        />
+                        <button
+                          onClick={() => setShowSequenceSearch(false)}
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="max-h-32 overflow-y-auto">
+                      {isLoadingSequences ? (
+                        <div className="p-3 text-center">
+                          <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-1" />
+                          <div className="text-xs text-gray-600">Loading...</div>
+                        </div>
+                      ) : filteredSequences.length === 0 ? (
+                        <div className="p-3 text-xs text-gray-500 text-center">No sequences found</div>
+                      ) : (
+                        filteredSequences.map(sequence => (
+                          <button
+                            key={sequence.id}
+                            onClick={() => handleSequenceSelect(sequence)}
+                            className="w-full px-3 py-2 text-left text-xs hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                          >
+                            <div className="font-medium truncate">{sequence.name}</div>
+                            {sequence.total_step_count > 0 && (
+                              <div className="text-gray-500 text-xs">
+                                {sequence.total_step_count} steps • {sequence.email_step_count} emails
+                              </div>
+                            )}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Show sequence details */}
+              {selectedSequence && selectedSequence.total_step_count > 0 && (
+                <div className="mt-1 text-xs text-gray-500">
+                  {selectedSequence.total_step_count} steps • {selectedSequence.email_step_count} emails
+                </div>
+              )}
+            </div>
+
+            {/* Save Configuration */}
+            <button
+              onClick={saveHubSpotConfig}
+              disabled={!canSaveConfig}
+              className={`w-full px-3 py-1.5 rounded text-xs font-medium ${
+                canSaveConfig
+                  ? 'bg-orange-500 hover:bg-orange-600 text-white'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              {isSavingConfig ? 'Saving...' : 'Save Config'}
+            </button>
+
+            {/* Action Steps */}
+            {isFullyConfigured && (
+              <div className="pt-2 border-t border-gray-200">
+                <div className="flex gap-1">
+                  <button
+                    onClick={handleCompanyImport}
+                    disabled={companyImportStatus.imported}
+                    className={`flex-1 px-2 py-1 rounded text-xs font-medium flex items-center justify-center gap-1 ${
+                      companyImportStatus.imported
+                        ? 'bg-green-500 text-white'
+                        : 'bg-orange-500 hover:bg-orange-600 text-white'
+                    }`}
+                    title={companyImportStatus.imported ? "Company Imported" : "Import Company"}
+                  >
+                    {companyImportStatus.imported ? (
+                      <CheckCircle className="w-3 h-3" />
+                    ) : (
+                      <Building className="w-3 h-3" />
+                    )}
+                    <span className="hidden sm:inline">1</span>
+                  </button>
+                  <button
+                    disabled
+                    className="flex-1 px-2 py-1 rounded text-xs font-medium bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1"
+                    title="Import Contacts"
+                  >
+                    <Users className="w-3 h-3" />
+                    <span className="hidden sm:inline">2</span>
+                  </button>
+                  <button
+                    disabled
+                    className="flex-1 px-2 py-1 rounded text-xs font-medium bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1"
+                    title="Enroll in Sequence"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    <span className="hidden sm:inline">3</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Company Import Popup */}
+      {showCompanyImportPopup && signalId && (
+        <CompanyImportPopup
+          isOpen={showCompanyImportPopup}
+          onClose={() => setShowCompanyImportPopup(false)}
+          signalId={signalId}
+          onImportSuccess={handleCompanyImportSuccess}
+        />
+      )}
+    </div>
+  )
+}

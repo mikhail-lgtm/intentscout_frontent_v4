@@ -91,7 +91,7 @@ export const QueueSidebar: React.FC<QueueSidebarProps> = ({
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-semibold text-gray-900">
-          Queue
+          Signal Queue
         </h3>
         <span className="text-sm text-gray-500">
           {totalSignals > 0 ? `${totalSignals} signals` : "Empty"}

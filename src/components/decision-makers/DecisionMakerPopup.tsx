@@ -1,0 +1,477 @@
+import React, { useState, useEffect } from 'react'
+import { X, Search, CheckCircle, Users, Loader2, AlertCircle, ExternalLink, UserPlus, UserMinus, Check } from 'lucide-react'
+import { useDecisionMakers } from '../../hooks/useDecisionMakers'
+import { useContacts } from '../../hooks/useContacts'
+import { DecisionMakersListSkeleton } from './DecisionMakerSkeleton'
+
+interface DecisionMakerPopupProps {
+  isOpen: boolean
+  onClose: () => void
+  signalId: string
+  companyName: string
+  onContactAdded?: () => void
+}
+
+const LinkedInIcon: React.FC<{ className?: string }> = ({ className = "w-4 h-4" }) => {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+    </svg>
+  )
+}
+
+const ApplePayCheckmark: React.FC = () => {
+  return (
+    <div className="flex items-center justify-center">
+      <div className="relative">
+        {/* Background circle */}
+        <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center animate-pulse">
+          {/* Checkmark */}
+          <CheckCircle className="w-8 h-8 text-white animate-bounce" />
+        </div>
+        {/* Success rings */}
+        <div className="absolute inset-0 border-2 border-green-300 rounded-full animate-ping"></div>
+        <div className="absolute inset-2 border-2 border-green-400 rounded-full animate-ping" style={{ animationDelay: '0.2s' }}></div>
+      </div>
+    </div>
+  )
+}
+
+const LoadingSpinner: React.FC = () => {
+  return (
+    <div className="flex items-center justify-center space-x-2">
+      <Loader2 className="w-6 h-6 text-orange-500 animate-spin" />
+      <div className="text-gray-600">
+        <div className="font-medium">Finding decision makers...</div>
+        <div className="text-sm text-gray-500">This usually takes around 2 minutes</div>
+      </div>
+    </div>
+  )
+}
+
+export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
+  isOpen,
+  onClose,
+  signalId,
+  companyName,
+  onContactAdded
+}) => {
+  const [guidance, setGuidance] = useState('')
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [importingIds, setImportingIds] = useState<Set<string>>(new Set())
+  const [importingAll, setImportingAll] = useState(false)
+  
+  // Use the decision makers hook
+  const {
+    searchStatus,
+    isLoading,
+    error,
+    startSearch,
+    restartSearch,
+    isSearchInProgress,
+    hasResults,
+    hasFailed
+  } = useDecisionMakers(signalId)
+
+  // Use contacts hook to track imported contacts
+  const { contacts, refetch: refetchContacts } = useContacts(signalId)
+
+  // Track which decision makers are already imported
+  const [importedDecisionMakers, setImportedDecisionMakers] = useState<Set<string>>(new Set())
+
+  // Update imported decision makers when contacts change
+  useEffect(() => {
+    const imported = new Set<string>()
+    contacts.forEach(contact => {
+      if (contact.decision_maker_id && contact.source === 'decision_maker_finder') {
+        imported.add(contact.decision_maker_id)
+      }
+    })
+    setImportedDecisionMakers(imported)
+  }, [contacts])
+
+  const handleStartSearch = async () => {
+    const searchId = await startSearch(guidance)
+    
+    if (searchId) {
+      // Show success animation
+      setShowSuccess(true)
+      
+      // Hide success animation after 2 seconds
+      setTimeout(() => {
+        setShowSuccess(false)
+      }, 2000)
+    }
+  }
+
+  const handleImportDecisionMaker = async (dm: any) => {
+    setImportingIds(prev => new Set([...prev, dm.id]))
+    
+    try {
+      const { api } = await import('../../lib/apiClient')
+      
+      const response = await api.contacts.importDecisionMaker({
+        signal_id: signalId,
+        decision_maker_id: dm.id,
+        first_name: dm.first_name,
+        last_name: dm.last_name,
+        job_title: dm.job_title,
+        linkedin_url: dm.linkedin_url,
+        why_reach_out: dm.why_reach_out
+      })
+
+      if (response.error) {
+        throw new Error(response.error)
+      }
+
+      // Refresh contacts and notify parent
+      await refetchContacts()
+      if (onContactAdded) {
+        onContactAdded()
+      }
+
+    } catch (err) {
+      console.error('Failed to import decision maker:', err)
+    } finally {
+      setImportingIds(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(dm.id)
+        return newSet
+      })
+    }
+  }
+
+  const handleUnimportDecisionMaker = async (dm: any) => {
+    setImportingIds(prev => new Set([...prev, dm.id]))
+    
+    try {
+      const { api } = await import('../../lib/apiClient')
+      
+      // Find the contact to delete
+      const contact = contacts.find(c => c.decision_maker_id === dm.id)
+      if (!contact) {
+        throw new Error('Contact not found')
+      }
+
+      const response = await api.contacts.delete(contact.id)
+
+      if (response.error) {
+        throw new Error(response.error)
+      }
+
+      // Refresh contacts and notify parent
+      await refetchContacts()
+      if (onContactAdded) {
+        onContactAdded()
+      }
+
+    } catch (err) {
+      console.error('Failed to unimport decision maker:', err)
+    } finally {
+      setImportingIds(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(dm.id)
+        return newSet
+      })
+    }
+  }
+
+  const handleImportAll = async () => {
+    if (!searchStatus?.decision_makers) return
+
+    setImportingAll(true)
+    
+    try {
+      const { api } = await import('../../lib/apiClient')
+      
+      // Import all non-imported decision makers
+      const toImport = searchStatus.decision_makers.filter(dm => !importedDecisionMakers.has(dm.id))
+      
+      for (const dm of toImport) {
+        try {
+          await api.contacts.importDecisionMaker({
+            signal_id: signalId,
+            decision_maker_id: dm.id,
+            first_name: dm.first_name,
+            last_name: dm.last_name,
+            job_title: dm.job_title,
+            linkedin_url: dm.linkedin_url,
+            why_reach_out: dm.why_reach_out
+          })
+        } catch (err) {
+          console.error(`Failed to import ${dm.first_name} ${dm.last_name}:`, err)
+        }
+      }
+
+      // Refresh contacts and notify parent
+      await refetchContacts()
+      if (onContactAdded) {
+        onContactAdded()
+      }
+
+    } catch (err) {
+      console.error('Failed to import all decision makers:', err)
+    } finally {
+      setImportingAll(false)
+    }
+  }
+
+  const handleClose = () => {
+    setGuidance('')
+    setShowSuccess(false)
+    setImportingIds(new Set())
+    onClose()
+  }
+
+  const renderContent = () => {
+    // Show success animation
+    if (showSuccess) {
+      return (
+        <div className="text-center py-16">
+          <ApplePayCheckmark />
+          <div className="mt-6">
+            <h3 className="text-xl font-semibold text-gray-900">Search Started!</h3>
+            <p className="text-gray-600 mt-3 leading-relaxed">Finding decision makers at {companyName}</p>
+          </div>
+        </div>
+      )
+    }
+
+    // Show loading state  
+    if (isSearchInProgress) {
+      return (
+        <div>
+          <div className="text-center py-8">
+            <LoadingSpinner />
+            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+              <p className="text-sm text-blue-800 leading-relaxed">
+                We're analyzing job postings, LinkedIn profiles, and company information to find the best contacts at {companyName}.
+              </p>
+            </div>
+          </div>
+          <div className="mt-8">
+            <DecisionMakersListSkeleton count={5} />
+          </div>
+        </div>
+      )
+    }
+
+    // Show results
+    if (hasResults) {
+      const totalDMs = searchStatus?.decision_makers.length || 0
+      const importedCount = searchStatus?.decision_makers.filter(dm => importedDecisionMakers.has(dm.id)).length || 0
+      const canImportAll = totalDMs > importedCount
+
+      return (
+        <div>
+          <div className="mb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Found {totalDMs} Decision Makers
+                </h3>
+                <p className="text-gray-600 text-sm mt-1">
+                  {importedCount} imported • Ready for outreach at {companyName}
+                </p>
+              </div>
+              {canImportAll && (
+                <button
+                  onClick={handleImportAll}
+                  disabled={importingAll}
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md transition-colors bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {importingAll ? (
+                    <>
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      Importing...
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="w-3 h-3" />
+                      Import All
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-2 max-h-[500px] overflow-y-auto">
+            {searchStatus?.decision_makers.map((dm) => {
+              const isImported = importedDecisionMakers.has(dm.id)
+              const isProcessing = importingIds.has(dm.id)
+
+              return (
+                <div key={dm.id} className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-medium text-gray-900 text-sm">
+                          {dm.first_name} {dm.last_name}
+                        </h4>
+                        {isImported && (
+                          <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded flex items-center gap-1">
+                            <Check className="w-3 h-3" />
+                            Imported
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-gray-600 text-xs mt-0.5">{dm.job_title}</p>
+                      <p className="text-gray-500 text-xs mt-1 line-clamp-2">{dm.why_reach_out}</p>
+                    </div>
+                    <div className="flex items-center gap-1 ml-3">
+                      <button
+                        onClick={() => isImported ? handleUnimportDecisionMaker(dm) : handleImportDecisionMaker(dm)}
+                        disabled={isProcessing}
+                        className={`flex items-center justify-center w-7 h-7 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                          isImported 
+                            ? 'text-red-600 hover:text-red-700 hover:bg-red-50' 
+                            : 'text-orange-600 hover:text-orange-700 hover:bg-orange-50'
+                        }`}
+                        title={isImported ? "Remove from Contacts" : "Add to Contacts"}
+                      >
+                        {isProcessing ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : isImported ? (
+                          <UserMinus className="w-3 h-3" />
+                        ) : (
+                          <UserPlus className="w-3 h-3" />
+                        )}
+                      </button>
+                      <a
+                        href={dm.linkedin_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 px-2 py-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors group"
+                        title="View LinkedIn Profile"
+                      >
+                        <LinkedInIcon className="w-3.5 h-3.5" />
+                        <ExternalLink className="w-2.5 h-2.5 opacity-70 group-hover:opacity-100 transition-opacity" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )
+    }
+
+    // Show error state
+    if (hasFailed) {
+      return (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 bg-red-100 rounded-xl flex items-center justify-center mx-auto mb-6">
+            <AlertCircle className="w-8 h-8 text-red-600" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-3">Search Failed</h3>
+          <p className="text-gray-600 mb-8 max-w-md mx-auto leading-relaxed">
+            {searchStatus?.error_message || error || 'Something went wrong while finding decision makers.'}
+          </p>
+          <button
+            onClick={restartSearch}
+            className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
+          >
+            Try Again
+          </button>
+        </div>
+      )
+    }
+
+    // Show initial form
+    return (
+      <div>
+        <div className="text-center mb-8">
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Find Decision Makers</h3>
+          <p className="text-gray-600">Discover the right contacts at {companyName}</p>
+        </div>
+
+        <div className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Additional Guidance (Optional)
+            </label>
+            <textarea
+              value={guidance}
+              onChange={(e) => setGuidance(e.target.value)}
+              placeholder="e.g., Focus on CTOs and VPs of Engineering, or target procurement decision makers..."
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 resize-none text-sm"
+              rows={4}
+            />
+            <p className="text-xs text-gray-500 mt-2">
+              Help us target specific roles or departments for better results
+            </p>
+          </div>
+
+          {error && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+              <p className="text-red-700 text-sm leading-relaxed">{error}</p>
+            </div>
+          )}
+
+          <div className="flex gap-4 pt-2">
+            <button
+              onClick={handleClose}
+              className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleStartSearch}
+              disabled={isLoading}
+              className="flex-1 px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Starting...
+                </>
+              ) : (
+                'Start Finding'
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isOpen) return null
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50 z-50"
+        onClick={handleClose}
+      />
+      
+      {/* Modal */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gray-50">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                <Search className="w-4 h-4 text-orange-600" />
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900">Decision Maker Finder</h2>
+            </div>
+            <button
+              onClick={handleClose}
+              className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-500" />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+            {renderContent()}
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}

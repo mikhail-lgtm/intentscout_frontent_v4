@@ -1,6 +1,6 @@
 === EXTRACTED TSX FILES ===
 Generated from: /Users/syaz/Dropbox/PYprograms/Votek_AI_LLC/code/frontendV4
-Total files: 23
+Total files: 34
 ==================================================
 
 ==================== FILE: src/App.tsx ====================
@@ -105,7 +105,7 @@ export const AuthCallback = () => {
         <div className="max-w-md w-full text-center">
           <img
             className="mx-auto h-20 w-auto mb-8"
-            src="/IntentScout.png"
+            src="/IntentScoutFull.png"
             alt="IntentScout"
           />
           <div className="bg-red-50 border border-red-200 rounded-lg p-6">
@@ -122,7 +122,7 @@ export const AuthCallback = () => {
       <div className="max-w-md w-full text-center">
         <img
           className="mx-auto h-20 w-auto mb-8"
-          src="/IntentScout.png"
+          src="/IntentScoutFull.png"
           alt="IntentScout"
         />
         <div className="w-8 h-8 border-4 border-orange-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
@@ -262,7 +262,7 @@ export const AuthHandler = () => {
         <div className="max-w-md w-full text-center">
           <img
             className="mx-auto h-20 w-auto mb-8"
-            src="/IntentScout.png"
+            src="/IntentScoutFull.png"
             alt="IntentScout"
           />
           <div className="bg-red-50 border border-red-200 rounded-lg p-6">
@@ -285,7 +285,7 @@ export const AuthHandler = () => {
       <div className="max-w-md w-full text-center">
         <img
           className="mx-auto h-20 w-auto mb-8"
-          src="/IntentScout.png"
+          src="/IntentScoutFull.png"
           alt="IntentScout"
         />
         <div className="w-8 h-8 border-4 border-orange-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
@@ -391,7 +391,7 @@ export const ChangeEmailPage = () => {
           <div className="text-center">
             <img
               className="mx-auto h-20 w-auto"
-              src="/IntentScout.png"
+              src="/IntentScoutFull.png"
               alt="IntentScout"
             />
             <h2 className="mt-6 text-3xl font-bold text-gray-900">
@@ -430,7 +430,7 @@ export const ChangeEmailPage = () => {
         <div className="text-center">
           <img
             className="mx-auto h-20 w-auto"
-            src="/IntentScout.png"
+            src="/IntentScoutFull.png"
             alt="IntentScout"
           />
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
@@ -581,7 +581,7 @@ export const ConfirmSignupPage = () => {
         <div className="text-center">
           <img
             className="mx-auto h-20 w-auto"
-            src="/IntentScout.png"
+            src="/IntentScoutFull.png"
             alt="IntentScout"
           />
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
@@ -725,7 +725,7 @@ export const InvitePage = () => {
         <div className="max-w-md w-full text-center">
           <img
             className="mx-auto h-20 w-auto mb-8"
-            src="/IntentScout.png"
+            src="/IntentScoutFull.png"
             alt="IntentScout"
           />
           <div className="w-8 h-8 border-4 border-orange-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
@@ -741,7 +741,7 @@ export const InvitePage = () => {
         <div className="max-w-md w-full text-center">
           <img
             className="mx-auto h-20 w-auto mb-8"
-            src="/IntentScout.png"
+            src="/IntentScoutFull.png"
             alt="IntentScout"
           />
           <div className="bg-red-50 border border-red-200 rounded-lg p-6">
@@ -759,7 +759,7 @@ export const InvitePage = () => {
         <div className="text-center">
           <img
             className="mx-auto h-20 w-auto"
-            src="/IntentScout.png"
+            src="/IntentScoutFull.png"
             alt="IntentScout"
           />
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
@@ -878,7 +878,7 @@ export const LoginPage = () => {
         <div className="text-center">
           <img
             className="mx-auto h-20 w-auto"
-            src="/IntentScout.png"
+            src="/IntentScoutFull.png"
             alt="IntentScout"
           />
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
@@ -1074,7 +1074,7 @@ export const MagicLinkPage = () => {
           <div className="text-center">
             <img
               className="mx-auto h-20 w-auto"
-              src="/IntentScout.png"
+              src="/IntentScoutFull.png"
               alt="IntentScout"
             />
             <h2 className="mt-6 text-3xl font-bold text-gray-900">
@@ -1115,7 +1115,7 @@ export const MagicLinkPage = () => {
         <div className="text-center">
           <img
             className="mx-auto h-20 w-auto"
-            src="/IntentScout.png"
+            src="/IntentScoutFull.png"
             alt="IntentScout"
           />
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
@@ -1270,7 +1270,7 @@ export const ReauthPage = () => {
         <div className="text-center">
           <img
             className="mx-auto h-20 w-auto"
-            src="/IntentScout.png"
+            src="/IntentScoutFull.png"
             alt="IntentScout"
           />
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
@@ -1486,7 +1486,7 @@ export const ResetPasswordPage = () => {
           <div className="text-center">
             <img
               className="mx-auto h-20 w-auto"
-              src="/IntentScout.png"
+              src="/IntentScoutFull.png"
               alt="IntentScout"
             />
             <h2 className="mt-6 text-3xl font-bold text-gray-900">
@@ -1584,7 +1584,7 @@ export const ResetPasswordPage = () => {
         <div className="text-center">
           <img
             className="mx-auto h-20 w-auto"
-            src="/IntentScout.png"
+            src="/IntentScoutFull.png"
             alt="IntentScout"
           />
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
@@ -1798,7 +1798,7 @@ export const Header = ({ activeTab, setActiveTab }: HeaderProps) => {
     <header className="bg-white border-b border-gray-200 py-4 px-6 flex items-center justify-between sticky top-0 z-30 shadow-sm">
       <div className="flex items-center">
         <div className="flex items-center mr-4 flex-col">
-          <img src="/IntentScout.png" alt="IntentScout Logo" className="h-auto w-auto max-h-10 max-w-full mb-1" />
+          <img src="/IntentScoutFull.png" alt="IntentScout Logo" className="h-auto w-auto max-h-10 max-w-full mb-1" />
           <p className="text-xs text-gray-500 leading-tight">AI-Powered Sales Intelligence</p>
         </div>
       </div>
@@ -1897,17 +1897,1284 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
 ============================================================
 
-==================== FILE: src/components/outreach/OutreachPage.tsx ====================
-export const OutreachPage = () => {
+==================== FILE: src/components/contacts/AddContactPopup.tsx ====================
+import React, { useState, useEffect } from 'react'
+import { X, Plus, Loader2, CheckCircle } from 'lucide-react'
+
+interface Contact {
+  id: string
+  first_name: string
+  last_name: string
+  job_title: string
+  linkedin_contact: string
+  email_address: string | null
+  direct_phone: string | null
+  mobile_phone: string | null
+  person_city: string | null
+  person_state: string | null
+  country: string | null
+  notes: string
+  source: string
+  decision_maker_id?: string
+}
+
+interface AddContactPopupProps {
+  isOpen: boolean
+  onClose: () => void
+  onContactAdded: () => void
+  signalId: string
+  companyName: string
+  editingContact?: Contact
+}
+
+interface ContactFormData {
+  first_name: string
+  last_name: string
+  job_title: string
+  linkedin_contact: string
+  email_address: string
+  direct_phone: string
+  mobile_phone: string
+  person_city: string
+  person_state: string
+  country: string
+  notes: string
+}
+
+export const AddContactPopup: React.FC<AddContactPopupProps> = ({
+  isOpen,
+  onClose,
+  onContactAdded,
+  signalId,
+  companyName,
+  editingContact
+}) => {
+  const [formData, setFormData] = useState<ContactFormData>({
+    first_name: '',
+    last_name: '',
+    job_title: '',
+    linkedin_contact: '',
+    email_address: '',
+    direct_phone: '',
+    mobile_phone: '',
+    person_city: '',
+    person_state: '',
+    country: '',
+    notes: ''
+  })
+  
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [showSuccess, setShowSuccess] = useState(false)
+
+  const isEditing = !!editingContact
+
+  // Initialize form data when editing contact
+  useEffect(() => {
+    if (editingContact) {
+      setFormData({
+        first_name: editingContact.first_name,
+        last_name: editingContact.last_name,
+        job_title: editingContact.job_title,
+        linkedin_contact: editingContact.linkedin_contact || '',
+        email_address: editingContact.email_address || '',
+        direct_phone: editingContact.direct_phone || '',
+        mobile_phone: editingContact.mobile_phone || '',
+        person_city: editingContact.person_city || '',
+        person_state: editingContact.person_state || '',
+        country: editingContact.country || '',
+        notes: editingContact.notes || ''
+      })
+    } else {
+      // Reset to empty form for new contact
+      setFormData({
+        first_name: '',
+        last_name: '',
+        job_title: '',
+        linkedin_contact: '',
+        email_address: '',
+        direct_phone: '',
+        mobile_phone: '',
+        person_city: '',
+        person_state: '',
+        country: '',
+        notes: ''
+      })
+    }
+  }, [editingContact])
+
+  const handleInputChange = (field: keyof ContactFormData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    // Validate required fields
+    if (!formData.first_name || !formData.last_name || !formData.job_title) {
+      setError('First name, last name, and job title are required')
+      return
+    }
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const { api } = await import('../../lib/apiClient')
+      
+      const contactData = {
+        signal_id: signalId,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        job_title: formData.job_title,
+        linkedin_contact: formData.linkedin_contact || '',
+        email_address: formData.email_address || null,
+        direct_phone: formData.direct_phone || null,
+        mobile_phone: formData.mobile_phone || null,
+        person_city: formData.person_city || null,
+        person_state: formData.person_state || null,
+        country: formData.country || null,
+        notes: formData.notes || '',
+        source: 'manual'
+      }
+
+      const response = isEditing 
+        ? await api.contacts.update(editingContact.id, contactData)
+        : await api.contacts.create(contactData)
+
+      if (response.error) {
+        throw new Error(response.error)
+      }
+
+      // Show success animation
+      setShowSuccess(true)
+      
+      // Reset form and close after delay
+      setTimeout(() => {
+        setShowSuccess(false)
+        setFormData({
+          first_name: '',
+          last_name: '',
+          job_title: '',
+          linkedin_contact: '',
+          email_address: '',
+          direct_phone: '',
+          mobile_phone: '',
+          person_city: '',
+          person_state: '',
+          country: '',
+          notes: ''
+        })
+        onContactAdded()
+        onClose()
+      }, 1500)
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : `Failed to ${isEditing ? 'update' : 'create'} contact`)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleClose = () => {
+    if (isLoading) return
+    setFormData({
+      first_name: '',
+      last_name: '',
+      job_title: '',
+      linkedin_contact: '',
+      email_address: '',
+      direct_phone: '',
+      mobile_phone: '',
+      person_city: '',
+      person_state: '',
+      country: '',
+      notes: ''
+    })
+    setError(null)
+    setShowSuccess(false)
+    onClose()
+  }
+
+  if (!isOpen) return null
+
   return (
-    <div className="p-6">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">
-          Outreach Management
-        </h1>
-        <p className="text-gray-600">
-          This feature will be rolled out soon.
-        </p>
+    <>
+      {/* Backdrop */}
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50 z-50"
+        onClick={handleClose}
+      />
+      
+      {/* Modal */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gray-50">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                <Plus className="w-4 h-4 text-orange-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  {isEditing ? 'Edit Contact' : 'Add Contact'}
+                </h2>
+                <p className="text-sm text-gray-600">
+                  {isEditing ? 'Update contact details for' : 'Adding contact for'} {companyName}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleClose}
+              className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-500" />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+            {showSuccess ? (
+              <div className="text-center py-16">
+                <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900">
+                  Contact {isEditing ? 'Updated!' : 'Added!'}
+                </h3>
+                <p className="text-gray-600 mt-2">
+                  Successfully {isEditing ? 'updated' : 'added to'} {companyName}
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Basic Info */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        First Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.first_name}
+                        onChange={(e) => handleInputChange('first_name', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Last Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.last_name}
+                        onChange={(e) => handleInputChange('last_name', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Job Title *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.job_title}
+                      onChange={(e) => handleInputChange('job_title', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Contact Information */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Contact Information</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        LinkedIn URL
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.linkedin_contact}
+                        onChange={(e) => handleInputChange('linkedin_contact', e.target.value)}
+                        placeholder="https://linkedin.com/in/profile"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        value={formData.email_address}
+                        onChange={(e) => handleInputChange('email_address', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Direct Phone
+                        </label>
+                        <input
+                          type="tel"
+                          value={formData.direct_phone}
+                          onChange={(e) => handleInputChange('direct_phone', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Mobile Phone
+                        </label>
+                        <input
+                          type="tel"
+                          value={formData.mobile_phone}
+                          onChange={(e) => handleInputChange('mobile_phone', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Location */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Location</h3>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        City
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.person_city}
+                        onChange={(e) => handleInputChange('person_city', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        State
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.person_state}
+                        onChange={(e) => handleInputChange('person_state', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Country
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.country}
+                        onChange={(e) => handleInputChange('country', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Notes */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Notes
+                  </label>
+                  <textarea
+                    value={formData.notes}
+                    onChange={(e) => handleInputChange('notes', e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 resize-none"
+                    placeholder="Additional notes about this contact..."
+                  />
+                </div>
+
+                {error && (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-red-700 text-sm">{error}</p>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex gap-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={handleClose}
+                    className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                    disabled={isLoading}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="flex-1 px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        {isEditing ? 'Updating...' : 'Adding...'}
+                      </>
+                    ) : (
+                      isEditing ? 'Update Contact' : 'Add Contact'
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
+============================================================
+
+==================== FILE: src/components/contacts/ContactSkeleton.tsx ====================
+import React from 'react'
+
+export const ContactSkeleton: React.FC = () => {
+  return (
+    <div className="border border-gray-200 rounded-lg p-3 animate-pulse">
+      <div className="flex items-start justify-between">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            {/* Name skeleton */}
+            <div className="h-4 bg-gray-200 rounded w-32"></div>
+            {/* Badge skeleton (sometimes visible) */}
+            <div className="h-4 bg-gray-100 rounded w-12"></div>
+          </div>
+          {/* Job title skeleton */}
+          <div className="h-3 bg-gray-200 rounded w-24 mb-2"></div>
+          {/* Email skeleton */}
+          <div className="h-3 bg-gray-100 rounded w-40 mb-1"></div>
+          {/* Notes skeleton */}
+          <div className="h-3 bg-gray-100 rounded w-56"></div>
+        </div>
+        <div className="flex items-center gap-1 ml-3">
+          {/* LinkedIn button skeleton */}
+          <div className="w-10 h-7 bg-gray-100 rounded"></div>
+          {/* Edit button skeleton */}
+          <div className="w-7 h-7 bg-gray-100 rounded"></div>
+          {/* Delete button skeleton */}
+          <div className="w-7 h-7 bg-gray-100 rounded"></div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export const ContactsListSkeleton: React.FC<{ count?: number }> = ({ count = 3 }) => {
+  return (
+    <div className="space-y-2">
+      {Array.from({ length: count }).map((_, index) => (
+        <ContactSkeleton key={index} />
+      ))}
+    </div>
+  )
+}
+
+============================================================
+
+==================== FILE: src/components/contacts/ContactsComponent.tsx ====================
+import React, { useState } from 'react'
+import { Search, Loader2, CheckCircle, Users, Plus, ExternalLink, Trash2, Edit } from 'lucide-react'
+import { useDecisionMakers } from '../../hooks/useDecisionMakers'
+import { useContacts } from '../../hooks/useContacts'
+import { DecisionMakerPopup } from '../decision-makers/DecisionMakerPopup'
+import { AddContactPopup } from './AddContactPopup'
+import { ContactsListSkeleton } from './ContactSkeleton'
+import { ConfirmationModal } from '../ui/ConfirmationModal'
+
+interface ContactsComponentProps {
+  signalId: string
+  companyName: string
+}
+
+const LinkedInIcon: React.FC<{ className?: string }> = ({ className = "w-4 h-4" }) => {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+    </svg>
+  )
+}
+
+export const ContactsComponent: React.FC<ContactsComponentProps> = ({
+  signalId,
+  companyName
+}) => {
+  const [showDecisionMakerPopup, setShowDecisionMakerPopup] = useState(false)
+  const [showAddContactPopup, setShowAddContactPopup] = useState(false)
+  const [editingContact, setEditingContact] = useState<any>(null)
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean
+    contactId: string
+    contactName: string
+  }>({
+    isOpen: false,
+    contactId: '',
+    contactName: ''
+  })
+  
+  // Use decision makers hook to track search status
+  const { isSearchInProgress, hasResults, hasFailed } = useDecisionMakers(signalId)
+  
+  // Use contacts hook to manage contacts
+  const { contacts, isLoading: contactsLoading, error: contactsError, refetch, deleteContact } = useContacts(signalId)
+  
+  // Determine if we have a valid signal to work with
+  const hasSignal = signalId && signalId !== ''
+
+  const getDecisionMakerButtonContent = () => {
+    if (isSearchInProgress) {
+      return {
+        icon: <Loader2 className="w-3 h-3 animate-spin" />,
+        text: "DM Search...",
+        className: "bg-orange-500 hover:bg-orange-600 text-white"
+      }
+    }
+    
+    if (hasResults) {
+      return {
+        icon: <CheckCircle className="w-3 h-3" />,
+        text: "DM Results",
+        className: "bg-green-500 hover:bg-green-600 text-white"
+      }
+    }
+    
+    if (hasFailed) {
+      return {
+        icon: <Search className="w-3 h-3" />,
+        text: "DM Retry",
+        className: "bg-red-500 hover:bg-red-600 text-white"
+      }
+    }
+    
+    return {
+      icon: <Search className="w-3 h-3" />,
+      text: "Find DMs",
+      className: "bg-orange-500 hover:bg-orange-600 text-white"
+    }
+  }
+
+  const handleDeleteContact = (contactId: string, contactName: string) => {
+    setDeleteConfirmation({
+      isOpen: true,
+      contactId,
+      contactName
+    })
+  }
+
+  const executeDeleteContact = async () => {
+    if (deleteConfirmation.contactId) {
+      await deleteContact(deleteConfirmation.contactId)
+    }
+  }
+
+  const handleEditContact = (contact: any) => {
+    setEditingContact(contact)
+    setShowAddContactPopup(true)
+  }
+
+  const handleCloseEditPopup = () => {
+    setEditingContact(null)
+    setShowAddContactPopup(false)
+  }
+
+  const decisionMakerButtonContent = getDecisionMakerButtonContent()
+
+  return (
+    <div className="h-full flex flex-col">
+      {/* Header with title and buttons */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-gray-900">Contacts</h3>
+          {hasSignal && !contactsLoading && (
+            <span className="text-sm text-gray-500">({contacts.length})</span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowAddContactPopup(true)}
+            disabled={!hasSignal}
+            className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md transition-colors bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Plus className="w-3 h-3" />
+            Add
+          </button>
+          <button
+            onClick={() => setShowDecisionMakerPopup(true)}
+            disabled={!hasSignal}
+            className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${decisionMakerButtonContent.className}`}
+          >
+            {decisionMakerButtonContent.icon}
+            {decisionMakerButtonContent.text}
+          </button>
+        </div>
+      </div>
+
+      {/* Content area */}
+      <div className="flex-1 overflow-y-auto">
+        {contactsLoading ? (
+          <ContactsListSkeleton count={4} />
+        ) : !hasSignal ? (
+          <div className="text-center text-gray-400 flex items-center justify-center h-32">
+            <div>
+              <div className="text-2xl mb-2">📋</div>
+              <div className="text-sm">Select a signal to view contacts</div>
+            </div>
+          </div>
+        ) : contactsError ? (
+          <div className="text-center text-red-600 p-4">
+            <p className="text-sm">{contactsError}</p>
+          </div>
+        ) : contacts.length === 0 ? (
+          <div className="text-center text-gray-400 flex items-center justify-center h-32">
+            <div>
+              <div className="text-2xl mb-2">👥</div>
+              <div className="text-sm">No contacts yet</div>
+              <div className="text-xs mt-1">Add a contact or find decision makers</div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {contacts.map((contact) => (
+              <div key={contact.id} className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-medium text-gray-900 text-sm">
+                        {contact.first_name} {contact.last_name}
+                      </h4>
+                      {contact.source === 'decision_maker_finder' && (
+                        <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded">
+                          DM
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-gray-600 text-xs mt-0.5">{contact.job_title}</p>
+                    {contact.email_address && (
+                      <p className="text-gray-500 text-xs mt-1">{contact.email_address}</p>
+                    )}
+                    {contact.notes && (
+                      <p className="text-gray-500 text-xs mt-1 line-clamp-2">{contact.notes}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 ml-3">
+                    {contact.linkedin_contact && (
+                      <a
+                        href={contact.linkedin_contact}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 px-2 py-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors group"
+                        title="View LinkedIn Profile"
+                      >
+                        <LinkedInIcon className="w-3.5 h-3.5" />
+                        <ExternalLink className="w-2.5 h-2.5 opacity-70 group-hover:opacity-100 transition-opacity" />
+                      </a>
+                    )}
+                    <button
+                      onClick={() => handleEditContact(contact)}
+                      className="flex items-center justify-center w-7 h-7 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded transition-colors"
+                      title="Edit contact"
+                    >
+                      <Edit className="w-3 h-3" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteContact(contact.id, `${contact.first_name} ${contact.last_name}`)}
+                      className="flex items-center justify-center w-7 h-7 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                      title="Delete contact"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Add/Edit Contact Popup */}
+      <AddContactPopup
+        isOpen={showAddContactPopup}
+        onClose={handleCloseEditPopup}
+        onContactAdded={refetch}
+        signalId={signalId}
+        companyName={companyName}
+        editingContact={editingContact}
+      />
+
+      {/* Decision Maker Popup */}
+      <DecisionMakerPopup
+        isOpen={showDecisionMakerPopup}
+        onClose={() => setShowDecisionMakerPopup(false)}
+        signalId={signalId}
+        companyName={companyName}
+        onContactAdded={refetch}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteConfirmation.isOpen}
+        onClose={() => setDeleteConfirmation({ ...deleteConfirmation, isOpen: false })}
+        onConfirm={executeDeleteContact}
+        title="Delete Contact"
+        message={`Are you sure you want to delete ${deleteConfirmation.contactName}? This action cannot be undone.`}
+        variant="danger"
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+    </div>
+  )
+}
+
+============================================================
+
+==================== FILE: src/components/decision-makers/DecisionMakerPopup.tsx ====================
+import React, { useState, useEffect } from 'react'
+import { X, Search, CheckCircle, Users, Loader2, AlertCircle, ExternalLink, UserPlus, UserMinus, Check } from 'lucide-react'
+import { useDecisionMakers } from '../../hooks/useDecisionMakers'
+import { useContacts } from '../../hooks/useContacts'
+import { DecisionMakersListSkeleton } from './DecisionMakerSkeleton'
+
+interface DecisionMakerPopupProps {
+  isOpen: boolean
+  onClose: () => void
+  signalId: string
+  companyName: string
+  onContactAdded?: () => void
+}
+
+const LinkedInIcon: React.FC<{ className?: string }> = ({ className = "w-4 h-4" }) => {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+    </svg>
+  )
+}
+
+const ApplePayCheckmark: React.FC = () => {
+  return (
+    <div className="flex items-center justify-center">
+      <div className="relative">
+        {/* Background circle */}
+        <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center animate-pulse">
+          {/* Checkmark */}
+          <CheckCircle className="w-8 h-8 text-white animate-bounce" />
+        </div>
+        {/* Success rings */}
+        <div className="absolute inset-0 border-2 border-green-300 rounded-full animate-ping"></div>
+        <div className="absolute inset-2 border-2 border-green-400 rounded-full animate-ping" style={{ animationDelay: '0.2s' }}></div>
+      </div>
+    </div>
+  )
+}
+
+const LoadingSpinner: React.FC = () => {
+  return (
+    <div className="flex items-center justify-center space-x-2">
+      <Loader2 className="w-6 h-6 text-orange-500 animate-spin" />
+      <div className="text-gray-600">
+        <div className="font-medium">Finding decision makers...</div>
+        <div className="text-sm text-gray-500">This usually takes around 2 minutes</div>
+      </div>
+    </div>
+  )
+}
+
+export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
+  isOpen,
+  onClose,
+  signalId,
+  companyName,
+  onContactAdded
+}) => {
+  const [guidance, setGuidance] = useState('')
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [importingIds, setImportingIds] = useState<Set<string>>(new Set())
+  const [importingAll, setImportingAll] = useState(false)
+  
+  // Use the decision makers hook
+  const {
+    searchStatus,
+    isLoading,
+    error,
+    startSearch,
+    restartSearch,
+    isSearchInProgress,
+    hasResults,
+    hasFailed
+  } = useDecisionMakers(signalId)
+
+  // Use contacts hook to track imported contacts
+  const { contacts, refetch: refetchContacts } = useContacts(signalId)
+
+  // Track which decision makers are already imported
+  const [importedDecisionMakers, setImportedDecisionMakers] = useState<Set<string>>(new Set())
+
+  // Update imported decision makers when contacts change
+  useEffect(() => {
+    const imported = new Set<string>()
+    contacts.forEach(contact => {
+      if (contact.decision_maker_id && contact.source === 'decision_maker_finder') {
+        imported.add(contact.decision_maker_id)
+      }
+    })
+    setImportedDecisionMakers(imported)
+  }, [contacts])
+
+  const handleStartSearch = async () => {
+    const searchId = await startSearch(guidance)
+    
+    if (searchId) {
+      // Show success animation
+      setShowSuccess(true)
+      
+      // Hide success animation after 2 seconds
+      setTimeout(() => {
+        setShowSuccess(false)
+      }, 2000)
+    }
+  }
+
+  const handleImportDecisionMaker = async (dm: any) => {
+    setImportingIds(prev => new Set([...prev, dm.id]))
+    
+    try {
+      const { api } = await import('../../lib/apiClient')
+      
+      const response = await api.contacts.importDecisionMaker({
+        signal_id: signalId,
+        decision_maker_id: dm.id,
+        first_name: dm.first_name,
+        last_name: dm.last_name,
+        job_title: dm.job_title,
+        linkedin_url: dm.linkedin_url,
+        why_reach_out: dm.why_reach_out
+      })
+
+      if (response.error) {
+        throw new Error(response.error)
+      }
+
+      // Refresh contacts and notify parent
+      await refetchContacts()
+      if (onContactAdded) {
+        onContactAdded()
+      }
+
+    } catch (err) {
+      console.error('Failed to import decision maker:', err)
+    } finally {
+      setImportingIds(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(dm.id)
+        return newSet
+      })
+    }
+  }
+
+  const handleUnimportDecisionMaker = async (dm: any) => {
+    setImportingIds(prev => new Set([...prev, dm.id]))
+    
+    try {
+      const { api } = await import('../../lib/apiClient')
+      
+      // Find the contact to delete
+      const contact = contacts.find(c => c.decision_maker_id === dm.id)
+      if (!contact) {
+        throw new Error('Contact not found')
+      }
+
+      const response = await api.contacts.delete(contact.id)
+
+      if (response.error) {
+        throw new Error(response.error)
+      }
+
+      // Refresh contacts and notify parent
+      await refetchContacts()
+      if (onContactAdded) {
+        onContactAdded()
+      }
+
+    } catch (err) {
+      console.error('Failed to unimport decision maker:', err)
+    } finally {
+      setImportingIds(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(dm.id)
+        return newSet
+      })
+    }
+  }
+
+  const handleImportAll = async () => {
+    if (!searchStatus?.decision_makers) return
+
+    setImportingAll(true)
+    
+    try {
+      const { api } = await import('../../lib/apiClient')
+      
+      // Import all non-imported decision makers
+      const toImport = searchStatus.decision_makers.filter(dm => !importedDecisionMakers.has(dm.id))
+      
+      for (const dm of toImport) {
+        try {
+          await api.contacts.importDecisionMaker({
+            signal_id: signalId,
+            decision_maker_id: dm.id,
+            first_name: dm.first_name,
+            last_name: dm.last_name,
+            job_title: dm.job_title,
+            linkedin_url: dm.linkedin_url,
+            why_reach_out: dm.why_reach_out
+          })
+        } catch (err) {
+          console.error(`Failed to import ${dm.first_name} ${dm.last_name}:`, err)
+        }
+      }
+
+      // Refresh contacts and notify parent
+      await refetchContacts()
+      if (onContactAdded) {
+        onContactAdded()
+      }
+
+    } catch (err) {
+      console.error('Failed to import all decision makers:', err)
+    } finally {
+      setImportingAll(false)
+    }
+  }
+
+  const handleClose = () => {
+    setGuidance('')
+    setShowSuccess(false)
+    setImportingIds(new Set())
+    onClose()
+  }
+
+  const renderContent = () => {
+    // Show success animation
+    if (showSuccess) {
+      return (
+        <div className="text-center py-16">
+          <ApplePayCheckmark />
+          <div className="mt-6">
+            <h3 className="text-xl font-semibold text-gray-900">Search Started!</h3>
+            <p className="text-gray-600 mt-3 leading-relaxed">Finding decision makers at {companyName}</p>
+          </div>
+        </div>
+      )
+    }
+
+    // Show loading state  
+    if (isSearchInProgress) {
+      return (
+        <div>
+          <div className="text-center py-8">
+            <LoadingSpinner />
+            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+              <p className="text-sm text-blue-800 leading-relaxed">
+                We're analyzing job postings, LinkedIn profiles, and company information to find the best contacts at {companyName}.
+              </p>
+            </div>
+          </div>
+          <div className="mt-8">
+            <DecisionMakersListSkeleton count={5} />
+          </div>
+        </div>
+      )
+    }
+
+    // Show results
+    if (hasResults) {
+      const totalDMs = searchStatus?.decision_makers.length || 0
+      const importedCount = searchStatus?.decision_makers.filter(dm => importedDecisionMakers.has(dm.id)).length || 0
+      const canImportAll = totalDMs > importedCount
+
+      return (
+        <div>
+          <div className="mb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Found {totalDMs} Decision Makers
+                </h3>
+                <p className="text-gray-600 text-sm mt-1">
+                  {importedCount} imported • Ready for outreach at {companyName}
+                </p>
+              </div>
+              {canImportAll && (
+                <button
+                  onClick={handleImportAll}
+                  disabled={importingAll}
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md transition-colors bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {importingAll ? (
+                    <>
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      Importing...
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="w-3 h-3" />
+                      Import All
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-2 max-h-[500px] overflow-y-auto">
+            {searchStatus?.decision_makers.map((dm) => {
+              const isImported = importedDecisionMakers.has(dm.id)
+              const isProcessing = importingIds.has(dm.id)
+
+              return (
+                <div key={dm.id} className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-medium text-gray-900 text-sm">
+                          {dm.first_name} {dm.last_name}
+                        </h4>
+                        {isImported && (
+                          <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded flex items-center gap-1">
+                            <Check className="w-3 h-3" />
+                            Imported
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-gray-600 text-xs mt-0.5">{dm.job_title}</p>
+                      <p className="text-gray-500 text-xs mt-1 line-clamp-2">{dm.why_reach_out}</p>
+                    </div>
+                    <div className="flex items-center gap-1 ml-3">
+                      <button
+                        onClick={() => isImported ? handleUnimportDecisionMaker(dm) : handleImportDecisionMaker(dm)}
+                        disabled={isProcessing}
+                        className={`flex items-center justify-center w-7 h-7 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                          isImported 
+                            ? 'text-red-600 hover:text-red-700 hover:bg-red-50' 
+                            : 'text-orange-600 hover:text-orange-700 hover:bg-orange-50'
+                        }`}
+                        title={isImported ? "Remove from Contacts" : "Add to Contacts"}
+                      >
+                        {isProcessing ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : isImported ? (
+                          <UserMinus className="w-3 h-3" />
+                        ) : (
+                          <UserPlus className="w-3 h-3" />
+                        )}
+                      </button>
+                      <a
+                        href={dm.linkedin_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 px-2 py-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors group"
+                        title="View LinkedIn Profile"
+                      >
+                        <LinkedInIcon className="w-3.5 h-3.5" />
+                        <ExternalLink className="w-2.5 h-2.5 opacity-70 group-hover:opacity-100 transition-opacity" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )
+    }
+
+    // Show error state
+    if (hasFailed) {
+      return (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 bg-red-100 rounded-xl flex items-center justify-center mx-auto mb-6">
+            <AlertCircle className="w-8 h-8 text-red-600" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-3">Search Failed</h3>
+          <p className="text-gray-600 mb-8 max-w-md mx-auto leading-relaxed">
+            {searchStatus?.error_message || error || 'Something went wrong while finding decision makers.'}
+          </p>
+          <button
+            onClick={restartSearch}
+            className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
+          >
+            Try Again
+          </button>
+        </div>
+      )
+    }
+
+    // Show initial form
+    return (
+      <div>
+        <div className="text-center mb-8">
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Find Decision Makers</h3>
+          <p className="text-gray-600">Discover the right contacts at {companyName}</p>
+        </div>
+
+        <div className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Additional Guidance (Optional)
+            </label>
+            <textarea
+              value={guidance}
+              onChange={(e) => setGuidance(e.target.value)}
+              placeholder="e.g., Focus on CTOs and VPs of Engineering, or target procurement decision makers..."
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 resize-none text-sm"
+              rows={4}
+            />
+            <p className="text-xs text-gray-500 mt-2">
+              Help us target specific roles or departments for better results
+            </p>
+          </div>
+
+          {error && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+              <p className="text-red-700 text-sm leading-relaxed">{error}</p>
+            </div>
+          )}
+
+          <div className="flex gap-4 pt-2">
+            <button
+              onClick={handleClose}
+              className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleStartSearch}
+              disabled={isLoading}
+              className="flex-1 px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Starting...
+                </>
+              ) : (
+                'Start Finding'
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isOpen) return null
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50 z-50"
+        onClick={handleClose}
+      />
+      
+      {/* Modal */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gray-50">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                <Search className="w-4 h-4 text-orange-600" />
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900">Decision Maker Finder</h2>
+            </div>
+            <button
+              onClick={handleClose}
+              className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-500" />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+            {renderContent()}
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
+============================================================
+
+==================== FILE: src/components/decision-makers/DecisionMakerSkeleton.tsx ====================
+import React from 'react'
+
+export const DecisionMakerSkeleton: React.FC = () => {
+  return (
+    <div className="border border-gray-200 rounded-lg p-3 animate-pulse">
+      <div className="flex items-start justify-between">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            {/* Name skeleton */}
+            <div className="h-4 bg-gray-200 rounded w-36"></div>
+            {/* Import status badge skeleton (sometimes visible) */}
+            <div className="h-4 bg-gray-100 rounded w-16"></div>
+          </div>
+          {/* Job title skeleton */}
+          <div className="h-3 bg-gray-200 rounded w-28 mb-2"></div>
+          {/* Why reach out skeleton */}
+          <div className="space-y-1">
+            <div className="h-3 bg-gray-100 rounded w-full"></div>
+            <div className="h-3 bg-gray-100 rounded w-3/4"></div>
+          </div>
+        </div>
+        <div className="flex items-center gap-1 ml-3">
+          {/* Import/unimport button skeleton */}
+          <div className="w-7 h-7 bg-gray-100 rounded"></div>
+          {/* LinkedIn button skeleton */}
+          <div className="w-10 h-7 bg-gray-100 rounded"></div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export const DecisionMakersListSkeleton: React.FC<{ count?: number }> = ({ count = 4 }) => {
+  return (
+    <div>
+      {/* Header skeleton */}
+      <div className="mb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="h-6 bg-gray-200 rounded w-48 mb-2"></div>
+            <div className="h-4 bg-gray-100 rounded w-64"></div>
+          </div>
+          <div className="h-8 bg-gray-100 rounded w-24"></div>
+        </div>
+      </div>
+
+      {/* List skeleton */}
+      <div className="space-y-2 max-h-[500px] overflow-y-auto">
+        {Array.from({ length: count }).map((_, index) => (
+          <DecisionMakerSkeleton key={index} />
+        ))}
       </div>
     </div>
   )
@@ -1915,15 +3182,2017 @@ export const OutreachPage = () => {
 
 ============================================================
 
+==================== FILE: src/components/outreach/OutreachPage.tsx ====================
+import { useState, useCallback } from 'react'
+import { Settings } from 'lucide-react'
+import { OutreachSidebar } from './OutreachSidebar'
+import { ApprovedSignal } from '../../hooks/useApprovedSignals'
+import { IntentCard } from '../signals/IntentCard'
+import { ContactsComponent } from '../contacts/ContactsComponent'
+import { useSignalDetails } from '../../hooks/useSignalDetails'
+import { SequenceBuilder } from '../sequences/SequenceBuilder'
+
+interface FilterOptions {
+  product: string
+  minScore: number
+}
+
+export const OutreachPage = () => {
+  // State management
+  const [filters, setFilters] = useState<FilterOptions>({
+    product: 'salesforce',
+    minScore: 3
+  })
+  
+  const [selectedSignal, setSelectedSignal] = useState<ApprovedSignal | null>(null)
+  const [showSequenceBuilder, setShowSequenceBuilder] = useState(false)
+
+  // Get full signal details when a signal is selected
+  const { signal: fullSignal, isLoading: isLoadingSignalDetails } = useSignalDetails({
+    approvedSignal: selectedSignal,
+    productId: filters.product,
+    minScore: filters.minScore
+  })
+
+  // Handlers
+  const handleFilterChange = useCallback((newFilters: Partial<FilterOptions>) => {
+    setFilters(prev => ({ ...prev, ...newFilters }))
+    setSelectedSignal(null) // Clear selection when filters change
+  }, [])
+
+  const handleSignalSelect = useCallback((signal: ApprovedSignal) => {
+    setSelectedSignal(signal)
+  }, [])
+
+  return (
+    <div className="h-full bg-gray-50 overflow-hidden flex flex-col">
+      {/* Top Title Bar */}
+      <div className="flex-shrink-0 px-4 sm:px-6 lg:px-8 py-3">
+        <div className="flex items-center justify-between">
+          <h1 className="text-lg font-bold text-gray-900">Outreach Management</h1>
+          <button
+            onClick={() => setShowSequenceBuilder(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
+          >
+            <Settings className="w-4 h-4" />
+            Sequence Builder
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex gap-6 px-4 sm:px-6 lg:px-8 pb-6 min-h-0">
+        {/* Sidebar */}
+        <div className="w-80 flex-shrink-0 min-h-0">
+          <OutreachSidebar 
+            productId={filters.product}
+            minScore={filters.minScore}
+            onSignalSelect={handleSignalSelect}
+            selectedSignalId={selectedSignal?.id}
+            onFilterChange={handleFilterChange}
+            filters={filters}
+          />
+        </div>
+
+        {/* Main Content - 2x2 Grid */}
+        <div className="flex-1 p-4 min-h-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full max-w-6xl mx-auto"
+               style={{ gridTemplateRows: '1fr 1fr' }}>
+            {/* Top-left: Intent Card */}
+            <div className="overflow-y-auto custom-scrollbar bg-white rounded-lg shadow-sm border border-gray-200">
+              <IntentCard 
+                signal={fullSignal} 
+                isLoading={isLoadingSignalDetails}
+              />
+            </div>
+
+            {/* Top-right: Component 2 */}
+            <div className="overflow-y-auto custom-scrollbar bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-gray-400 flex items-center justify-center">
+              <div>
+                <div className="text-2xl mb-2">+</div>
+                <div className="text-sm">Component 2</div>
+              </div>
+            </div>
+
+            {/* Bottom-left: Contacts Component */}
+            <div className="overflow-y-auto custom-scrollbar bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <ContactsComponent 
+                signalId={selectedSignal?.id || ''} 
+                companyName={fullSignal?.company?.name || selectedSignal?.companyName || 'Unknown Company'} 
+              />
+            </div>
+
+            {/* Bottom-right: Component 4 */}
+            <div className="overflow-y-auto custom-scrollbar bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-gray-400 flex items-center justify-center">
+              <div>
+                <div className="text-2xl mb-2">+</div>
+                <div className="text-sm">Component 4</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Sequence Builder Modal */}
+      <SequenceBuilder
+        isOpen={showSequenceBuilder}
+        onClose={() => setShowSequenceBuilder(false)}
+      />
+    </div>
+  )
+}
+
+============================================================
+
+==================== FILE: src/components/outreach/OutreachSidebar.tsx ====================
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { Search, ArrowUp } from 'lucide-react'
+import { useApprovedSignals, ApprovedSignal } from '../../hooks/useApprovedSignals'
+import { useDebounce } from '../../hooks/useDebounce'
+import { ProductSelector } from '../signals/ProductSelector'
+import { DateSelector } from '../signals/DateSelector'
+
+interface FilterOptions {
+  product: string
+  minScore: number
+}
+
+interface OutreachSidebarProps {
+  productId: string
+  minScore: number
+  onSignalSelect?: (signal: ApprovedSignal) => void
+  selectedSignalId?: string
+  onFilterChange?: (filters: Partial<FilterOptions>) => void
+  filters?: FilterOptions
+}
+
+const SkeletonSignalItem: React.FC = () => {
+  return (
+    <div className="p-3 border border-gray-200 rounded-lg bg-white animate-pulse">
+      <div className="flex items-center space-x-3">
+        <div className="w-8 h-8 bg-gray-200 rounded-lg"></div>
+        <div className="flex-1 min-w-0">
+          <div className="h-3 bg-gray-200 rounded w-24 mb-1"></div>
+          <div className="h-2 bg-gray-200 rounded w-16"></div>
+        </div>
+        <div className="w-8 h-4 bg-gray-200 rounded"></div>
+      </div>
+    </div>
+  )
+}
+
+const SkeletonDateGroup: React.FC = () => {
+  return (
+    <div className="mb-4">
+      <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
+      <div className="space-y-2">
+        {[...Array(3)].map((_, i) => (
+          <SkeletonSignalItem key={i} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const SkeletonSearchResults: React.FC = () => {
+  return (
+    <div className="space-y-4">
+      {[...Array(3)].map((_, i) => (
+        <SkeletonDateGroup key={i} />
+      ))}
+    </div>
+  )
+}
+
+const SkeletonOutreachSidebar: React.FC = () => {
+  return (
+    <div className="w-full bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      {/* Header Skeleton */}
+      <div className="flex justify-between items-center mb-4">
+        <div className="h-5 bg-gray-200 rounded w-20"></div>
+        <div className="h-4 bg-gray-200 rounded w-16"></div>
+      </div>
+
+      {/* Search Skeleton */}
+      <div className="mb-4">
+        <div className="h-9 bg-gray-200 rounded w-full"></div>
+      </div>
+
+      {/* Date Filter Skeleton */}
+      <div className="mb-4">
+        <div className="h-8 bg-gray-200 rounded w-32"></div>
+      </div>
+
+      {/* Content Skeleton */}
+      <SkeletonSearchResults />
+    </div>
+  )
+}
+
+export const OutreachSidebar: React.FC<OutreachSidebarProps> = ({ 
+  productId, 
+  minScore, 
+  onSignalSelect,
+  selectedSignalId,
+  onFilterChange,
+  filters
+}) => {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [dateFilter, setDateFilter] = useState<string>('')
+  const [showScrollTop, setShowScrollTop] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
+  
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const debouncedSearch = useDebounce(searchTerm, 500)
+
+  // Handle immediate typing feedback
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value)
+    if (value !== debouncedSearch) {
+      setIsTyping(true)
+    }
+  }
+
+  // Reset typing state when debounced search changes
+  useEffect(() => {
+    if (searchTerm === debouncedSearch) {
+      setIsTyping(false)
+    }
+  }, [searchTerm, debouncedSearch])
+
+  // Fetch approved signals with search and filters
+  const { 
+    signals, 
+    groupedSignals, 
+    isLoading, 
+    isLoadingMore, 
+    isSearching,
+    error, 
+    hasMore, 
+    totalLoaded,
+    loadMore, 
+    refetch 
+  } = useApprovedSignals({
+    productId,
+    minScore,
+    search: debouncedSearch,
+    dateFilter
+  })
+
+  // Infinite scroll detection
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current
+    if (!container || isLoadingMore || !hasMore) return
+
+    const { scrollTop, scrollHeight, clientHeight } = container
+    const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100
+
+    // Show scroll to top button
+    setShowScrollTop(scrollTop > 200)
+
+    if (isNearBottom) {
+      loadMore()
+    }
+  }, [isLoadingMore, hasMore, loadMore])
+
+  // Attach scroll listener
+  useEffect(() => {
+    const container = scrollContainerRef.current
+    if (container) {
+      container.addEventListener('scroll', handleScroll)
+      return () => container.removeEventListener('scroll', handleScroll)
+    }
+  }, [handleScroll])
+
+  // Format date for display
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString + 'T00:00:00')
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today'
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday'
+    } else {
+      return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric',
+        year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+      })
+    }
+  }
+
+  // Scroll to top
+  const scrollToTop = () => {
+    scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  return (
+    <div className="w-full bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col h-full">
+      {/* Header */}
+      <div className="mb-4">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Outreach Queue
+          </h3>
+          <span className="text-sm text-gray-500">
+            {totalLoaded > 0 ? `${totalLoaded} signals` : "Empty"}
+          </span>
+        </div>
+        
+        {/* Controls Row */}
+        {onFilterChange && filters && (
+          <div className="flex items-center gap-2 mb-3">
+            {isLoading && !searchTerm && !dateFilter ? (
+              <div className="h-8 bg-gray-200 rounded w-32 animate-pulse"></div>
+            ) : (
+              <ProductSelector
+                value={filters.product}
+                onChange={(product) => onFilterChange({ product })}
+              />
+            )}
+            
+            <DateSelector
+              selectedDate={dateFilter || new Date().toISOString().split('T')[0]}
+              onChange={setDateFilter}
+              productId={filters.product}
+              minScore={filters.minScore}
+              decisionFilter="approve"
+              showNavButtons={false}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Search Bar */}
+      <div className="mb-4">
+        <div className="relative">
+          {isSearching ? (
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
+            </div>
+          ) : (
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          )}
+          <input
+            type="text"
+            placeholder="Search companies..."
+            value={searchTerm}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+          />
+        </div>
+      </div>
+
+      {/* Error State */}
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-sm text-red-600">{error}</p>
+          <button
+            onClick={refetch}
+            className="mt-2 text-xs text-red-700 underline hover:no-underline"
+          >
+            Try again
+          </button>
+        </div>
+      )}
+
+      {/* Signals List - Scrollable with infinite scroll */}
+      <div 
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto custom-scrollbar relative"
+      >
+        {isTyping || isSearching ? (
+          <SkeletonSearchResults />
+        ) : groupedSignals.length > 0 ? (
+          <div className="space-y-4 pb-4">
+            {groupedSignals.map(({ date, signals: dateSignals }) => (
+              <div key={date} className="mb-4">
+                {/* Date Header */}
+                <div className="sticky top-0 bg-white z-10 pb-2">
+                  <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                    {formatDate(date)}
+                  </h4>
+                </div>
+
+                {/* Signals for this date */}
+                <div className="space-y-2">
+                  {dateSignals.map((signal) => {
+                    const isSelected = selectedSignalId === signal.id
+                    
+                    return (
+                      <div
+                        key={signal.id}
+                        onClick={() => onSignalSelect && onSignalSelect(signal)}
+                        className={`p-3 border rounded-lg transition-all duration-200 flex items-center gap-3 group
+                          ${onSignalSelect ? 'cursor-pointer' : ''} 
+                          ${isSelected
+                            ? "border-orange-500 bg-orange-50 shadow-sm"
+                            : "border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300"
+                          }`}
+                      >
+                        {/* Company logo */}
+                        <div className="relative flex-shrink-0">
+                          {signal.companyLogoUrl ? (
+                            <img 
+                              src={signal.companyLogoUrl} 
+                              alt={signal.companyName}
+                              className="w-8 h-8 rounded-lg object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none'
+                                const fallback = e.currentTarget.nextElementSibling as HTMLElement
+                                if (fallback) fallback.style.display = 'flex'
+                              }}
+                            />
+                          ) : null}
+                          <div 
+                            className={`w-8 h-8 bg-gradient-to-br from-orange-100 to-orange-200 rounded-lg flex items-center justify-center text-orange-600 font-semibold text-xs ${
+                              signal.companyLogoUrl ? 'hidden' : 'flex'
+                            }`}
+                          >
+                            {signal.companyName.substring(0, 2).toUpperCase()}
+                          </div>
+                        </div>
+
+                        {/* Company info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-gray-900 truncate">
+                            {signal.companyName}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            Score: {signal.intentScore.toFixed(1)} • {signal.jobsFoundCount} jobs
+                          </div>
+                        </div>
+
+                        {/* Intent score badge */}
+                        <div className="flex-shrink-0">
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            signal.intentScore >= 4.5
+                              ? 'bg-green-100 text-green-700'
+                              : signal.intentScore >= 4.0
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : 'bg-orange-100 text-orange-700'
+                          }`}>
+                            {signal.intentScore.toFixed(1)}
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+
+            {/* Loading more indicator */}
+            {isLoadingMore && (
+              <div className="flex justify-center py-4">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-orange-500"></div>
+              </div>
+            )}
+
+            {/* No more items indicator */}
+            {!hasMore && totalLoaded > 0 && (
+              <div className="text-center py-4 text-xs text-gray-500">
+                All signals loaded
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-gray-500 text-sm">
+            {searchTerm || dateFilter ? 'No signals match your filters' : 'No approved signals found'}
+          </div>
+        )}
+
+        {/* Scroll to top button */}
+        {showScrollTop && (
+          <button
+            onClick={scrollToTop}
+            className="fixed bottom-4 right-4 p-2 bg-orange-500 text-white rounded-full shadow-lg hover:bg-orange-600 transition-colors"
+            title="Scroll to top"
+          >
+            <ArrowUp className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+============================================================
+
+==================== FILE: src/components/sequences/BlockEditor.tsx ====================
+import React, { useState, useEffect } from 'react'
+import { X, Save, Mail, MessageCircle, UserPlus, Phone, CheckSquare, Clock, Settings } from 'lucide-react'
+import { SequenceBlock, SequenceBlockType } from '../../types/sequences'
+import { DataSourcesEditor } from './DataSourcesEditor'
+
+interface BlockEditorProps {
+  isOpen: boolean
+  onClose: () => void
+  onSave: (block: SequenceBlock) => void
+  block: SequenceBlock
+}
+
+export const BlockEditor: React.FC<BlockEditorProps> = ({ isOpen, onClose, onSave, block }) => {
+  const [formData, setFormData] = useState<SequenceBlock>(block)
+  const [isSaving, setIsSaving] = useState(false)
+
+  // Update form data when block changes
+  useEffect(() => {
+    setFormData(block)
+  }, [block])
+
+  if (!isOpen) return null
+
+  const getBlockIcon = (type: SequenceBlockType) => {
+    switch (type) {
+      case SequenceBlockType.EMAIL:
+        return <Mail className="w-6 h-6" />
+      case SequenceBlockType.LINKEDIN_MESSAGE:
+        return <MessageCircle className="w-6 h-6" />
+      case SequenceBlockType.LINKEDIN_CONNECTION:
+        return <UserPlus className="w-6 h-6" />
+      case SequenceBlockType.PHONE_CALL:
+        return <Phone className="w-6 h-6" />
+      case SequenceBlockType.TASK:
+        return <CheckSquare className="w-6 h-6" />
+      case SequenceBlockType.WAIT:
+        return <Clock className="w-6 h-6" />
+      default:
+        return <Settings className="w-6 h-6" />
+    }
+  }
+
+  const getBlockColor = (type: SequenceBlockType) => {
+    switch (type) {
+      case SequenceBlockType.EMAIL:
+        return 'bg-blue-50 border-blue-200 text-blue-700'
+      case SequenceBlockType.LINKEDIN_MESSAGE:
+        return 'bg-indigo-50 border-indigo-200 text-indigo-700'
+      case SequenceBlockType.LINKEDIN_CONNECTION:
+        return 'bg-purple-50 border-purple-200 text-purple-700'
+      case SequenceBlockType.PHONE_CALL:
+        return 'bg-green-50 border-green-200 text-green-700'
+      case SequenceBlockType.TASK:
+        return 'bg-orange-50 border-orange-200 text-orange-700'
+      case SequenceBlockType.WAIT:
+        return 'bg-gray-50 border-gray-200 text-gray-700'
+      default:
+        return 'bg-gray-50 border-gray-200 text-gray-700'
+    }
+  }
+
+  const getBlockTypeLabel = (type: SequenceBlockType) => {
+    switch (type) {
+      case SequenceBlockType.EMAIL:
+        return 'Email'
+      case SequenceBlockType.LINKEDIN_MESSAGE:
+        return 'LinkedIn Message'
+      case SequenceBlockType.LINKEDIN_CONNECTION:
+        return 'LinkedIn Connection'
+      case SequenceBlockType.PHONE_CALL:
+        return 'Phone Call'
+      case SequenceBlockType.TASK:
+        return 'Task'
+      case SequenceBlockType.WAIT:
+        return 'Wait Period'
+      default:
+        return 'Unknown'
+    }
+  }
+
+  const handleSave = async () => {
+    // Validate prompts based on block type
+    if (formData.block_type === SequenceBlockType.EMAIL) {
+      if (!formData.config.subject_prompt?.trim() || !formData.config.body_prompt?.trim()) {
+        alert('Please enter both subject and body prompts for email blocks')
+        return
+      }
+    } else if (formData.block_type === SequenceBlockType.LINKEDIN_MESSAGE) {
+      if (!formData.config.body_prompt?.trim()) {
+        alert('Please enter a message prompt for LinkedIn message blocks')
+        return
+      }
+    } else if (formData.block_type === SequenceBlockType.LINKEDIN_CONNECTION) {
+      if (!formData.config.connection_message_prompt?.trim()) {
+        alert('Please enter a connection message prompt')
+        return
+      }
+    } else if (formData.block_type === SequenceBlockType.PHONE_CALL || formData.block_type === SequenceBlockType.TASK) {
+      if (!formData.config.task_description?.trim()) {
+        alert('Please enter a task description')
+        return
+      }
+    }
+
+    setIsSaving(true)
+    try {
+      onSave(formData)
+    } catch (error) {
+      console.error('Failed to save block:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const updateFormData = (updates: Partial<SequenceBlock>) => {
+    setFormData(prev => ({ ...prev, ...updates }))
+  }
+
+  const updateConfig = (configUpdates: Partial<typeof formData.config>) => {
+    setFormData(prev => ({
+      ...prev,
+      config: { ...prev.config, ...configUpdates }
+    }))
+  }
+
+  const renderBlockSpecificFields = () => {
+    switch (formData.block_type) {
+      case SequenceBlockType.EMAIL:
+        return (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Subject Line Prompt *
+              </label>
+              <textarea
+                value={formData.config.subject_prompt || ''}
+                onChange={(e) => updateConfig({ subject_prompt: e.target.value })}
+                rows={2}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="AI prompt for generating email subject lines..."
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Use variables like {'{{first_name}}'}, {'{{company_name}}'}, {'{{job_title}}'} in your prompt
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email Body Prompt *
+              </label>
+              <textarea
+                value={formData.config.body_prompt || ''}
+                onChange={(e) => updateConfig({ body_prompt: e.target.value })}
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="AI prompt for generating email content..."
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Describe the tone, style, and content you want the AI to generate
+              </p>
+            </div>
+          </>
+        )
+
+      case SequenceBlockType.LINKEDIN_MESSAGE:
+        return (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              LinkedIn Message Prompt *
+            </label>
+            <textarea
+              value={formData.config.body_prompt || ''}
+              onChange={(e) => updateConfig({ body_prompt: e.target.value })}
+              rows={4}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="AI prompt for generating LinkedIn messages..."
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Remember LinkedIn has character limits. Use variables like {'{{first_name}}'}, {'{{company_name}}'}
+            </p>
+          </div>
+        )
+
+      case SequenceBlockType.LINKEDIN_CONNECTION:
+        return (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Connection Request Message Prompt *
+            </label>
+            <textarea
+              value={formData.config.connection_message_prompt || ''}
+              onChange={(e) => updateConfig({ connection_message_prompt: e.target.value })}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              placeholder="AI prompt for generating connection request messages..."
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Keep it brief and professional. LinkedIn connection requests have character limits.
+            </p>
+          </div>
+        )
+
+      case SequenceBlockType.PHONE_CALL:
+      case SequenceBlockType.TASK:
+        return (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Task Description *
+            </label>
+            <textarea
+              value={formData.config.task_description || ''}
+              onChange={(e) => updateConfig({ task_description: e.target.value })}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              placeholder="Describe what should be done for this task..."
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Provide clear instructions for the task to be completed
+            </p>
+          </div>
+        )
+
+      case SequenceBlockType.WAIT:
+        return (
+          <div className="text-center py-6">
+            <Clock className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+            <p className="text-gray-600">
+              Wait blocks only require delay configuration below
+            </p>
+          </div>
+        )
+
+      default:
+        return null
+    }
+  }
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50" />
+
+      {/* Modal */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh]">
+          {/* Header */}
+          <div className={`flex items-center justify-between p-6 border-b ${getBlockColor(formData.block_type)} border-opacity-30`}>
+            <div className="flex items-center gap-4">
+              <div className={`w-12 h-12 ${getBlockColor(formData.block_type)} rounded-lg flex items-center justify-center border`}>
+                {getBlockIcon(formData.block_type)}
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Edit {getBlockTypeLabel(formData.block_type)}
+                </h2>
+                <p className="text-sm text-gray-600">Step {formData.step_number}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" />
+                {isSaving ? 'Saving...' : 'Save'}
+              </button>
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+            <div className="space-y-6">
+              {/* Block-Specific Configuration */}
+              {formData.block_type !== SequenceBlockType.WAIT && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {getBlockTypeLabel(formData.block_type)} Configuration
+                  </h3>
+                  {renderBlockSpecificFields()}
+                </div>
+              )}
+
+              {/* Data Sources Configuration */}
+              {formData.block_type !== SequenceBlockType.WAIT && (
+                <DataSourcesEditor
+                  blockType={formData.block_type}
+                  dataSources={formData.config.data_sources || []}
+                  onDataSourcesChange={(sources) => updateConfig({ data_sources: sources })}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
+============================================================
+
+==================== FILE: src/components/sequences/DataSourcesEditor.tsx ====================
+import React, { useState } from 'react'
+import { Database, Info, Signal, Building2, User, Linkedin, Users, FileText } from 'lucide-react'
+import { DataSourceConfig, DataSourceType, SequenceBlockType } from '../../types/sequences'
+
+interface DataSourcesEditorProps {
+  blockType: SequenceBlockType
+  dataSources: DataSourceConfig[]
+  onDataSourcesChange: (sources: DataSourceConfig[]) => void
+}
+
+// Data source info with descriptions and icons
+const DATA_SOURCE_INFO: Record<DataSourceType, {
+  label: string
+  description: string
+  icon: React.ComponentType<{ className?: string }>
+  needsPrompt: boolean
+  example: string
+}> = {
+  [DataSourceType.SIGNAL]: {
+    label: 'Intent Signal',
+    description: 'Buying intent data including intent scores, reasoning, and citations from job postings and website activity',
+    icon: Signal,
+    needsPrompt: false,
+    example: 'Intent score: 8.5/10, Recent job posting for "Sales Manager", Company expanding sales team'
+  },
+  [DataSourceType.COMPANY]: {
+    label: 'Company Data',
+    description: 'Company information including industry, size, headquarters, about us, and specialties',
+    icon: Building2,
+    needsPrompt: false,
+    example: 'SaaS company, 50-200 employees, San Francisco HQ, Specializes in CRM software'
+  },
+  [DataSourceType.CONTACT]: {
+    label: 'Contact Info',
+    description: 'Contact details including name, job title, LinkedIn profile, and other contact information',
+    icon: User,
+    needsPrompt: false,
+    example: 'John Smith, VP of Sales, 5+ years at company, LinkedIn: linkedin.com/in/johnsmith'
+  },
+  [DataSourceType.LINKEDIN]: {
+    label: 'LinkedIn Profile',
+    description: 'LinkedIn profile data including experience, education, skills, and recent activity',
+    icon: Linkedin,
+    needsPrompt: false,
+    example: 'MBA from Stanford, Previously at Salesforce, Recently posted about sales automation'
+  },
+  [DataSourceType.COACTOR]: {
+    label: 'Coactor Data',
+    description: 'RAG database of company research and intelligence data. You can query specific information about the company.',
+    icon: Users,
+    needsPrompt: true,
+    example: 'Recent news about product launches, competitor analysis, market position, funding rounds'
+  },
+  [DataSourceType.CUSTOM]: {
+    label: 'Custom Notes',
+    description: 'Custom user-provided data, notes, and additional context for personalization',
+    icon: FileText,
+    needsPrompt: true,
+    example: 'Met at trade show last year, Interested in automation solutions, Budget approved for Q1'
+  }
+}
+
+export const DataSourcesEditor: React.FC<DataSourcesEditorProps> = ({
+  blockType,
+  dataSources,
+  onDataSourcesChange
+}) => {
+  const [hoveredSource, setHoveredSource] = useState<DataSourceType | null>(null)
+
+  const isSourceSelected = (sourceType: DataSourceType): boolean => {
+    return dataSources.some(source => source.source_type === sourceType)
+  }
+
+  const toggleDataSource = (sourceType: DataSourceType) => {
+    const sourceInfo = DATA_SOURCE_INFO[sourceType]
+    
+    if (isSourceSelected(sourceType)) {
+      // Remove the source
+      onDataSourcesChange(dataSources.filter(source => source.source_type !== sourceType))
+    } else {
+      // Add the source
+      const newSource: DataSourceConfig = {
+        source_type: sourceType,
+        fields: [], // No longer using specific fields
+        required: false,
+        fallback_text: sourceInfo.needsPrompt ? '' : undefined
+      }
+      onDataSourcesChange([...dataSources, newSource])
+    }
+  }
+
+  const updateSourcePrompt = (sourceType: DataSourceType, prompt: string) => {
+    const updated = dataSources.map(source => 
+      source.source_type === sourceType 
+        ? { ...source, fallback_text: prompt }
+        : source
+    )
+    onDataSourcesChange(updated)
+  }
+
+  const getSourcePrompt = (sourceType: DataSourceType): string => {
+    const source = dataSources.find(s => s.source_type === sourceType)
+    return source?.fallback_text || ''
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center gap-2">
+        <Database className="w-5 h-5 text-orange-600" />
+        <h3 className="text-lg font-semibold text-gray-900">Data Sources</h3>
+      </div>
+      
+      <p className="text-sm text-gray-600">
+        Select which data sources the AI should use when generating {blockType} content. Hover over each source to see what data it includes.
+      </p>
+
+      {/* Data source grid */}
+      <div className="grid grid-cols-2 gap-4">
+        {Object.entries(DATA_SOURCE_INFO).map(([sourceType, info], index) => {
+          const Icon = info.icon
+          const isSelected = isSourceSelected(sourceType as DataSourceType)
+          
+          return (
+            <div key={sourceType} className="space-y-2">
+              {/* Checkbox card */}
+              <div
+                className={`relative border-2 rounded-lg p-4 cursor-pointer transition-all duration-200 ${
+                  isSelected 
+                    ? 'border-orange-500 bg-orange-50' 
+                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                }`}
+                onClick={() => toggleDataSource(sourceType as DataSourceType)}
+                onMouseEnter={() => setHoveredSource(sourceType as DataSourceType)}
+                onMouseLeave={() => setHoveredSource(null)}
+              >
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => {}} // Handled by parent click
+                    className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                  />
+                  <Icon className={`w-5 h-5 ${isSelected ? 'text-orange-600' : 'text-gray-500'}`} />
+                  <div className="flex-1">
+                    <div className={`font-medium ${isSelected ? 'text-orange-900' : 'text-gray-900'}`}>
+                      {info.label}
+                    </div>
+                  </div>
+                  <Info className="w-4 h-4 text-gray-400" />
+                </div>
+
+                {/* Tooltip on hover - always pop out to the right */}
+                {hoveredSource === sourceType && (
+                  <div className="absolute left-full ml-2 top-0 z-[60] w-80 p-3 bg-gray-900 text-white text-sm rounded-lg shadow-lg pointer-events-none">
+                    <div className="font-medium mb-1">{info.label}</div>
+                    <div className="text-gray-300 mb-2">{info.description}</div>
+                    <div className="text-xs text-gray-400">
+                      <strong>Example:</strong> {info.example}
+                    </div>
+                    {/* Arrow pointing to the card */}
+                    <div className="absolute right-full top-4 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-gray-900"></div>
+                  </div>
+                )}
+              </div>
+
+              {/* Prompt input for sources that need it */}
+              {isSelected && info.needsPrompt && (
+                <div className="ml-9">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Custom instruction for {info.label}:
+                  </label>
+                  <textarea
+                    value={getSourcePrompt(sourceType as DataSourceType)}
+                    onChange={(e) => updateSourcePrompt(sourceType as DataSourceType, e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    placeholder={
+                      sourceType === DataSourceType.COACTOR 
+                        ? "Query the company database (e.g., 'recent funding rounds', 'competitor analysis', 'market position')"
+                        : `Describe how the AI should use ${info.label.toLowerCase()} in the email...`
+                    }
+                  />
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Summary */}
+      {dataSources.length > 0 && (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+          <div className="text-sm text-orange-800">
+            <strong>{dataSources.length} data source{dataSources.length !== 1 ? 's' : ''} selected:</strong>{' '}
+            {dataSources.map(source => DATA_SOURCE_INFO[source.source_type].label).join(', ')}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+============================================================
+
+==================== FILE: src/components/sequences/SequenceBuilder.tsx ====================
+import React, { useState } from 'react'
+import { X, Plus, Settings, Play, Pause, Archive, Copy, Trash2, Edit } from 'lucide-react'
+import { useSequences } from '../../hooks/useSequences'
+import { Sequence, SequenceStatus } from '../../types/sequences'
+import { SequenceEditor } from './SequenceEditor'
+import { ConfirmationModal } from '../ui/ConfirmationModal'
+
+interface SequenceBuilderProps {
+  isOpen: boolean
+  onClose: () => void
+}
+
+export const SequenceBuilder: React.FC<SequenceBuilderProps> = ({ isOpen, onClose }) => {
+  const { sequences, isLoading, error, createSequence, deleteSequence, duplicateSequence, updateSequenceStatus, clearError } = useSequences()
+  const [editingSequence, setEditingSequence] = useState<Sequence | null>(null)
+  const [showEditor, setShowEditor] = useState(false)
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean
+    sequenceId: string
+    sequenceName: string
+  }>({
+    isOpen: false,
+    sequenceId: '',
+    sequenceName: ''
+  })
+
+  if (!isOpen) return null
+
+  const getStatusColor = (status: SequenceStatus) => {
+    switch (status) {
+      case SequenceStatus.ACTIVE:
+        return 'bg-green-100 text-green-700 border-green-200'
+      case SequenceStatus.PAUSED:
+        return 'bg-yellow-100 text-yellow-700 border-yellow-200'
+      case SequenceStatus.ARCHIVED:
+        return 'bg-gray-100 text-gray-700 border-gray-200'
+      default: // DRAFT
+        return 'bg-blue-100 text-blue-700 border-blue-200'
+    }
+  }
+
+  const getStatusIcon = (status: SequenceStatus) => {
+    switch (status) {
+      case SequenceStatus.ACTIVE:
+        return <Play className="w-3 h-3" />
+      case SequenceStatus.PAUSED:
+        return <Pause className="w-3 h-3" />
+      case SequenceStatus.ARCHIVED:
+        return <Archive className="w-3 h-3" />
+      default: // DRAFT
+        return <Edit className="w-3 h-3" />
+    }
+  }
+
+  const handleCreateSequence = () => {
+    setEditingSequence(null)
+    setShowEditor(true)
+  }
+
+  const handleEditSequence = (sequence: Sequence) => {
+    setEditingSequence(sequence)
+    setShowEditor(true)
+  }
+
+  const handleDeleteSequence = (sequenceId: string, sequenceName: string) => {
+    setDeleteConfirmation({
+      isOpen: true,
+      sequenceId,
+      sequenceName
+    })
+  }
+
+  const executeDeleteSequence = async () => {
+    if (deleteConfirmation.sequenceId) {
+      await deleteSequence(deleteConfirmation.sequenceId)
+    }
+  }
+
+  const handleDuplicateSequence = async (sequenceId: string) => {
+    await duplicateSequence(sequenceId)
+  }
+
+  const handleStatusChange = async (sequenceId: string, newStatus: SequenceStatus) => {
+    await updateSequenceStatus(sequenceId, newStatus)
+  }
+
+  const handleEditorClose = () => {
+    setShowEditor(false)
+    setEditingSequence(null)
+  }
+
+  // If showing editor, render that instead
+  if (showEditor) {
+    return (
+      <SequenceEditor
+        isOpen={true}
+        onClose={handleEditorClose}
+        sequence={editingSequence}
+      />
+    )
+  }
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50" onClick={onClose} />
+
+      {/* Modal */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh]">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gray-50">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                <Settings className="w-4 h-4 text-orange-600" />
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900">Sequence Builder</h2>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleCreateSequence}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
+              >
+                <Plus className="w-4 h-4" />
+                New Sequence
+              </button>
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex justify-between items-center">
+                  <p className="text-red-700 text-sm">{error}</p>
+                  <button
+                    onClick={clearError}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {isLoading ? (
+              // Loading skeleton
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="border border-gray-200 rounded-lg p-6 animate-pulse">
+                    <div className="h-6 bg-gray-200 rounded mb-3"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-4 w-3/4"></div>
+                    <div className="flex justify-between items-center">
+                      <div className="h-5 bg-gray-200 rounded w-16"></div>
+                      <div className="h-8 bg-gray-200 rounded w-20"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : sequences.length === 0 ? (
+              // Empty state
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <Settings className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No sequences yet</h3>
+                <p className="text-gray-600 mb-6">Create your first sequence to start automating your outreach</p>
+                <button
+                  onClick={handleCreateSequence}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create First Sequence
+                </button>
+              </div>
+            ) : (
+              // Sequences grid
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {sequences.map((sequence) => (
+                  <div
+                    key={sequence.id}
+                    className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+                  >
+                    {/* Sequence header */}
+                    <div className="flex justify-between items-start mb-3">
+                      <h3 className="font-semibold text-gray-900 text-lg truncate pr-2">
+                        {sequence.name}
+                      </h3>
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor(sequence.status)}`}>
+                        {getStatusIcon(sequence.status)}
+                        {sequence.status}
+                      </span>
+                    </div>
+
+                    {/* Description */}
+                    {sequence.description && (
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                        {sequence.description}
+                      </p>
+                    )}
+
+                    {/* Stats */}
+                    <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                      <span>{sequence.blocks.length} step{sequence.blocks.length !== 1 ? 's' : ''}</span>
+                      <span>Updated {new Date(sequence.updated_at || '').toLocaleDateString()}</span>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleEditSequence(sequence)}
+                        className="flex-1 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDuplicateSequence(sequence.id!)}
+                        className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                        title="Duplicate"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteSequence(sequence.id!, sequence.name)}
+                        className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteConfirmation.isOpen}
+        onClose={() => setDeleteConfirmation({ ...deleteConfirmation, isOpen: false })}
+        onConfirm={executeDeleteSequence}
+        title="Delete Sequence"
+        message={`Are you sure you want to delete "${deleteConfirmation.sequenceName}"? This action cannot be undone.`}
+        variant="danger"
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+    </>
+  )
+}
+
+============================================================
+
+==================== FILE: src/components/sequences/SequenceEditor.tsx ====================
+import React, { useState, useEffect } from 'react'
+import { X, Plus, Save, Mail, MessageCircle, UserPlus, Phone, CheckSquare, Clock, Settings, ChevronDown, ChevronUp, GripVertical } from 'lucide-react'
+import { useSequences } from '../../hooks/useSequences'
+import { Sequence, SequenceBlock, SequenceBlockType, SequenceDelayUnit, BLOCK_TEMPLATES } from '../../types/sequences'
+import { BlockEditor } from './BlockEditor'
+
+interface SequenceEditorProps {
+  isOpen: boolean
+  onClose: () => void
+  sequence?: Sequence | null
+}
+
+export const SequenceEditor: React.FC<SequenceEditorProps> = ({ isOpen, onClose, sequence }) => {
+  const { createSequence, updateSequence } = useSequences()
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    blocks: [] as SequenceBlock[]
+  })
+  const [editingBlock, setEditingBlock] = useState<SequenceBlock | null>(null)
+  const [showBlockEditor, setShowBlockEditor] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [expandedBlocks, setExpandedBlocks] = useState<Set<string>>(new Set())
+  
+  // Drag and drop state - following their existing patterns
+  const [dragState, setDragState] = useState({
+    isDragging: false,
+    draggedBlockId: null as string | null,
+    draggedIndex: null as number | null,
+    dropIndicatorIndex: null as number | null,
+    dragStartPos: { x: 0, y: 0 },
+    currentPos: { x: 0, y: 0 }
+  })
+
+  // Initialize form data when sequence changes
+  useEffect(() => {
+    if (sequence) {
+      setFormData({
+        name: sequence.name,
+        description: sequence.description || '',
+        blocks: sequence.blocks
+      })
+    } else {
+      setFormData({
+        name: '',
+        description: '',
+        blocks: []
+      })
+    }
+  }, [sequence])
+
+  if (!isOpen) return null
+
+  const getBlockIcon = (type: SequenceBlockType) => {
+    switch (type) {
+      case SequenceBlockType.EMAIL:
+        return <Mail className="w-5 h-5" />
+      case SequenceBlockType.LINKEDIN_MESSAGE:
+        return <MessageCircle className="w-5 h-5" />
+      case SequenceBlockType.LINKEDIN_CONNECTION:
+        return <UserPlus className="w-5 h-5" />
+      case SequenceBlockType.PHONE_CALL:
+        return <Phone className="w-5 h-5" />
+      case SequenceBlockType.TASK:
+        return <CheckSquare className="w-5 h-5" />
+      case SequenceBlockType.WAIT:
+        return <Clock className="w-5 h-5" />
+      default:
+        return <Settings className="w-5 h-5" />
+    }
+  }
+
+  const getBlockColor = (type: SequenceBlockType) => {
+    switch (type) {
+      case SequenceBlockType.EMAIL:
+        return 'bg-blue-50 border-blue-200 text-blue-700'
+      case SequenceBlockType.LINKEDIN_MESSAGE:
+        return 'bg-indigo-50 border-indigo-200 text-indigo-700'
+      case SequenceBlockType.LINKEDIN_CONNECTION:
+        return 'bg-purple-50 border-purple-200 text-purple-700'
+      case SequenceBlockType.PHONE_CALL:
+        return 'bg-green-50 border-green-200 text-green-700'
+      case SequenceBlockType.TASK:
+        return 'bg-orange-50 border-orange-200 text-orange-700'
+      case SequenceBlockType.WAIT:
+        return 'bg-gray-50 border-gray-200 text-gray-700'
+      default:
+        return 'bg-gray-50 border-gray-200 text-gray-700'
+    }
+  }
+
+  const formatDelayText = (value: number, unit: SequenceDelayUnit) => {
+    if (value === 0) return 'Immediately'
+    const unitText = value === 1 ? unit.replace('s', '') : unit
+    return `${value} ${unitText}`
+  }
+
+  const addBlock = (type: SequenceBlockType) => {
+    const template = BLOCK_TEMPLATES[type]
+    const newBlock: SequenceBlock = {
+      id: `block_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      step_number: formData.blocks.length + 1,
+      block_type: type,
+      name: template.name || 'New Block',
+      delay_value: template.delay_value || 0,
+      delay_unit: template.delay_unit || SequenceDelayUnit.DAYS,
+      config: template.config || {}
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      blocks: [...prev.blocks, newBlock]
+    }))
+  }
+
+  const editBlock = (block: SequenceBlock) => {
+    setEditingBlock(block)
+    setShowBlockEditor(true)
+  }
+
+  const updateBlock = (updatedBlock: SequenceBlock) => {
+    setFormData(prev => ({
+      ...prev,
+      blocks: prev.blocks.map(block => 
+        block.id === updatedBlock.id ? updatedBlock : block
+      )
+    }))
+  }
+
+  const deleteBlock = (blockId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      blocks: prev.blocks.filter(block => block.id !== blockId)
+        .map((block, index) => ({ ...block, step_number: index + 1 }))
+    }))
+  }
+
+  const toggleBlockExpansion = (blockId: string) => {
+    setExpandedBlocks(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(blockId)) {
+        newSet.delete(blockId)
+      } else {
+        newSet.add(blockId)
+      }
+      return newSet
+    })
+  }
+
+  const handleSave = async () => {
+    if (!formData.name.trim()) {
+      alert('Please enter a sequence name')
+      return
+    }
+
+    setIsSaving(true)
+    try {
+      if (sequence?.id) {
+        // Update existing sequence
+        await updateSequence(sequence.id, formData)
+      } else {
+        // Create new sequence
+        await createSequence(formData)
+      }
+      onClose()
+    } catch (error) {
+      console.error('Failed to save sequence:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleBlockEditorClose = () => {
+    setShowBlockEditor(false)
+    setEditingBlock(null)
+  }
+
+  const handleBlockEditorSave = (updatedBlock: SequenceBlock) => {
+    updateBlock(updatedBlock)
+    handleBlockEditorClose()
+  }
+
+  // Mouse-based drag and drop handlers - following their patterns
+  const handleMouseDown = (e: React.MouseEvent, blockId: string) => {
+    e.preventDefault()
+    const blockIndex = formData.blocks.findIndex(block => block.id === blockId)
+    
+    setDragState({
+      isDragging: true,
+      draggedBlockId: blockId,
+      draggedIndex: blockIndex,
+      dropIndicatorIndex: null,
+      dragStartPos: { x: e.clientX, y: e.clientY },
+      currentPos: { x: e.clientX, y: e.clientY }
+    })
+  }
+
+  // Mouse move handler for drag operations
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!dragState.isDragging) return
+    
+    // Update current position
+    setDragState(prev => ({
+      ...prev,
+      currentPos: { x: e.clientX, y: e.clientY }
+    }))
+
+    // Calculate drop position
+    const container = document.querySelector('[data-sequence-container]') as HTMLElement
+    if (!container) return
+
+    const rect = container.getBoundingClientRect()
+    const mouseY = e.clientY - rect.top
+    
+    // Find the closest drop position
+    const blockElements = container.querySelectorAll('[data-block-id]')
+    
+    if (blockElements.length === 0) {
+      setDragState(prev => ({ ...prev, dropIndicatorIndex: 0 }))
+      return
+    }
+
+    let closestIndex = 0
+    let closestDistance = Infinity
+
+    // Check if mouse is above the first block
+    const firstBlockRect = blockElements[0].getBoundingClientRect()
+    const firstBlockTop = firstBlockRect.top - rect.top
+    
+    if (mouseY < firstBlockTop) {
+      setDragState(prev => ({ ...prev, dropIndicatorIndex: 0 }))
+      return
+    }
+
+    // Check between blocks
+    blockElements.forEach((blockEl, index) => {
+      const blockRect = blockEl.getBoundingClientRect()
+      const blockCenterY = blockRect.top + blockRect.height / 2 - rect.top
+      const distance = Math.abs(mouseY - blockCenterY)
+      
+      if (distance < closestDistance) {
+        closestDistance = distance
+        closestIndex = mouseY < blockCenterY ? index : index + 1
+      }
+    })
+
+    // Don't show indicator if dropping in same position
+    if (dragState.draggedIndex !== null && 
+        (closestIndex === dragState.draggedIndex || closestIndex === dragState.draggedIndex + 1)) {
+      setDragState(prev => ({ ...prev, dropIndicatorIndex: null }))
+    } else {
+      setDragState(prev => ({ ...prev, dropIndicatorIndex: closestIndex }))
+    }
+  }
+
+  // Mouse up handler to complete drag
+  const handleMouseUp = () => {
+    if (!dragState.isDragging) return
+
+    const { draggedIndex, dropIndicatorIndex, draggedBlockId } = dragState
+    
+    if (draggedBlockId && dropIndicatorIndex !== null && draggedIndex !== null) {
+      let targetIndex = dropIndicatorIndex
+      if (draggedIndex < dropIndicatorIndex) {
+        targetIndex = dropIndicatorIndex - 1
+      }
+
+      if (draggedIndex !== targetIndex) {
+        // Reorder the blocks
+        const newBlocks = [...formData.blocks]
+        const [draggedBlock] = newBlocks.splice(draggedIndex, 1)
+        newBlocks.splice(targetIndex, 0, draggedBlock)
+
+        // Update step numbers
+        const updatedBlocks = newBlocks.map((block, index) => ({
+          ...block,
+          step_number: index + 1
+        }))
+
+        setFormData(prev => ({
+          ...prev,
+          blocks: updatedBlocks
+        }))
+      }
+    }
+
+    // Reset drag state
+    setDragState({
+      isDragging: false,
+      draggedBlockId: null,
+      draggedIndex: null,
+      dropIndicatorIndex: null,
+      dragStartPos: { x: 0, y: 0 },
+      currentPos: { x: 0, y: 0 }
+    })
+  }
+
+  // Add event listeners for mouse move and up
+  useEffect(() => {
+    if (dragState.isDragging) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+      document.body.style.cursor = 'grabbing'
+      document.body.style.userSelect = 'none'
+      
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mouseup', handleMouseUp)
+        document.body.style.cursor = ''
+        document.body.style.userSelect = ''
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dragState.isDragging]) // Only depend on isDragging to avoid infinite re-renders
+
+  // Update block delay inline
+  const updateBlockDelay = (blockId: string, delayValue: number, delayUnit: SequenceDelayUnit) => {
+    setFormData(prev => ({
+      ...prev,
+      blocks: prev.blocks.map(block => 
+        block.id === blockId 
+          ? { ...block, delay_value: delayValue, delay_unit: delayUnit }
+          : block
+      )
+    }))
+  }
+
+  // Calculate drop indicator position
+  const getDropIndicatorPosition = () => {
+    if (dragState.dropIndicatorIndex === null) return 0
+    
+    const container = document.querySelector('[data-sequence-container]')
+    if (!container) return 0
+    
+    const blockElements = container.querySelectorAll('[data-block-id]')
+    
+    if (dragState.dropIndicatorIndex === 0) {
+      // Position at the top
+      return 0
+    }
+    
+    if (dragState.dropIndicatorIndex > blockElements.length) {
+      // Position at the bottom
+      const lastBlock = blockElements[blockElements.length - 1] as HTMLElement
+      if (lastBlock) {
+        return lastBlock.offsetTop + lastBlock.offsetHeight + 12 // 12px spacing
+      }
+    }
+    
+    // Position between blocks
+    const targetBlock = blockElements[dragState.dropIndicatorIndex - 1] as HTMLElement
+    if (targetBlock) {
+      return targetBlock.offsetTop + targetBlock.offsetHeight + 6 // Half spacing
+    }
+    
+    return 0
+  }
+
+  // If showing block editor, render that instead
+  if (showBlockEditor && editingBlock) {
+    return (
+      <BlockEditor
+        isOpen={true}
+        onClose={handleBlockEditorClose}
+        onSave={handleBlockEditorSave}
+        block={editingBlock}
+      />
+    )
+  }
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50" />
+
+      {/* Modal */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh]">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gray-50">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                <Settings className="w-4 h-4 text-orange-600" />
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900">
+                {sequence ? 'Edit Sequence' : 'Create Sequence'}
+              </h2>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" />
+                {isSaving ? 'Saving...' : 'Save'}
+              </button>
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="flex h-[calc(90vh-80px)]">
+            {/* Left Panel - Sequence Info */}
+            <div className="w-1/3 border-r border-gray-200 p-6">
+              <div className="space-y-6">
+                {/* Basic Info */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Sequence Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    placeholder="Enter sequence name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    placeholder="Describe this sequence..."
+                  />
+                </div>
+
+                {/* Add Block Buttons */}
+                <div>
+                  <h3 className="text-sm font-medium text-gray-900 mb-3">Add Block</h3>
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => addBlock(SequenceBlockType.EMAIL)}
+                      className="w-full flex items-center gap-3 p-3 text-left border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                    >
+                      <Mail className="w-5 h-5 text-blue-600" />
+                      <div>
+                        <div className="font-medium text-gray-900">Email</div>
+                        <div className="text-sm text-gray-500">Send an email message</div>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => addBlock(SequenceBlockType.LINKEDIN_MESSAGE)}
+                      className="w-full flex items-center gap-3 p-3 text-left border border-gray-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-300 transition-colors"
+                    >
+                      <MessageCircle className="w-5 h-5 text-indigo-600" />
+                      <div>
+                        <div className="font-medium text-gray-900">LinkedIn Message</div>
+                        <div className="text-sm text-gray-500">Send a LinkedIn message</div>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => addBlock(SequenceBlockType.LINKEDIN_CONNECTION)}
+                      className="w-full flex items-center gap-3 p-3 text-left border border-gray-200 rounded-lg hover:bg-purple-50 hover:border-purple-300 transition-colors"
+                    >
+                      <UserPlus className="w-5 h-5 text-purple-600" />
+                      <div>
+                        <div className="font-medium text-gray-900">LinkedIn Connect</div>
+                        <div className="text-sm text-gray-500">Send connection request</div>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => addBlock(SequenceBlockType.PHONE_CALL)}
+                      className="w-full flex items-center gap-3 p-3 text-left border border-gray-200 rounded-lg hover:bg-green-50 hover:border-green-300 transition-colors"
+                    >
+                      <Phone className="w-5 h-5 text-green-600" />
+                      <div>
+                        <div className="font-medium text-gray-900">Phone Call</div>
+                        <div className="text-sm text-gray-500">Schedule a phone call</div>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => addBlock(SequenceBlockType.TASK)}
+                      className="w-full flex items-center gap-3 p-3 text-left border border-gray-200 rounded-lg hover:bg-orange-50 hover:border-orange-300 transition-colors"
+                    >
+                      <CheckSquare className="w-5 h-5 text-orange-600" />
+                      <div>
+                        <div className="font-medium text-gray-900">Task</div>
+                        <div className="text-sm text-gray-500">Custom task reminder</div>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => addBlock(SequenceBlockType.WAIT)}
+                      className="w-full flex items-center gap-3 p-3 text-left border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors"
+                    >
+                      <Clock className="w-5 h-5 text-gray-600" />
+                      <div>
+                        <div className="font-medium text-gray-900">Wait</div>
+                        <div className="text-sm text-gray-500">Add a delay period</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Panel - Sequence Flow */}
+            <div className="flex-1 p-6 overflow-y-auto">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900">Sequence Flow</h3>
+                  <span className="text-sm text-gray-500">
+                    {formData.blocks.length} step{formData.blocks.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+
+                {formData.blocks.length === 0 ? (
+                  <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
+                    <Settings className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h4 className="text-lg font-medium text-gray-900 mb-2">No steps yet</h4>
+                    <p className="text-gray-500">Add blocks from the left panel to build your sequence</p>
+                  </div>
+                ) : (
+                  <div 
+                    className="space-y-3 relative"
+                    data-sequence-container
+                  >
+                    {/* Dynamic drop indicator */}
+                    {dragState.dropIndicatorIndex !== null && (
+                      <div
+                        className="absolute left-0 right-0 h-0.5 bg-blue-500 z-30 transition-all duration-150 ease-out shadow-lg"
+                        style={{
+                          top: `${getDropIndicatorPosition()}px`,
+                        }}
+                      >
+                        {/* Circle indicators at ends */}
+                        <div className="absolute -left-1.5 -top-1.5 w-3 h-3 bg-blue-500 rounded-full shadow-md"></div>
+                        <div className="absolute -right-1.5 -top-1.5 w-3 h-3 bg-blue-500 rounded-full shadow-md"></div>
+                      </div>
+                    )}
+
+                    {formData.blocks.map((block, index) => (
+                      <div key={block.id} className="relative" data-block-id={block.id}>
+                        {/* Delay editor - always show for easy editing */}
+                        {index > 0 && (
+                          <div className="flex items-center justify-center mb-3">
+                            <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-600 text-sm rounded-lg border">
+                              <Clock className="w-3 h-3" />
+                              <span className="text-xs">Wait</span>
+                              <input
+                                type="number"
+                                min="0"
+                                value={block.delay_value}
+                                onChange={(e) => updateBlockDelay(block.id, Math.max(0, parseInt(e.target.value) || 0), block.delay_unit)}
+                                className="w-12 px-1 py-0.5 text-xs border border-gray-300 rounded text-center bg-white focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
+                              />
+                              <select
+                                value={block.delay_unit}
+                                onChange={(e) => updateBlockDelay(block.id, block.delay_value, e.target.value as SequenceDelayUnit)}
+                                className="text-xs border border-gray-300 rounded bg-white focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
+                              >
+                                <option value={SequenceDelayUnit.MINUTES}>min</option>
+                                <option value={SequenceDelayUnit.HOURS}>hrs</option>
+                                <option value={SequenceDelayUnit.DAYS}>days</option>
+                                <option value={SequenceDelayUnit.WEEKS}>wks</option>
+                              </select>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Show either ghost placeholder OR the actual block, never both */}
+                        {dragState.draggedBlockId === block.id ? (
+                          /* Ghost placeholder when item is being dragged */
+                          <div className={`border-2 border-dashed border-gray-300 rounded-lg p-4 ${getBlockColor(block.block_type)} opacity-50 pointer-events-none`}>
+                            <div className="flex items-center gap-3">
+                              <div className="w-4 h-4 bg-gray-300 rounded"></div>
+                              <div className="w-8 h-8 bg-gray-300 rounded-lg"></div>
+                              <div>
+                                <div className="h-4 bg-gray-300 rounded w-24 mb-1"></div>
+                                <div className="h-3 bg-gray-300 rounded w-16"></div>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          /* Normal block card */
+                          <div 
+                            className={`border rounded-lg p-4 ${getBlockColor(block.block_type)} hover:shadow-md transition-all duration-200 cursor-move select-none`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              {/* Drag handle */}
+                              <div 
+                                className="cursor-grab active:cursor-grabbing p-2 hover:bg-white hover:bg-opacity-70 rounded-md transition-all duration-200 group"
+                                onMouseDown={(e) => handleMouseDown(e, block.id)}
+                              >
+                                <GripVertical className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                              </div>
+                              <div className="flex items-center justify-center w-8 h-8 bg-white rounded-lg">
+                                {getBlockIcon(block.block_type)}
+                              </div>
+                              <div>
+                                <div className="font-medium">{block.name}</div>
+                                <div className="text-sm opacity-75">Step {block.step_number}</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => editBlock(block)}
+                                className="px-3 py-1.5 text-xs font-medium bg-white hover:bg-gray-50 rounded-md border transition-colors"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => toggleBlockExpansion(block.id)}
+                                className="p-1.5 hover:bg-white hover:bg-opacity-50 rounded-md transition-colors"
+                              >
+                                {expandedBlocks.has(block.id) ? (
+                                  <ChevronUp className="w-4 h-4" />
+                                ) : (
+                                  <ChevronDown className="w-4 h-4" />
+                                )}
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Expanded view */}
+                          {expandedBlocks.has(block.id) && (
+                            <div className="mt-3 pt-3 border-t border-white border-opacity-30">
+                              <div className="space-y-2 text-sm">
+                                {block.config.subject_prompt && (
+                                  <div>
+                                    <div className="font-medium opacity-75">Subject Prompt:</div>
+                                    <div className="bg-white bg-opacity-50 p-2 rounded text-xs font-mono">
+                                      {block.config.subject_prompt}
+                                    </div>
+                                  </div>
+                                )}
+                                {block.config.body_prompt && (
+                                  <div>
+                                    <div className="font-medium opacity-75">Body Prompt:</div>
+                                    <div className="bg-white bg-opacity-50 p-2 rounded text-xs font-mono">
+                                      {block.config.body_prompt}
+                                    </div>
+                                  </div>
+                                )}
+                                {block.config.connection_message_prompt && (
+                                  <div>
+                                    <div className="font-medium opacity-75">Connection Message:</div>
+                                    <div className="bg-white bg-opacity-50 p-2 rounded text-xs font-mono">
+                                      {block.config.connection_message_prompt}
+                                    </div>
+                                  </div>
+                                )}
+                                {block.config.task_description && (
+                                  <div>
+                                    <div className="font-medium opacity-75">Task Description:</div>
+                                    <div className="bg-white bg-opacity-50 p-2 rounded text-xs">
+                                      {block.config.task_description}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex justify-end mt-3">
+                                <button
+                                  onClick={() => deleteBlock(block.id)}
+                                  className="px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                                >
+                                  Delete Step
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Floating drag overlay - follows mouse cursor */}
+      {dragState.isDragging && dragState.draggedBlockId && (
+        <div
+          className="fixed pointer-events-none z-50 transform -translate-x-1/2 -translate-y-1/2 transition-none"
+          style={{
+            left: dragState.currentPos.x,
+            top: dragState.currentPos.y,
+          }}
+        >
+          {(() => {
+            const draggedBlock = formData.blocks.find(b => b.id === dragState.draggedBlockId)
+            if (!draggedBlock) return null
+            
+            return (
+              <div className={`border rounded-lg p-4 ${getBlockColor(draggedBlock.block_type)} transform rotate-2 scale-95 shadow-2xl opacity-90 w-64`}>
+                <div className="flex items-center gap-3">
+                  <GripVertical className="w-4 h-4 text-gray-400" />
+                  <div className="flex items-center justify-center w-8 h-8 bg-white rounded-lg">
+                    {getBlockIcon(draggedBlock.block_type)}
+                  </div>
+                  <div>
+                    <div className="font-medium">{draggedBlock.name}</div>
+                    <div className="text-sm opacity-75">Step {draggedBlock.step_number}</div>
+                  </div>
+                </div>
+              </div>
+            )
+          })()}
+        </div>
+      )}
+    </>
+  )
+}
+
+============================================================
+
 ==================== FILE: src/components/signals/DateSelector.tsx ====================
 import { useState, useRef, useEffect } from 'react'
+import { useSignalCounts } from '../../hooks/useSignalCounts'
 
 interface Props {
   selectedDate: string
   onChange: (date: string) => void
+  productId?: string
+  minScore?: number
+  decisionFilter?: string
+  showNavButtons?: boolean
 }
 
-export const DateSelector = ({ selectedDate, onChange }: Props) => {
+export const DateSelector = ({ selectedDate, onChange, productId, minScore = 3.0, decisionFilter, showNavButtons = true }: Props) => {
   const [showCalendar, setShowCalendar] = useState(false)
   const calendarRef = useRef<HTMLDivElement>(null)
 
@@ -1986,15 +5255,17 @@ export const DateSelector = ({ selectedDate, onChange }: Props) => {
   return (
     <div className="flex items-center space-x-1">
       {/* Previous Day Button */}
-      <button
-        onClick={() => handleNavigation('prev')}
-        className="border border-gray-300 rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm flex items-center hover:bg-gray-50 bg-white"
-        title={`Previous day (${formatDate(getPreviousDay(selectedDate))})`}
-      >
-        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
+      {showNavButtons && (
+        <button
+          onClick={() => handleNavigation('prev')}
+          className="border border-gray-300 rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm flex items-center hover:bg-gray-50 bg-white"
+          title={`Previous day (${formatDate(getPreviousDay(selectedDate))})`}
+        >
+          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+      )}
 
       {/* Calendar Selector */}
       <div className="relative" ref={calendarRef}>
@@ -2020,22 +5291,27 @@ export const DateSelector = ({ selectedDate, onChange }: Props) => {
                 setShowCalendar(false)
               }}
               onClose={() => setShowCalendar(false)}
+              productId={productId}
+              minScore={minScore}
+              decisionFilter={decisionFilter}
             />
           </div>
         )}
       </div>
 
       {/* Next Day Button */}
-      <button
-        onClick={() => handleNavigation('next')}
-        disabled={isFuture(getNextDay(selectedDate))}
-        className="border border-gray-300 rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm flex items-center hover:bg-gray-50 bg-white disabled:opacity-50 disabled:cursor-not-allowed"
-        title={isFuture(getNextDay(selectedDate)) ? "Cannot navigate to future dates" : `Next day (${formatDate(getNextDay(selectedDate))})`}
-      >
-        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
+      {showNavButtons && (
+        <button
+          onClick={() => handleNavigation('next')}
+          disabled={isFuture(getNextDay(selectedDate))}
+          className="border border-gray-300 rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm flex items-center hover:bg-gray-50 bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+          title={isFuture(getNextDay(selectedDate)) ? "Cannot navigate to future dates" : `Next day (${formatDate(getNextDay(selectedDate))})`}
+        >
+          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      )}
     </div>
   )
 }
@@ -2045,13 +5321,30 @@ interface CalendarPickerProps {
   selectedDate: string
   onDateSelect: (date: string) => void
   onClose: () => void
+  productId?: string
+  minScore?: number
+  decisionFilter?: string
 }
 
-const CalendarPicker = ({ selectedDate, onDateSelect, onClose }: CalendarPickerProps) => {
+const CalendarPicker = ({ selectedDate, onDateSelect, onClose, productId, minScore = 3.0, decisionFilter }: CalendarPickerProps) => {
   const [currentMonth, setCurrentMonth] = useState(() => {
     const date = new Date(selectedDate + 'T00:00:00')
     return new Date(date.getFullYear(), date.getMonth(), 1)
   })
+
+  // Get date range for current month to fetch signal counts
+  const monthStartDate = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-01`
+  const monthEndDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0)
+  const monthEndDateString = `${monthEndDate.getFullYear()}-${String(monthEndDate.getMonth() + 1).padStart(2, '0')}-${String(monthEndDate.getDate()).padStart(2, '0')}`
+
+  // Fetch signal counts for the current month
+  const { hasSignalsForDate, isLoading } = useSignalCounts(
+    productId ? monthStartDate : '',
+    productId ? monthEndDateString : '',
+    productId || '',
+    minScore,
+    decisionFilter
+  )
 
   const today = new Date()
   const monthNames = [
@@ -2101,12 +5394,14 @@ const CalendarPicker = ({ selectedDate, onDateSelect, onClose }: CalendarPickerP
       dayDate.setHours(0, 0, 0, 0)
       const isFutureDate = dayDate > todayDate
 
+      const hasSignals = hasSignalsForDate(currentDateString)
+
       days.push(
         <button
           key={day}
           onClick={() => !isFutureDate && handleDateClick(day)}
           disabled={isFutureDate}
-          className={`w-8 h-8 text-sm rounded-md flex items-center justify-center transition-colors ${
+          className={`w-8 h-8 text-sm rounded-md flex items-center justify-center transition-colors relative ${
             isSelected
               ? 'bg-orange-500 text-white font-medium'
               : isToday
@@ -2117,6 +5412,9 @@ const CalendarPicker = ({ selectedDate, onDateSelect, onClose }: CalendarPickerP
           }`}
         >
           {day}
+          {hasSignals && !isSelected && (
+            <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-orange-500 rounded-full"></div>
+          )}
         </button>
       )
     }
@@ -2137,9 +5435,14 @@ const CalendarPicker = ({ selectedDate, onDateSelect, onClose }: CalendarPickerP
           </svg>
         </button>
         
-        <h3 className="text-sm font-semibold text-gray-900">
-          {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-        </h3>
+        <div className="flex items-center space-x-2">
+          <h3 className="text-sm font-semibold text-gray-900">
+            {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+          </h3>
+          {isLoading && (
+            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-orange-500"></div>
+          )}
+        </div>
         
         <button
           onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))}
@@ -2412,20 +5715,23 @@ export const FilterPanel = ({ filters, onChange, isOpen, onClose }: Props) => {
 
 ==================== FILE: src/components/signals/IntentCard.tsx ====================
 import React, { useState } from 'react'
-import { TrendingUp, Building, Calendar, Users, ExternalLink, Linkedin, Briefcase, ChevronDown, ChevronUp, ThumbsUp, ThumbsDown } from 'lucide-react'
+import { TrendingUp, Building, Calendar, Users, ExternalLink, Linkedin, Briefcase, ChevronDown, ChevronUp, ThumbsUp, ThumbsDown, Minus } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { Signal } from '../../hooks/useSignals'
+import { api } from '../../lib/apiClient'
+import { ConfirmationModal } from '../ui/ConfirmationModal'
 
 interface IntentCardProps {
   signal: Signal | null
-  onApprove: () => void
-  onReject: () => void
+  onApprove?: () => void
+  onReject?: () => void
+  onRemoveDecision?: () => void
   isLoading?: boolean
 }
 
 const SkeletonIntentCard: React.FC = () => {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse min-h-[600px]">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse h-full min-h-[600px]">
       {/* Header Banner Skeleton */}
       <div className="h-32 bg-gray-200"></div>
       
@@ -2606,8 +5912,127 @@ const JobCitationCard: React.FC<{ job: any; citationIndex: number; isExpanded: b
   )
 }
 
-export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onReject, isLoading = false }) => {
+export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onReject, onRemoveDecision, isLoading = false }) => {
   const [expandedJobs, setExpandedJobs] = useState<Set<number>>(new Set())
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [confirmationModal, setConfirmationModal] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    action: () => void
+    variant?: 'warning' | 'danger' | 'info' | 'success'
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    action: () => {},
+    variant: 'warning'
+  })
+
+  const handleApprove = async () => {
+    if (!signal?.id || isUpdating) return
+    
+    // Show confirmation if signal already has a decision
+    if (signal.decision && signal.decision !== 'approve') {
+      setConfirmationModal({
+        isOpen: true,
+        title: 'Change Signal Status',
+        message: `This signal is currently ${signal.decision}d. Are you sure you want to approve it?`,
+        action: executeApprove,
+        variant: 'success'
+      })
+      return
+    }
+    
+    executeApprove()
+  }
+
+  const executeApprove = async () => {
+    if (!signal?.id || isUpdating) return
+    
+    setIsUpdating(true)
+    try {
+      const response = await api.signals.updateDecision(signal.id, 'approve')
+      if (response.error) {
+        throw new Error(response.error)
+      }
+      onApprove?.()
+    } catch (err) {
+      console.error('Failed to approve signal:', err)
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handleReject = async () => {
+    if (!signal?.id || isUpdating) return
+    
+    // Show confirmation if signal already has a decision
+    if (signal.decision && signal.decision !== 'reject') {
+      setConfirmationModal({
+        isOpen: true,
+        title: 'Change Signal Status',
+        message: `This signal is currently ${signal.decision === 'approve' ? 'approved' : signal.decision}. Are you sure you want to reject it?`,
+        action: executeReject,
+        variant: 'danger'
+      })
+      return
+    }
+    
+    executeReject()
+  }
+
+  const executeReject = async () => {
+    if (!signal?.id || isUpdating) return
+    
+    setIsUpdating(true)
+    try {
+      const response = await api.signals.updateDecision(signal.id, 'reject')
+      if (response.error) {
+        throw new Error(response.error)
+      }
+      onReject?.()
+    } catch (err) {
+      console.error('Failed to reject signal:', err)
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handleRemoveDecision = async () => {
+    if (!signal?.id || isUpdating) return
+    
+    // Show confirmation if signal has a decision
+    if (signal.decision) {
+      setConfirmationModal({
+        isOpen: true,
+        title: 'Remove Decision',
+        message: `This signal is currently ${signal.decision === 'approve' ? 'approved' : 'rejected'}. Are you sure you want to remove this decision?`,
+        action: executeRemoveDecision,
+        variant: 'warning'
+      })
+      return
+    }
+    
+    executeRemoveDecision()
+  }
+
+  const executeRemoveDecision = async () => {
+    if (!signal?.id || isUpdating) return
+    
+    setIsUpdating(true)
+    try {
+      const response = await api.signals.updateDecision(signal.id, 'remove')
+      if (response.error) {
+        throw new Error(response.error)
+      }
+      onRemoveDecision?.()
+    } catch (err) {
+      console.error('Failed to remove decision:', err)
+    } finally {
+      setIsUpdating(false)
+    }
+  }
 
   const toggleJobExpansion = (index: number) => {
     setExpandedJobs(prev => {
@@ -2629,8 +6054,19 @@ export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onRej
     }, 100)
   }
 
-  if (isLoading || !signal) {
+  if (isLoading) {
     return <SkeletonIntentCard />
+  }
+
+  if (!signal) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-gray-500 h-full flex items-center justify-center">
+        <div>
+          <div className="text-2xl mb-2">📊</div>
+          <div className="text-sm">Select a signal to view details</div>
+        </div>
+      </div>
+    )
   }
 
   const company = signal.company
@@ -2862,25 +6298,83 @@ export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onRej
         </div>
       )}
 
-      {/* Actions */}
-      <div className="flex justify-center space-x-4 sm:space-x-5">
-        {/* Reject Button */}
-        <button
-          onClick={onReject}
-          className="w-14 h-14 sm:w-16 sm:h-16 bg-white border-2 text-red-500 rounded-full flex items-center justify-center shadow-md hover:bg-red-50 transition-all duration-150 ease-in-out transform hover:scale-105"
-        >
-          <ThumbsDown size={20} />
-        </button>
-        
-        {/* Approve Button */}
-        <button
-          onClick={onApprove}
-          className="w-14 h-14 sm:w-16 sm:h-16 bg-white border-2 text-green-500 rounded-full flex items-center justify-center shadow-md hover:bg-green-50 transition-all duration-150 ease-in-out transform hover:scale-105"
-        >
-          <ThumbsUp size={20} />
-        </button>
+      {/* Decision Slider */}
+      <div className="flex justify-center">
+        <div className="relative bg-gray-100 rounded-full p-1 shadow-inner backdrop-blur-sm">
+          {/* Sliding Background Indicator */}
+          <div 
+            className={`absolute top-2 bottom-2 left-2 right-2 w-[76px] rounded-full transition-all duration-300 ease-out shadow-inner ${
+              signal?.decision === 'reject' 
+                ? 'translate-x-0 bg-red-500 shadow-md' 
+                : signal?.decision === 'approve' 
+                ? 'translate-x-[160px] bg-green-500 shadow-md'
+                : 'translate-x-[80px] bg-gray-300 shadow-sm'
+            }`}
+          />
+          
+          {/* Three State Buttons */}
+          <div className="relative flex">
+            {/* Reject State */}
+            <button
+              onClick={signal?.decision === 'reject' ? handleRemoveDecision : handleReject}
+              disabled={isUpdating}
+              className={`group relative z-10 w-20 h-12 rounded-full flex items-center justify-center transition-all duration-200 disabled:opacity-50 ${
+                signal?.decision === 'reject'
+                  ? 'text-white'
+                  : 'text-red-500 hover:text-red-700'
+              }`}
+            >
+              {/* Red-tinted glass hover effect */}
+              <div className="absolute inset-1 rounded-full bg-red-500/15 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-inner" />
+              <ThumbsDown size={18} className="relative z-10" />
+            </button>
+            
+            {/* Neutral State */}
+            <button
+              onClick={handleRemoveDecision}
+              disabled={isUpdating}
+              className={`group relative z-10 w-20 h-12 rounded-full flex items-center justify-center transition-all duration-200 disabled:opacity-50 ${
+                !signal?.decision
+                  ? 'text-white'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {/* Neutral gray-tinted glass hover effect */}
+              <div className="absolute inset-1 rounded-full bg-gray-200/25 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-inner" />
+              <Minus size={18} className="relative z-10" />
+            </button>
+            
+            {/* Approve State */}
+            <button
+              onClick={signal?.decision === 'approve' ? handleRemoveDecision : handleApprove}
+              disabled={isUpdating}
+              className={`group relative z-10 w-20 h-12 rounded-full flex items-center justify-center transition-all duration-200 disabled:opacity-50 ${
+                signal?.decision === 'approve'
+                  ? 'text-white'
+                  : 'text-green-500 hover:text-green-700'
+              }`}
+            >
+              {/* Green-tinted glass hover effect */}
+              <div className="absolute inset-1 rounded-full bg-green-500/15 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-inner" />
+              <ThumbsUp size={18} className="relative z-10" />
+            </button>
+          </div>
+        </div>
       </div>
+
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmationModal.isOpen}
+        onClose={() => setConfirmationModal({ ...confirmationModal, isOpen: false })}
+        onConfirm={confirmationModal.action}
+        title={confirmationModal.title}
+        message={confirmationModal.message}
+        variant={confirmationModal.variant}
+        confirmText="Yes, Continue"
+        cancelText="Cancel"
+      />
     </div>
   )
 }
@@ -3082,7 +6576,7 @@ export const QueueSidebar: React.FC<QueueSidebarProps> = ({
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-semibold text-gray-900">
-          Queue
+          Signal Queue
         </h3>
         <span className="text-sm text-gray-500">
           {totalSignals > 0 ? `${totalSignals} signals` : "Empty"}
@@ -3262,7 +6756,8 @@ export const SignalsPage = () => {
     isJobsLoading,
     error, 
     refetch,
-    markSignal
+    markSignal,
+    removeDecision
   } = useSignals(selectedDate, filters)
 
   const currentSignal = signals[currentIndex] || null
@@ -3294,6 +6789,11 @@ export const SignalsPage = () => {
     }
   }, [currentSignal, markSignal, currentIndex, signals.length])
 
+  const handleRemoveDecision = useCallback(async () => {
+    if (!currentSignal) return
+    await removeDecision(currentSignal.id)
+  }, [currentSignal, removeDecision])
+
   // Filter status
   const hasActiveFilters = filters.minScore > 3 || filters.vertical
 
@@ -3301,17 +6801,12 @@ export const SignalsPage = () => {
   const isAnyLoading = isLoading || isIntentScoresLoading || isCompaniesLoading || isJobsLoading
 
   return (
-    <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
-      {/* Fixed Header */}
-      <div className="flex-shrink-0 bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-2 z-10">
-        <div className="max-w-7xl mx-auto">
-          {/* Main Header Row */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2">
-            <div className="mb-2 sm:mb-0">
-              <h1 className="text-xl font-bold text-gray-900">
-                Intent Signals
-              </h1>
-            </div>
+    <div className="h-full bg-gray-50 overflow-hidden flex flex-col">
+      {/* Sticky Header */}
+      <div className="flex-shrink-0 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 bg-gray-50 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <h1 className="text-xl font-bold text-gray-900">Intent Signals</h1>
             
             <div className="flex items-center gap-2">
               <ProductSelector
@@ -3337,33 +6832,32 @@ export const SignalsPage = () => {
               <DateSelector
                 selectedDate={selectedDate}
                 onChange={handleDateChange}
+                productId={filters.product}
+                minScore={filters.minScore}
               />
             </div>
           </div>
+          
+          {/* Filters Text */}
+          <div className="flex items-center gap-3 text-xs text-gray-500">
+            <span>Filters:</span>
+            <span>Product: {filters.product}</span>
+            {filters.minScore > 3 && <span>Min Score: {filters.minScore}</span>}
+            {filters.vertical && <span>Vertical: {filters.vertical}</span>}
+            {!hasActiveFilters && <span className="text-gray-400">Default</span>}
+          </div>
+        </div>
+      </div>
 
-          {/* Stats Row */}
-          {signals.length > 0 && !isIntentScoresLoading && (
-            <div className="flex items-center gap-6 mb-2">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-600">Total:</span>
-                <span className="text-sm font-semibold text-gray-900">{signals.length}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-600">Position:</span>
-                <span className="text-sm font-semibold text-gray-900">{currentIndex + 1}</span>
-              </div>
-              {currentSignal && (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-600">Score:</span>
-                  <span className="text-sm font-semibold text-orange-600">{currentSignal.intentScore.toFixed(1)}</span>
-                </div>
-              )}
-            </div>
-          )}
+      {/* Main Content Area */}
+      <div className="flex-1 max-w-7xl mx-auto flex gap-6 px-4 sm:px-6 lg:px-8 min-h-0 pb-6 pt-6">
+        {/* Main Content */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar" style={{ height: 'calc(100% - 2rem)' }}>
+          {/* Content moved from header */}
 
           {/* Loading Status */}
           {isAnyLoading && (
-            <div className="mb-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
+            <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
               <div className="flex items-center gap-2">
                 <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></div>
                 <div className="text-blue-700">
@@ -3375,25 +6869,6 @@ export const SignalsPage = () => {
               </div>
             </div>
           )}
-
-          {/* Active Filters - Always visible in small grey text */}
-          <div className="mb-2">
-            <div className="flex items-center gap-3 text-xs text-gray-500">
-              <span>Filters:</span>
-              <span>Product: {filters.product}</span>
-              {filters.minScore > 3 && <span>Min Score: {filters.minScore}</span>}
-              {filters.vertical && <span>Vertical: {filters.vertical}</span>}
-              {!hasActiveFilters && <span className="text-gray-400">Default</span>}
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      {/* Main Content Area */}
-      <div className="flex-1 max-w-7xl mx-auto flex gap-6 px-4 sm:px-6 lg:px-8 py-6 min-h-0">
-        {/* Main Content */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
 
           {/* Error State */}
           {error && (
@@ -3447,12 +6922,15 @@ export const SignalsPage = () => {
 
           {/* Intent Card */}
           {(currentSignal || isAnyLoading) && (
-            <IntentCard
-              signal={currentSignal}
-              onApprove={handleApprove}
-              onReject={handleReject}
-              isLoading={isAnyLoading}
-            />
+            <div className="h-full">
+              <IntentCard
+                signal={currentSignal}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                onRemoveDecision={handleRemoveDecision}
+                isLoading={isAnyLoading}
+              />
+            </div>
           )}
 
           {/* Completion State */}
@@ -3482,7 +6960,7 @@ export const SignalsPage = () => {
           </div>
 
         {/* Sidebar */}
-        <div className="w-80 flex-shrink-0 min-h-0">
+        <div className="w-80 flex-shrink-0 min-h-0" style={{ height: 'calc(100% - 2rem)' }}>
           <QueueSidebar 
             signals={signals}
             currentIndex={currentIndex}
@@ -3541,6 +7019,114 @@ export const StatsOverview = ({ totalSignals, currentIndex, currentSignal }: Pro
           {currentIndex + 1}
         </div>
         <div className="text-xs text-gray-600 uppercase tracking-wider">Current Signal</div>
+      </div>
+    </div>
+  )
+}
+
+============================================================
+
+==================== FILE: src/components/ui/ConfirmationModal.tsx ====================
+import React from 'react'
+import { AlertTriangle, CheckCircle, Info, XCircle } from 'lucide-react'
+
+interface ConfirmationModalProps {
+  isOpen: boolean
+  onClose: () => void
+  onConfirm: () => void
+  title: string
+  message: string
+  confirmText?: string
+  cancelText?: string
+  variant?: 'warning' | 'danger' | 'info' | 'success'
+}
+
+export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  message,
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+  variant = 'warning'
+}) => {
+  if (!isOpen) return null
+
+  const getVariantStyles = () => {
+    switch (variant) {
+      case 'danger':
+        return {
+          icon: <XCircle className="w-6 h-6 text-red-500" />,
+          confirmButton: 'bg-red-500 hover:bg-red-600 text-white',
+          border: 'border-red-100'
+        }
+      case 'success':
+        return {
+          icon: <CheckCircle className="w-6 h-6 text-green-500" />,
+          confirmButton: 'bg-green-500 hover:bg-green-600 text-white',
+          border: 'border-green-100'
+        }
+      case 'info':
+        return {
+          icon: <Info className="w-6 h-6 text-blue-500" />,
+          confirmButton: 'bg-blue-500 hover:bg-blue-600 text-white',
+          border: 'border-blue-100'
+        }
+      default: // warning
+        return {
+          icon: <AlertTriangle className="w-6 h-6 text-orange-500" />,
+          confirmButton: 'bg-orange-500 hover:bg-orange-600 text-white',
+          border: 'border-orange-100'
+        }
+    }
+  }
+
+  const styles = getVariantStyles()
+
+  const handleConfirm = () => {
+    onConfirm()
+    onClose()
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-25 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div 
+        className={`bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 border ${styles.border} transform transition-all duration-200 scale-100`}
+        style={{
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)'
+        }}
+      >
+        <div className="p-6">
+          {/* Icon and Title */}
+          <div className="flex items-center gap-3 mb-4">
+            {styles.icon}
+            <h3 className="text-lg font-semibold text-gray-900 leading-none">
+              {title}
+            </h3>
+          </div>
+
+          {/* Message */}
+          <p className="text-gray-600 text-sm leading-relaxed mb-6">
+            {message}
+          </p>
+
+          {/* Actions */}
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="flex-1 px-4 py-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors text-sm"
+            >
+              {cancelText}
+            </button>
+            <button
+              onClick={handleConfirm}
+              className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-colors text-sm ${styles.confirmButton}`}
+            >
+              {confirmText}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )

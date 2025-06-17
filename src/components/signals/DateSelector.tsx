@@ -1,11 +1,16 @@
 import { useState, useRef, useEffect } from 'react'
+import { useSignalCounts } from '../../hooks/useSignalCounts'
 
 interface Props {
   selectedDate: string
   onChange: (date: string) => void
+  productId?: string
+  minScore?: number
+  decisionFilter?: string
+  showNavButtons?: boolean
 }
 
-export const DateSelector = ({ selectedDate, onChange }: Props) => {
+export const DateSelector = ({ selectedDate, onChange, productId, minScore = 3.0, decisionFilter, showNavButtons = true }: Props) => {
   const [showCalendar, setShowCalendar] = useState(false)
   const calendarRef = useRef<HTMLDivElement>(null)
 
@@ -68,15 +73,17 @@ export const DateSelector = ({ selectedDate, onChange }: Props) => {
   return (
     <div className="flex items-center space-x-1">
       {/* Previous Day Button */}
-      <button
-        onClick={() => handleNavigation('prev')}
-        className="border border-gray-300 rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm flex items-center hover:bg-gray-50 bg-white"
-        title={`Previous day (${formatDate(getPreviousDay(selectedDate))})`}
-      >
-        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
+      {showNavButtons && (
+        <button
+          onClick={() => handleNavigation('prev')}
+          className="border border-gray-300 rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm flex items-center hover:bg-gray-50 bg-white"
+          title={`Previous day (${formatDate(getPreviousDay(selectedDate))})`}
+        >
+          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+      )}
 
       {/* Calendar Selector */}
       <div className="relative" ref={calendarRef}>
@@ -102,22 +109,27 @@ export const DateSelector = ({ selectedDate, onChange }: Props) => {
                 setShowCalendar(false)
               }}
               onClose={() => setShowCalendar(false)}
+              productId={productId}
+              minScore={minScore}
+              decisionFilter={decisionFilter}
             />
           </div>
         )}
       </div>
 
       {/* Next Day Button */}
-      <button
-        onClick={() => handleNavigation('next')}
-        disabled={isFuture(getNextDay(selectedDate))}
-        className="border border-gray-300 rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm flex items-center hover:bg-gray-50 bg-white disabled:opacity-50 disabled:cursor-not-allowed"
-        title={isFuture(getNextDay(selectedDate)) ? "Cannot navigate to future dates" : `Next day (${formatDate(getNextDay(selectedDate))})`}
-      >
-        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
+      {showNavButtons && (
+        <button
+          onClick={() => handleNavigation('next')}
+          disabled={isFuture(getNextDay(selectedDate))}
+          className="border border-gray-300 rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm flex items-center hover:bg-gray-50 bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+          title={isFuture(getNextDay(selectedDate)) ? "Cannot navigate to future dates" : `Next day (${formatDate(getNextDay(selectedDate))})`}
+        >
+          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      )}
     </div>
   )
 }
@@ -127,13 +139,30 @@ interface CalendarPickerProps {
   selectedDate: string
   onDateSelect: (date: string) => void
   onClose: () => void
+  productId?: string
+  minScore?: number
+  decisionFilter?: string
 }
 
-const CalendarPicker = ({ selectedDate, onDateSelect, onClose }: CalendarPickerProps) => {
+const CalendarPicker = ({ selectedDate, onDateSelect, onClose, productId, minScore = 3.0, decisionFilter }: CalendarPickerProps) => {
   const [currentMonth, setCurrentMonth] = useState(() => {
     const date = new Date(selectedDate + 'T00:00:00')
     return new Date(date.getFullYear(), date.getMonth(), 1)
   })
+
+  // Get date range for current month to fetch signal counts
+  const monthStartDate = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-01`
+  const monthEndDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0)
+  const monthEndDateString = `${monthEndDate.getFullYear()}-${String(monthEndDate.getMonth() + 1).padStart(2, '0')}-${String(monthEndDate.getDate()).padStart(2, '0')}`
+
+  // Fetch signal counts for the current month
+  const { hasSignalsForDate, isLoading } = useSignalCounts(
+    productId ? monthStartDate : '',
+    productId ? monthEndDateString : '',
+    productId || '',
+    minScore,
+    decisionFilter
+  )
 
   const today = new Date()
   const monthNames = [
@@ -183,12 +212,14 @@ const CalendarPicker = ({ selectedDate, onDateSelect, onClose }: CalendarPickerP
       dayDate.setHours(0, 0, 0, 0)
       const isFutureDate = dayDate > todayDate
 
+      const hasSignals = hasSignalsForDate(currentDateString)
+
       days.push(
         <button
           key={day}
           onClick={() => !isFutureDate && handleDateClick(day)}
           disabled={isFutureDate}
-          className={`w-8 h-8 text-sm rounded-md flex items-center justify-center transition-colors ${
+          className={`w-8 h-8 text-sm rounded-md flex items-center justify-center transition-colors relative ${
             isSelected
               ? 'bg-orange-500 text-white font-medium'
               : isToday
@@ -199,6 +230,9 @@ const CalendarPicker = ({ selectedDate, onDateSelect, onClose }: CalendarPickerP
           }`}
         >
           {day}
+          {hasSignals && !isSelected && (
+            <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-orange-500 rounded-full"></div>
+          )}
         </button>
       )
     }
@@ -219,9 +253,14 @@ const CalendarPicker = ({ selectedDate, onDateSelect, onClose }: CalendarPickerP
           </svg>
         </button>
         
-        <h3 className="text-sm font-semibold text-gray-900">
-          {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-        </h3>
+        <div className="flex items-center space-x-2">
+          <h3 className="text-sm font-semibold text-gray-900">
+            {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+          </h3>
+          {isLoading && (
+            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-orange-500"></div>
+          )}
+        </div>
         
         <button
           onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))}

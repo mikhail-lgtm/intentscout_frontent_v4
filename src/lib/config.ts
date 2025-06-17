@@ -54,19 +54,76 @@ export const endpoints = {
   // Organization
   organization: {
     current: '/organization/current',
+    members: '/organization/members',
   },
   
   // Signals (to be added)
   signals: {
     list: '/signals',
     create: '/signals',
-    byId: (id: string) => `/signals/${id}`,
+    // Note: Individual signal endpoint doesn't exist - use outreach/signals instead
   },
   
   // Outreach (to be added)
   outreach: {
     campaigns: '/outreach/campaigns',
     sequences: '/outreach/sequences',
+    signals: '/outreach/signals',
+  },
+
+  // Sequences (user-created sequences)
+  sequences: {
+    list: '/sequences',
+    create: '/sequences',
+    getById: (sequenceId: string) => `/sequences/${sequenceId}`,
+    update: (sequenceId: string) => `/sequences/${sequenceId}`,
+    delete: (sequenceId: string) => `/sequences/${sequenceId}`,
+    duplicate: (sequenceId: string) => `/sequences/${sequenceId}/duplicate`,
+    updateStatus: (sequenceId: string) => `/sequences/${sequenceId}/status`,
+  },
+
+  // Decision Makers
+  decisionMakers: {
+    startSearch: '/decision-makers/start-search',
+    getStatus: (searchId: string) => `/decision-makers/search/${searchId}/status`,
+    getBySignal: (signalId: string) => `/decision-makers/signal/${signalId}`,
+    restart: (searchId: string) => `/decision-makers/search/${searchId}/restart`,
+  },
+
+  // Contacts
+  contacts: {
+    create: '/contacts',
+    getBySignal: (signalId: string) => `/contacts/signal/${signalId}`,
+    getById: (contactId: string) => `/contacts/${contactId}`,
+    update: (contactId: string) => `/contacts/${contactId}`,
+    delete: (contactId: string) => `/contacts/${contactId}`,
+  },
+
+  // HubSpot Integration
+  hubspot: {
+    authUrl: '/hubspot/auth-url',
+    callback: '/hubspot/callback',
+    status: '/hubspot/status',
+    disconnect: '/hubspot/disconnect',
+    refreshToken: '/hubspot/refresh-token',
+  },
+
+  // Settings
+  settings: {
+    hubspot: '/settings/hubspot',
+    hubspotSignal: (signalId: string) => `/settings/hubspot/signal/${signalId}`,
+    hubspotSequences: '/settings/hubspot/sequences',
+    validateSequence: '/settings/validate-sequence',
+    previewCompany: (signalId: string) => `/settings/hubspot/companies/preview/${signalId}`,
+    importCompany: (signalId: string) => `/settings/hubspot/companies/import/${signalId}`,
+    companyImportStatus: (signalId: string) => `/settings/hubspot/companies/status/${signalId}`,
+  },
+
+  // Email Generation
+  emails: {
+    generate: '/emails/generate',
+    getGeneration: (generationId: string) => `/emails/generation/${generationId}`,
+    listGenerations: '/emails/generations',
   }
 } as const
 

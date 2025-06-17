@@ -7,6 +7,16 @@ import type { User, Organization, AuthState } from '../types'
 let organizationCache: Organization | null = null
 let organizationPromise: Promise<Organization | null> | null = null
 
+// Load cached organization from localStorage on module load
+try {
+  const cachedOrg = localStorage.getItem('intentscout_organization')
+  if (cachedOrg) {
+    organizationCache = JSON.parse(cachedOrg)
+  }
+} catch (error) {
+  console.warn('Failed to load cached organization from localStorage:', error)
+}
+
 const fetchOrganization = async (): Promise<Organization | null> => {
   // Return cached result if available
   if (organizationCache) {
@@ -31,6 +41,12 @@ const fetchOrganization = async (): Promise<Organization | null> => {
           id: orgData.id,
           name: orgData.name,
           logoUrl: orgData.logoUrl,
+        }
+        // Persist to localStorage for future sessions
+        try {
+          localStorage.setItem('intentscout_organization', JSON.stringify(organizationCache))
+        } catch (error) {
+          console.warn('Failed to cache organization to localStorage:', error)
         }
         console.log('Cached organization:', organizationCache)
         return organizationCache
@@ -91,7 +107,13 @@ export const useAuth = () => {
             organizationId: session.user.user_metadata?.organizationId,
             createdAt: session.user.created_at,
           }
-          setAuthState({ user, organization: null, loading: false, error: null })
+          // Preserve existing organization data during initial session load
+          setAuthState(prev => ({ 
+            ...prev, 
+            user, 
+            loading: false, 
+            error: null 
+          }))
         } else {
           setAuthState({ user: null, organization: null, loading: false, error: null })
         }
@@ -116,8 +138,22 @@ export const useAuth = () => {
             organizationId: session.user.user_metadata?.organizationId,
             createdAt: session.user.created_at,
           }
-          setAuthState({ user, organization: null, loading: false, error: null })
+          // Preserve existing organization data when updating user
+          setAuthState(prev => ({ 
+            ...prev, 
+            user, 
+            loading: false, 
+            error: null 
+          }))
         } else {
+          // Clear organization cache when signing out
+          organizationCache = null
+          organizationRequestedRef.current = false
+          try {
+            localStorage.removeItem('intentscout_organization')
+          } catch (error) {
+            console.warn('Failed to clear cached organization from localStorage:', error)
+          }
           setAuthState({ user: null, organization: null, loading: false, error: null })
         }
       }
@@ -128,6 +164,13 @@ export const useAuth = () => {
       subscription.unsubscribe()
     }
   }, [])
+
+  // Load cached organization immediately if available
+  useEffect(() => {
+    if (organizationCache && authState.user && !authState.organization) {
+      setAuthState(prev => ({ ...prev, organization: organizationCache }))
+    }
+  }, [authState.user, authState.organization])
 
   // Load organization once when user is authenticated
   useEffect(() => {

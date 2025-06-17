@@ -12,14 +12,12 @@ def extract_tsx_files():
     """Extract all .tsx files from src directory and write to combined file."""
     
     # Get the current directory (should be the frontendV4 folder)
-    current_dir = Path.cwd()
-    src_dir = current_dir / "src"
+    current_dir = Path("/Users/syaz/Dropbox/PYprograms/Votek_AI_LLC/code/frontendV4")
+    src_dir = Path("/Users/syaz/Dropbox/PYprograms/Votek_AI_LLC/code/frontendV4/src")
     
     # Check if src directory exists
     if not src_dir.exists():
-        print(f"Error: src directory not found at {src_dir}")
-        print(f"Current directory: {current_dir}")
-        print("Make sure you're running this script from the frontendV4 folder.")
+        print(f"Source directory does not exist: {src_dir}")
         return
     
     # Find all .tsx files recursively in src directory

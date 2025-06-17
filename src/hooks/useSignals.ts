@@ -5,6 +5,14 @@ import { api } from '../lib/apiClient'
 const requestCache = new Map<string, Promise<any>>()
 const resultCache = new Map<string, any>()
 
+// Function to clear cache for specific date/product/score combinations
+const clearIntentScoresCache = (date: string, productId: string, minScore: number) => {
+  const cacheKey = `intent-scores-${date}-${productId}-${minScore}`
+  resultCache.delete(cacheKey)
+  requestCache.delete(cacheKey)
+  console.log('Cleared cache for', cacheKey)
+}
+
 const getCachedIntentScores = async (params: { date: string; product_id: string; min_score: number }) => {
   const cacheKey = `intent-scores-${params.date}-${params.product_id}-${params.min_score}`
   
@@ -281,17 +289,71 @@ export const useSignals = (date: string, filters: FilterOptions) => {
   // Mark signal with decision
   const markSignal = useCallback(async (signalId: string, decision: 'approve' | 'reject') => {
     try {
-      // TODO: Implement mark signal API endpoint
-      // For now, just update local state
+      // Update local state optimistically
       setSignals(prev => prev.map(signal => 
         signal.id === signalId 
           ? { ...signal, decision }
           : signal
       ))
+
+      // Call API to persist the decision
+      const response = await api.signals.updateDecision(signalId, decision)
+      
+      if (response.error) {
+        // Revert local state if API call failed
+        setSignals(prev => prev.map(signal => 
+          signal.id === signalId 
+            ? { ...signal, decision: null }
+            : signal
+        ))
+        throw new Error(response.error)
+      } else {
+        // Clear cache to ensure fresh data on next load
+        clearIntentScoresCache(date, filters.product, filters.minScore)
+      }
     } catch (error) {
       console.error('Failed to mark signal:', error)
+      // Revert local state on error
+      setSignals(prev => prev.map(signal => 
+        signal.id === signalId 
+          ? { ...signal, decision: null }
+          : signal
+      ))
     }
-  }, [])
+  }, [date, filters.product, filters.minScore])
+
+  // Remove decision from signal  
+  const removeDecision = useCallback(async (signalId: string) => {
+    try {
+      const previousDecision = signals.find(s => s.id === signalId)?.decision
+
+      // Update local state optimistically
+      setSignals(prev => prev.map(signal => 
+        signal.id === signalId 
+          ? { ...signal, decision: null }
+          : signal
+      ))
+
+      // Call API to remove the decision
+      const response = await api.signals.updateDecision(signalId, 'remove')
+      
+      if (response.error) {
+        // Revert local state if API call failed
+        setSignals(prev => prev.map(signal => 
+          signal.id === signalId 
+            ? { ...signal, decision: previousDecision }
+            : signal
+        ))
+        throw new Error(response.error)
+      } else {
+        // Clear cache to ensure fresh data on next load
+        clearIntentScoresCache(date, filters.product, filters.minScore)
+      }
+    } catch (error) {
+      console.error('Failed to remove signal decision:', error)
+      // State is already reverted above
+    }
+  }, [signals, date, filters.product, filters.minScore])
 
   // Refetch data
   const refetch = useCallback(() => {
@@ -311,6 +373,7 @@ export const useSignals = (date: string, filters: FilterOptions) => {
     isJobsLoading,
     error,
     refetch,
-    markSignal
+    markSignal,
+    removeDecision
   }
 }
