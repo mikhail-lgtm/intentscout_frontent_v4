@@ -17,7 +17,7 @@ interface UseSignalDetailsParams {
 
 /**
  * Hook to get full signal details from an ApprovedSignal
- * Uses the outreach signals endpoint to fetch complete signal data
+ * FIXED: Back to fetching actual signal details for IntentCard
  */
 export const useSignalDetails = ({ approvedSignal, productId, minScore }: UseSignalDetailsParams): UseSignalDetailsResult => {
   const [signal, setSignal] = useState<Signal | null>(null)

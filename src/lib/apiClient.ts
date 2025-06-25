@@ -239,6 +239,11 @@ class ApiClient {
     return this.makeRequest<T>(endpoint, { method: 'POST', body, requireAuth })
   }
 
+  // POST request with custom timeout
+  async postWithTimeout<T>(endpoint: string, body?: any, timeoutMs: number = this.timeout, requireAuth = true): Promise<ApiResponse<T>> {
+    return this.makeRequest<T>(endpoint, { method: 'POST', body, requireAuth, timeout: timeoutMs })
+  }
+
   // PUT request
   async put<T>(endpoint: string, body?: any, requireAuth = true): Promise<ApiResponse<T>> {
     return this.makeRequest<T>(endpoint, { method: 'PUT', body, requireAuth })
@@ -368,6 +373,20 @@ export const api = {
       apiClient.post(endpoints.decisionMakers.restart(searchId)),
   },
 
+  // Email Finder (Copied from Decision Makers pattern)
+  emailFinder: {
+    startSearch: (data: { 
+      signal_id: string;
+    }) => 
+      apiClient.post('/email-finder/start-search', data),
+    getStatus: (searchId: string) => 
+      apiClient.getWithTimeout(`/email-finder/search/${searchId}/status`, 200000), // 200 seconds
+    getBySignal: (signalId: string) => 
+      apiClient.get(`/email-finder/signal/${signalId}`),
+    restart: (searchId: string) => 
+      apiClient.post(`/email-finder/search/${searchId}/restart`),
+  },
+
   // Contacts  
   contacts: {
     getAll: (limit = 100, offset = 0) => 
@@ -391,6 +410,19 @@ export const api = {
       why_reach_out: string;
     }) => 
       apiClient.post('/contacts/import-decision-maker', data),
+    bulkImportDecisionMakers: (data: {
+      signal_id: string;
+      decision_makers: Array<{
+        signal_id: string;
+        decision_maker_id: string;
+        first_name: string;
+        last_name: string;
+        job_title: string;
+        linkedin_url: string;
+        why_reach_out: string;
+      }>;
+    }) => 
+      apiClient.post('/contacts/bulk-import-decision-makers', data),
   },
 
   // Sequences
@@ -401,29 +433,29 @@ export const api = {
         offset: offset.toString()
       })
       if (status) params.append('status', status)
-      return apiClient.get(`/sequences?${params.toString()}`)
+      return apiClient.get(`${endpoints.sequences.list}?${params.toString()}`)
     },
     create: (data: {
       name: string;
       description?: string;
       blocks?: any[];
     }) => 
-      apiClient.post('/sequences', data),
+      apiClient.post(endpoints.sequences.create, data),
     getById: (sequenceId: string) => 
-      apiClient.get(`/sequences/${sequenceId}`),
+      apiClient.get(endpoints.sequences.getById(sequenceId)),
     update: (sequenceId: string, data: {
       name?: string;
       description?: string;
       status?: string;
       blocks?: any[];
     }) => 
-      apiClient.patch(`/sequences/${sequenceId}`, data),
+      apiClient.patch(endpoints.sequences.update(sequenceId), data),
     delete: (sequenceId: string) => 
-      apiClient.delete(`/sequences/${sequenceId}`),
+      apiClient.delete(endpoints.sequences.delete(sequenceId)),
     duplicate: (sequenceId: string) => 
-      apiClient.post(`/sequences/${sequenceId}/duplicate`),
+      apiClient.post(endpoints.sequences.duplicate(sequenceId)),
     updateStatus: (sequenceId: string, status: string) => 
-      apiClient.patch(`/sequences/${sequenceId}/status?status=${status}`)
+      apiClient.patch(`${endpoints.sequences.updateStatus(sequenceId)}?status=${status}`)
   },
 
   // HubSpot Integration
@@ -459,6 +491,12 @@ export const api = {
       apiClient.post(endpoints.settings.importCompany(signalId), data),
     getCompanyImportStatus: (signalId: string) =>
       apiClient.get(endpoints.settings.companyImportStatus(signalId)),
+    previewContacts: (signalId: string) =>
+      apiClient.get(endpoints.settings.previewContacts(signalId)),
+    importContacts: (signalId: string, data: { contacts: any[] }) =>
+      apiClient.post(endpoints.settings.importContacts(signalId), data),
+    getContactsImportStatus: (signalId: string) =>
+      apiClient.get(endpoints.settings.contactsImportStatus(signalId)),
   },
 
   // Email Generation
@@ -500,6 +538,7 @@ export const api = {
       email_footer_name?: string;
       email_footer_company?: string;
       other_notes?: string;
+      value_prop?: string;
     }) => apiClient.post('/signal-notes', data),
     get: (signalId: string) => 
       apiClient.get(`/signal-notes/${signalId}`),
@@ -515,6 +554,25 @@ export const api = {
       apiClient.get(`/linkedin-scraping/status/${scrapingId}`),
     getContactProfile: (contactId: string) => 
       apiClient.get(`/linkedin-scraping/contact/${contactId}`),
+  },
+
+  // Email Validation
+  emailValidation: {
+    validateGeneration: (data: {
+      sequence_id: string;
+      contact_ids: string[];
+      signal_id: string;
+    }) => 
+      apiClient.post('/email-validation/validate-generation', data),
+  },
+
+  // Coactor (Memory.Actor RAG API for Value Propositions)
+  coactor: {
+    generateValueProp: (data: {
+      signal_id: string;
+      custom_guidance?: string;
+    }) => 
+      apiClient.postWithTimeout('/coactor/generate-value-prop', data, 90000), // 90 seconds
   },
 
   // Generic methods for flexibility

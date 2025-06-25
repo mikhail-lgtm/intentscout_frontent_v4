@@ -58,6 +58,9 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
 }) => {
   const [selectedSequence, setSelectedSequence] = useState('')
   const [showSuccess, setShowSuccess] = useState(false)
+  const [validationResult, setValidationResult] = useState<any>(null)
+  const [isValidating, setIsValidating] = useState(false)
+  const [validationError, setValidationError] = useState<string | null>(null)
   
   // Use the email generation hook
   const {
@@ -75,6 +78,47 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
 
   // Filter contacts with email addresses
   const contactsWithEmails = contacts.filter(contact => contact.email_address && contact.email_address.trim())
+
+  // Validate data sources when sequence changes
+  const validateDataSources = async () => {
+    if (!selectedSequence || contactsWithEmails.length === 0 || !signalId) {
+      setValidationResult(null)
+      setValidationError(null)
+      return
+    }
+
+    setIsValidating(true)
+    setValidationError(null)
+
+    try {
+      const { api } = await import('../../lib/apiClient')
+      const response = await api.emailValidation.validateGeneration({
+        sequence_id: selectedSequence,
+        contact_ids: contactsWithEmails.map(c => c.id),
+        signal_id: signalId
+      })
+
+      if (response.error) {
+        setValidationError(response.error)
+        setValidationResult(null)
+      } else {
+        setValidationResult(response.data)
+        setValidationError(null)
+      }
+    } catch (err: any) {
+      setValidationError(err.message || 'Validation failed')
+      setValidationResult(null)
+    } finally {
+      setIsValidating(false)
+    }
+  }
+
+  // Run validation when sequence or contacts change
+  useEffect(() => {
+    if (selectedSequence && contactsWithEmails.length > 0) {
+      validateDataSources()
+    }
+  }, [selectedSequence, contactsWithEmails.length, signalId])
 
   const handleStartGeneration = async () => {
     if (!selectedSequence || contactsWithEmails.length === 0) return
@@ -291,6 +335,86 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
             )}
           </div>
 
+
+          {/* Validation Loading */}
+          {isValidating && selectedSequence && (
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+              <div className="flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                <p className="text-blue-700 text-sm">Validating data sources...</p>
+              </div>
+            </div>
+          )}
+
+          {/* Validation Error */}
+          {validationError && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+              <p className="text-red-700 text-sm leading-relaxed">{validationError}</p>
+            </div>
+          )}
+
+          {/* Validation Results */}
+          {validationResult && !isValidating && selectedSequence && (
+            <div className={`p-4 border rounded-xl ${
+              validationResult.is_valid 
+                ? 'bg-green-50 border-green-200' 
+                : 'bg-yellow-50 border-yellow-200'
+            }`}>
+              <div className="flex items-start gap-2 mb-3">
+                {validationResult.is_valid ? (
+                  <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                ) : (
+                  <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                )}
+                <div className="flex-1">
+                  <h4 className={`font-medium text-sm ${
+                    validationResult.is_valid ? 'text-green-800' : 'text-yellow-800'
+                  }`}>
+                    {validationResult.is_valid 
+                      ? 'All contacts ready for email generation' 
+                      : 'Some contacts missing required data'}
+                  </h4>
+                  <p className={`text-xs mt-1 ${
+                    validationResult.is_valid ? 'text-green-700' : 'text-yellow-700'
+                  }`}>
+                    {validationResult.valid_contacts} of {validationResult.total_contacts} contacts have all required data sources
+                  </p>
+                </div>
+              </div>
+
+              {/* Show details for invalid contacts */}
+              {!validationResult.is_valid && (
+                <div className="space-y-2">
+                  {validationResult.validation_results
+                    .filter(result => !result.is_valid)
+                    .map((result, index) => (
+                      <div key={index} className="bg-white bg-opacity-60 rounded-lg p-3">
+                        <div className="font-medium text-sm text-gray-900 mb-1">
+                          {result.contact_name}
+                        </div>
+                        <div className="text-xs text-gray-600 space-y-1">
+                          {result.missing_source_details.map((detail, idx) => (
+                            <div key={idx} className="flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full flex-shrink-0"></span>
+                              <span>{detail.source}: {detail.issue}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  
+                  {validationResult.missing_sources_summary.includes('linkedin') && (
+                    <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                      <p className="text-xs text-blue-800">
+                        💡 <strong>Tip:</strong> You can scrape LinkedIn profiles for these contacts using the LinkedIn scraping feature in the contacts section.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           {error && (
             <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
               <p className="text-red-700 text-sm leading-relaxed">{error}</p>
@@ -306,7 +430,13 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
             </button>
             <button
               onClick={handleStartGeneration}
-              disabled={isLoading || !selectedSequence || contactsWithEmails.length === 0}
+              disabled={
+                isLoading || 
+                !selectedSequence || 
+                contactsWithEmails.length === 0 || 
+                (validationResult && !validationResult.is_valid) ||
+                isValidating
+              }
               className="flex-1 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium"
             >
               {isLoading ? (
@@ -318,6 +448,9 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
                 <>
                   <Wand2 className="w-4 h-4" />
                   Generate Emails
+                  {validationResult && !validationResult.is_valid && (
+                    <span className="text-xs ml-1">({validationResult.valid_contacts}/{validationResult.total_contacts})</span>
+                  )}
                 </>
               )}
             </button>

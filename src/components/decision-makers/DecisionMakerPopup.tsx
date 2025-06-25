@@ -184,24 +184,34 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
     try {
       const { api } = await import('../../lib/apiClient')
       
-      // Import all non-imported decision makers
+      // Import all non-imported decision makers using bulk import
       const toImport = searchStatus.decision_makers.filter(dm => !importedDecisionMakers.has(dm.id))
       
-      for (const dm of toImport) {
-        try {
-          await api.contacts.importDecisionMaker({
-            signal_id: signalId,
-            decision_maker_id: dm.id,
-            first_name: dm.first_name,
-            last_name: dm.last_name,
-            job_title: dm.job_title,
-            linkedin_url: dm.linkedin_url,
-            why_reach_out: dm.why_reach_out
-          })
-        } catch (err) {
-          console.error(`Failed to import ${dm.first_name} ${dm.last_name}:`, err)
-        }
+      if (toImport.length === 0) {
+        console.log('No decision makers to import')
+        return
       }
+
+      // Use bulk import for much faster performance
+      const response = await api.contacts.bulkImportDecisionMakers({
+        signal_id: signalId,
+        decision_makers: toImport.map(dm => ({
+          signal_id: signalId,
+          decision_maker_id: dm.id,
+          first_name: dm.first_name,
+          last_name: dm.last_name,
+          job_title: dm.job_title,
+          linkedin_url: dm.linkedin_url,
+          why_reach_out: dm.why_reach_out
+        }))
+      })
+
+      if (response.error) {
+        throw new Error(response.error)
+      }
+
+      const importedCount = (response.data as any)?.imported_count || toImport.length
+      console.log(`Successfully imported ${importedCount} decision makers`)
 
       // Refresh contacts and notify parent
       await refetchContacts()
@@ -210,7 +220,7 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
       }
 
     } catch (err) {
-      console.error('Failed to import all decision makers:', err)
+      console.error('Failed to bulk import decision makers:', err)
     } finally {
       setImportingAll(false)
     }

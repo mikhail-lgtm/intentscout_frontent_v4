@@ -132,6 +132,14 @@ export const OutreachSidebar: React.FC<OutreachSidebarProps> = ({
     dateFilter
   })
 
+  // Auto-select the most recent signal when signals are loaded and no signal is selected
+  useEffect(() => {
+    if (!selectedSignalId && signals.length > 0 && onSignalSelect && !searchTerm && !dateFilter) {
+      // Select the first (most recent) signal
+      onSignalSelect(signals[0])
+    }
+  }, [signals, selectedSignalId, onSignalSelect, searchTerm, dateFilter])
+
   // Infinite scroll detection
   const handleScroll = useCallback(() => {
     const container = scrollContainerRef.current

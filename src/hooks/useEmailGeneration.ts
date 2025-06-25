@@ -144,12 +144,25 @@ export const useEmailGeneration = (signalId: string | null | undefined) => {
     }
   }, [state.generationStatus?.generation_id])
 
-  // Auto-poll when generation is in progress
+  // OPTIMIZED: Auto-poll when generation is in progress with smarter timing
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null
     
     if (state.generationStatus && (state.generationStatus.status === 'pending' || state.generationStatus.status === 'in_progress')) {
-      interval = setInterval(pollGenerationStatus, 3000) // Poll every 3 seconds
+      // OPTIMIZED: Start with shorter interval, increase over time to reduce load
+      let pollCount = 0
+      const poll = () => {
+        pollGenerationStatus()
+        pollCount++
+        
+        // After 10 polls (30 seconds), switch to longer interval
+        if (pollCount > 10) {
+          if (interval) clearInterval(interval)
+          interval = setInterval(pollGenerationStatus, 10000) // Poll every 10 seconds after 30 seconds
+        }
+      }
+      
+      interval = setInterval(poll, 3000) // Poll every 3 seconds initially
     }
 
     return () => {

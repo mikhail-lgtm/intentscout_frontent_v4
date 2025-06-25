@@ -41,9 +41,21 @@ export const IndividualEmailPopup: React.FC<IndividualEmailPopupProps> = ({
   const [editedSubject, setEditedSubject] = useState('')
   const [editedBody, setEditedBody] = useState('')
   const [copySuccess, setCopySuccess] = useState<number | null>(null)
+  const [validationResult, setValidationResult] = useState<any>(null)
+  const [isValidating, setIsValidating] = useState(false)
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   // Use sequences hook to get available sequences
   const { sequences, isLoading: sequencesLoading } = useSequences()
+
+  const handleClose = () => {
+    setSelectedSequence('')
+    setEditingEmailIndex(null)
+    setError(null)
+    setValidationResult(null)
+    setValidationError(null)
+    onClose()
+  }
 
   // Load existing emails when popup opens
   useEffect(() => {
@@ -51,6 +63,47 @@ export const IndividualEmailPopup: React.FC<IndividualEmailPopupProps> = ({
       loadExistingEmails()
     }
   }, [isOpen, signalId, contact])
+
+  // Validate data sources when sequence changes
+  const validateDataSources = async () => {
+    if (!selectedSequence || !contact || !signalId) {
+      setValidationResult(null)
+      setValidationError(null)
+      return
+    }
+
+    setIsValidating(true)
+    setValidationError(null)
+
+    try {
+      const { api } = await import('../../lib/apiClient')
+      const response = await api.emailValidation.validateGeneration({
+        sequence_id: selectedSequence,
+        contact_ids: [contact.id],
+        signal_id: signalId
+      })
+
+      if (response.error) {
+        setValidationError(response.error)
+        setValidationResult(null)
+      } else {
+        setValidationResult(response.data)
+        setValidationError(null)
+      }
+    } catch (err: any) {
+      setValidationError(err.message || 'Validation failed')
+      setValidationResult(null)
+    } finally {
+      setIsValidating(false)
+    }
+  }
+
+  // Run validation when sequence changes
+  useEffect(() => {
+    if (selectedSequence && contact) {
+      validateDataSources()
+    }
+  }, [selectedSequence, contact, signalId])
 
   const loadExistingEmails = async () => {
     setIsLoading(true)
@@ -95,7 +148,9 @@ export const IndividualEmailPopup: React.FC<IndividualEmailPopupProps> = ({
       const generateResponse = await api.emails.generate({
         sequence_id: selectedSequence,
         contacts: [contactData],
-        signal_id: signalId
+        signal_id: signalId,
+        company_data: {},
+        custom_data: {}
       })
 
       if (generateResponse.error) {
@@ -220,7 +275,7 @@ export const IndividualEmailPopup: React.FC<IndividualEmailPopupProps> = ({
             </div>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
           >
             <X className="w-6 h-6" />
@@ -280,10 +335,74 @@ export const IndividualEmailPopup: React.FC<IndividualEmailPopupProps> = ({
                     <p className="text-xs text-gray-500 mt-2">Loading sequences...</p>
                   )}
                 </div>
+
+
+                {/* Validation Loading */}
+                {isValidating && selectedSequence && (
+                  <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                      <p className="text-blue-700 text-sm">Validating data sources...</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Validation Error */}
+                {validationError && (
+                  <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+                    <p className="text-red-700 text-sm leading-relaxed">{validationError}</p>
+                  </div>
+                )}
+
+                {/* Validation Results */}
+                {validationResult && !isValidating && selectedSequence && (
+                  <div className={`mb-6 p-4 border rounded-xl ${
+                    validationResult.is_valid 
+                      ? 'bg-green-50 border-green-200' 
+                      : 'bg-yellow-50 border-yellow-200'
+                  }`}>
+                    <div className="flex items-start gap-2 mb-3">
+                      {validationResult.is_valid ? (
+                        <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                      ) : (
+                        <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                      )}
+                      <div className="flex-1">
+                        <h4 className={`font-medium text-sm ${
+                          validationResult.is_valid ? 'text-green-800' : 'text-yellow-800'
+                        }`}>
+                          {validationResult.is_valid 
+                            ? 'Contact ready for email generation' 
+                            : 'Contact missing required data'}
+                        </h4>
+                        {!validationResult.is_valid && validationResult.validation_results.length > 0 && (
+                          <div className="mt-2 space-y-1">
+                            {validationResult.validation_results[0].missing_source_details.map((detail: any, idx: number) => (
+                              <div key={idx} className="flex items-center gap-2 text-xs text-yellow-700">
+                                <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full flex-shrink-0"></span>
+                                <span>{detail.source}: {detail.issue}</span>
+                              </div>
+                            ))}
+                            {validationResult.missing_sources_summary.includes('linkedin') && (
+                              <div className="mt-2 p-2 bg-blue-50 rounded text-xs text-blue-800">
+                                💡 <strong>Tip:</strong> You can scrape this contact's LinkedIn profile using the LinkedIn scraping feature.
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
                 
                 <button
                   onClick={generateEmail}
-                  disabled={isGenerating || !selectedSequence}
+                  disabled={
+                    isGenerating || 
+                    !selectedSequence || 
+                    (validationResult && !validationResult.is_valid) ||
+                    isValidating
+                  }
                   className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
                 >
                   {isGenerating ? (
@@ -325,9 +444,39 @@ export const IndividualEmailPopup: React.FC<IndividualEmailPopupProps> = ({
                       ))}
                     </select>
                   </div>
+
+                  {/* Validation indicator for regeneration */}
+                  {selectedSequence && (
+                    <div className="flex items-center">
+                      {isValidating ? (
+                        <div className="flex items-center gap-1 text-xs text-blue-600">
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          <span>Validating...</span>
+                        </div>
+                      ) : validationResult ? (
+                        validationResult.is_valid ? (
+                          <div className="flex items-center gap-1 text-xs text-green-600">
+                            <CheckCircle className="w-3 h-3" />
+                            <span>Ready</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 text-xs text-yellow-600">
+                            <AlertCircle className="w-3 h-3" />
+                            <span>Missing data</span>
+                          </div>
+                        )
+                      ) : null}
+                    </div>
+                  )}
+
                   <button
                     onClick={generateEmail}
-                    disabled={isGenerating || !selectedSequence}
+                    disabled={
+                      isGenerating || 
+                      !selectedSequence || 
+                      (validationResult && !validationResult.is_valid) ||
+                      isValidating
+                    }
                     className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
                   >
                     {isGenerating ? (

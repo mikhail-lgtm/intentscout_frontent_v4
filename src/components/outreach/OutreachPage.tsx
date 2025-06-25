@@ -119,11 +119,13 @@ export const OutreachPage = () => {
         </div>
       </div>
 
-      {/* Sequence Builder Modal */}
-      <SequenceBuilder
-        isOpen={showSequenceBuilder}
-        onClose={() => setShowSequenceBuilder(false)}
-      />
+      {/* Sequence Builder Modal - FIXED: Only mount when actually needed */}
+      {showSequenceBuilder && (
+        <SequenceBuilder
+          isOpen={showSequenceBuilder}
+          onClose={() => setShowSequenceBuilder(false)}
+        />
+      )}
     </div>
   )
 }

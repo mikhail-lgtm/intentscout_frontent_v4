@@ -117,6 +117,9 @@ export const endpoints = {
     previewCompany: (signalId: string) => `/settings/hubspot/companies/preview/${signalId}`,
     importCompany: (signalId: string) => `/settings/hubspot/companies/import/${signalId}`,
     companyImportStatus: (signalId: string) => `/settings/hubspot/companies/status/${signalId}`,
+    previewContacts: (signalId: string) => `/settings/hubspot/contacts/preview/${signalId}`,
+    importContacts: (signalId: string) => `/settings/hubspot/contacts/import/${signalId}`,
+    contactsImportStatus: (signalId: string) => `/settings/hubspot/contacts/status/${signalId}`,
   },
 
   // Email Generation

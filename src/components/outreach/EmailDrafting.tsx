@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Mail, Save, FileText, HelpCircle } from 'lucide-react'
+import { Mail, Save, FileText, HelpCircle, Lightbulb } from 'lucide-react'
 import { api } from '../../lib/apiClient'
+import { ValuePropGenerationPopup } from './ValuePropGenerationPopup'
 
 interface EmailNotesProps {
   signalId?: string
@@ -14,8 +15,10 @@ export const EmailDrafting = ({
   const [emailFooterName, setEmailFooterName] = useState('')
   const [emailFooterCompany, setEmailFooterCompany] = useState('')
   const [otherNotes, setOtherNotes] = useState('')
+  const [valueProp, setValueProp] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
+  const [showValuePropPopup, setShowValuePropPopup] = useState(false)
 
   // Load existing notes
   useEffect(() => {
@@ -28,6 +31,7 @@ export const EmailDrafting = ({
           setEmailFooterName((response.data as any).email_footer_name || '')
           setEmailFooterCompany((response.data as any).email_footer_company || '')
           setOtherNotes((response.data as any).other_notes || '')
+          setValueProp((response.data as any).value_prop || '')
         }
       } catch (error) {
         console.error('Failed to load notes:', error)
@@ -46,7 +50,8 @@ export const EmailDrafting = ({
         signal_id: signalId,
         email_footer_name: emailFooterName.trim() || undefined,
         email_footer_company: emailFooterCompany.trim() || undefined,
-        other_notes: otherNotes.trim() || undefined
+        other_notes: otherNotes.trim() || undefined,
+        value_prop: valueProp.trim() || undefined
       })
       setLastSaved(new Date())
     } catch (error) {
@@ -54,6 +59,62 @@ export const EmailDrafting = ({
     } finally {
       setIsSaving(false)
     }
+  }
+
+  const handleValuePropGenerated = async (generatedValueProp: string) => {
+    // Update the value prop field
+    setValueProp(generatedValueProp)
+    
+    // Auto-save the generated value prop
+    if (signalId) {
+      try {
+        setIsSaving(true)
+        await api.signalNotes.save({
+          signal_id: signalId,
+          email_footer_name: emailFooterName.trim() || undefined,
+          email_footer_company: emailFooterCompany.trim() || undefined,
+          other_notes: otherNotes.trim() || undefined,
+          value_prop: generatedValueProp.trim() || undefined
+        })
+        setLastSaved(new Date())
+      } catch (error) {
+        console.error('Failed to auto-save generated value prop:', error)
+      } finally {
+        setIsSaving(false)
+      }
+    }
+  }
+
+  if (!signalId) {
+    return (
+      <div className="h-full flex flex-col">
+        {/* Header skeleton */}
+        <div className="flex-shrink-0 px-6 py-4">
+          <div className="h-6 bg-gray-200 rounded w-24 animate-pulse"></div>
+        </div>
+        
+        {/* Content skeleton */}
+        <div className="flex-1 p-6 space-y-4">
+          <div className="space-y-2">
+            <div className="h-4 bg-gray-200 rounded w-32 animate-pulse"></div>
+            <div className="h-32 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+          <div className="space-y-2">
+            <div className="h-4 bg-gray-200 rounded w-24 animate-pulse"></div>
+            <div className="h-24 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+          <div className="space-y-2">
+            <div className="h-4 bg-gray-200 rounded w-40 animate-pulse"></div>
+            <div className="h-20 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+        </div>
+        
+        {/* Save button skeleton */}
+        <div className="flex-shrink-0 p-6 border-t border-gray-200">
+          <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -65,7 +126,39 @@ export const EmailDrafting = ({
 
       {/* Content - Now scrollable */}
       <div className="flex-1 p-6 flex flex-col space-y-4 overflow-y-auto">
-        {/* Other Notes - Moved to top */}
+        {/* Our Offer/Value Prop - Top priority */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700">
+                Our Offer/Value Prop
+              </label>
+              <div className="relative group">
+                <HelpCircle className="w-3 h-3 text-gray-400 cursor-help" />
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                  Your company's key value proposition for email personalization
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowValuePropPopup(true)}
+              disabled={!signalId}
+              className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Lightbulb className="w-3 h-3" />
+              Generate Value Prop
+            </button>
+          </div>
+          <textarea
+            value={valueProp}
+            onChange={(e) => setValueProp(e.target.value)}
+            placeholder="Describe your company's key value proposition, unique offering, or main benefit that would interest prospects..."
+            rows={6}
+            className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y min-h-[100px]"
+          />
+        </div>
+
+        {/* Other Notes */}
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-gray-700">
@@ -141,6 +234,16 @@ export const EmailDrafting = ({
           )}
         </button>
       </div>
+
+      {/* Value Prop Generation Popup */}
+      <ValuePropGenerationPopup
+        isOpen={showValuePropPopup}
+        onClose={() => setShowValuePropPopup(false)}
+        signalId={signalId || ''}
+        companyName={companyName || 'Unknown Company'}
+        onValuePropGenerated={handleValuePropGenerated}
+        hasExistingContent={!!valueProp.trim()}
+      />
     </div>
   )
 }

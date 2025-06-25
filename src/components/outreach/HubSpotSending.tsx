@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Settings, Wifi, WifiOff, Search, X, ExternalLink, Building, Users, CheckCircle, Loader2 } from 'lucide-react'
 import { api } from '../../lib/apiClient'
 import { CompanyImportPopup } from './CompanyImportPopup'
+import { ContactImportPopup } from './ContactImportPopup'
 
 interface HubSpotSequence {
   id: string
@@ -44,6 +45,7 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
   const [availableSequences, setAvailableSequences] = useState<HubSpotSequence[]>([])
   const [showSequenceSearch, setShowSequenceSearch] = useState(false)
   const [showCompanyImportPopup, setShowCompanyImportPopup] = useState(false)
+  const [showContactImportPopup, setShowContactImportPopup] = useState(false)
   
   // Loading states
   const [isLoadingConfig, setIsLoadingConfig] = useState(true)
@@ -62,27 +64,40 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
     imported_at: null
   })
 
+  // Contact import status
+  const [contactImportStatus, setContactImportStatus] = useState<{
+    imported: boolean
+    import_id: string | null
+    contacts_count: number
+    imported_at: string | null
+  }>({
+    imported: false,
+    import_id: null,
+    contacts_count: 0,
+    imported_at: null
+  })
+
   // Search
   const [sequenceSearch, setSequenceSearch] = useState('')
 
-  // Load HubSpot configuration on mount
+  // OPTIMIZED: Load HubSpot configuration and related data on mount
   useEffect(() => {
     if (signalId) {
       loadHubSpotConfig()
     }
   }, [signalId])
 
-  // Load sequences when connected
-  useEffect(() => {
-    if (hubspotConfig.is_connected) {
-      loadHubSpotSequences()
-    }
-  }, [hubspotConfig.is_connected])
-
-  // Check company import status
+  // OPTIMIZED: Load sequences and import statuses only when needed, combined
   useEffect(() => {
     if (signalId && hubspotConfig.is_connected) {
-      checkCompanyImportStatus()
+      // Load sequences and check import statuses in parallel
+      Promise.all([
+        loadHubSpotSequences(),
+        checkCompanyImportStatus(),
+        checkContactImportStatus()
+      ]).catch(err => {
+        console.error('Failed to load HubSpot data:', err)
+      })
     }
   }, [signalId, hubspotConfig.is_connected])
 
@@ -266,6 +281,25 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
     }
   }
 
+  const checkContactImportStatus = async () => {
+    if (!signalId) return
+    
+    try {
+      const response = await api.settings.getContactsImportStatus(signalId)
+      if (response.data && typeof response.data === 'object') {
+        const data = response.data as any
+        setContactImportStatus({
+          imported: data.imported || false,
+          import_id: data.import_id || null,
+          contacts_count: data.contacts_count || 0,
+          imported_at: data.imported_at || null
+        })
+      }
+    } catch (error) {
+      console.error('Failed to check contact import status:', error)
+    }
+  }
+
   const handleCompanyImport = () => {
     setShowCompanyImportPopup(true)
   }
@@ -273,6 +307,15 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
   const handleCompanyImportSuccess = () => {
     // Refresh import status after successful import
     checkCompanyImportStatus()
+  }
+
+  const handleContactImport = () => {
+    setShowContactImportPopup(true)
+  }
+
+  const handleContactImportSuccess = () => {
+    // Refresh import status after successful import
+    checkContactImportStatus()
   }
 
   const isFullyConfigured = hubspotConfig.is_connected && senderEmail && selectedSequence
@@ -447,11 +490,28 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
                     <span className="hidden sm:inline">1</span>
                   </button>
                   <button
-                    disabled
-                    className="flex-1 px-2 py-1 rounded text-xs font-medium bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1"
-                    title="Import Contacts"
+                    onClick={handleContactImport}
+                    disabled={!companyImportStatus.imported || contactImportStatus.imported}
+                    className={`flex-1 px-2 py-1 rounded text-xs font-medium flex items-center justify-center gap-1 ${
+                      contactImportStatus.imported
+                        ? 'bg-green-500 text-white'
+                        : companyImportStatus.imported
+                        ? 'bg-blue-500 hover:bg-blue-600 text-white'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                    title={
+                      contactImportStatus.imported 
+                        ? `${contactImportStatus.contacts_count} Contacts Imported`
+                        : companyImportStatus.imported
+                        ? "Import Contacts"
+                        : "Import Company First"
+                    }
                   >
-                    <Users className="w-3 h-3" />
+                    {contactImportStatus.imported ? (
+                      <CheckCircle className="w-3 h-3" />
+                    ) : (
+                      <Users className="w-3 h-3" />
+                    )}
                     <span className="hidden sm:inline">2</span>
                   </button>
                   <button
@@ -476,6 +536,16 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
           onClose={() => setShowCompanyImportPopup(false)}
           signalId={signalId}
           onImportSuccess={handleCompanyImportSuccess}
+        />
+      )}
+
+      {/* Contact Import Popup */}
+      {showContactImportPopup && signalId && (
+        <ContactImportPopup
+          isOpen={showContactImportPopup}
+          onClose={() => setShowContactImportPopup(false)}
+          signalId={signalId}
+          onImportSuccess={handleContactImportSuccess}
         />
       )}
     </div>

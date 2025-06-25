@@ -39,10 +39,11 @@ export const useLinkedInScraping = (signalId?: string) => {
   // Check if scraping failed
   const hasFailed = scrapingStatus?.status === 'failed'
 
-  // Poll for scraping status when in progress
+  // OPTIMIZED: Poll for scraping status when in progress with smarter timing
   useEffect(() => {
     if (!isScrapingInProgress || !scrapingStatus?.scraping_id) return
 
+    let pollCount = 0
     const pollInterval = setInterval(async () => {
       try {
         const response = await api.linkedInScraping.getStatus(scrapingStatus.scraping_id)
@@ -55,12 +56,35 @@ export const useLinkedInScraping = (signalId?: string) => {
             clearInterval(pollInterval)
           }
         }
+        
+        pollCount++
+        // OPTIMIZED: After 6 polls (30 seconds), increase interval to reduce load
+        if (pollCount > 6) {
+          clearInterval(pollInterval)
+          const longerInterval = setInterval(async () => {
+            try {
+              const response = await api.linkedInScraping.getStatus(scrapingStatus.scraping_id)
+              if (response.data && typeof response.data === 'object') {
+                const data = response.data as ScrapingStatus
+                setScrapingStatus(data)
+                
+                if (data.status === 'completed' || data.status === 'failed') {
+                  clearInterval(longerInterval)
+                }
+              }
+            } catch (err) {
+              console.error('Failed to poll scraping status:', err)
+              clearInterval(longerInterval)
+            }
+          }, 15000) // Poll every 15 seconds after 30 seconds
+        }
+        
       } catch (err) {
         console.error('Failed to poll scraping status:', err)
         setError('Failed to check scraping status')
         clearInterval(pollInterval)
       }
-    }, 5000) // Poll every 5 seconds
+    }, 5000) // Poll every 5 seconds initially
 
     return () => clearInterval(pollInterval)
   }, [isScrapingInProgress, scrapingStatus?.scraping_id])
@@ -98,15 +122,34 @@ export const useLinkedInScraping = (signalId?: string) => {
 
   // Get existing scraping results if any
   const checkExistingResults = useCallback(async () => {
-    if (!signalId) return
-    
+    if (!signalId || signalId === '') return
+
     try {
-      // This would need to be implemented if we want to check for existing results
-      // For now, we'll just reset the state
-      setScrapingStatus(null)
+      setIsLoading(true)
       setError(null)
+      
+      const response = await api.linkedInScraping.getStatus(signalId)
+      
+      if (response.error) {
+        setError(response.error)
+        return
+      }
+
+      if (response.data && typeof response.data === 'object') {
+        const data = response.data as any
+        if (data.status !== 'not_found') {
+          setScrapingStatus(data as ScrapingStatus)
+        } else {
+          setScrapingStatus(null)
+        }
+      } else {
+        setScrapingStatus(null)
+      }
     } catch (err) {
       console.error('Failed to check existing scraping results:', err)
+      setError(err instanceof Error ? err.message : 'Failed to check existing results')
+    } finally {
+      setIsLoading(false)
     }
   }, [signalId])
 
@@ -117,6 +160,13 @@ export const useLinkedInScraping = (signalId?: string) => {
     setIsLoading(false)
   }, [])
 
+  // Check for existing results on mount and signal change
+  useEffect(() => {
+    if (signalId) {
+      checkExistingResults()
+    }
+  }, [signalId, checkExistingResults])
+
   return {
     scrapingStatus,
     isLoading,
@@ -125,7 +175,8 @@ export const useLinkedInScraping = (signalId?: string) => {
     hasResults,
     hasFailed,
     startScraping,
-    checkExistingResults,
+    checkExistingResults, // Export for lazy loading
+    refreshStatus: checkExistingResults,
     reset
   }
 }
