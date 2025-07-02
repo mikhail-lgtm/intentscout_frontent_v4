@@ -497,6 +497,12 @@ export const api = {
       apiClient.post(endpoints.settings.importContacts(signalId), data),
     getContactsImportStatus: (signalId: string) =>
       apiClient.get(endpoints.settings.contactsImportStatus(signalId)),
+    enrollContactsInSequence: (signalId: string, data: {
+      sequence_id: string;
+      sender_email: string;
+      contact_ids: string[];
+    }) =>
+      apiClient.post(`/settings/hubspot/contacts/enroll-sequence/${signalId}`, data),
   },
 
   // Email Generation

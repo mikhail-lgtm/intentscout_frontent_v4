@@ -24,17 +24,24 @@ interface ContactData {
   notes: string
 }
 
+interface GeneratedEmail {
+  sequence_step: number
+  block_id: string
+  block_name: string
+  subject: string
+  body: string
+  status: string
+}
+
 interface HubSpotContactProperties {
   firstname: string
   lastname: string
   email: string
   jobtitle: string
   phone: string
-  linkedin_bio: string
   city: string
   state: string
   country: string
-  notes_last_contacted: string
   [key: string]: string
 }
 
@@ -42,6 +49,7 @@ interface MappedContact {
   contact_id: string
   raw_data: ContactData
   hubspot_properties: HubSpotContactProperties
+  generated_emails?: GeneratedEmail[]
 }
 
 export const ContactImportPopup: React.FC<ContactImportPopupProps> = ({
@@ -170,7 +178,7 @@ export const ContactImportPopup: React.FC<ContactImportPopupProps> = ({
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div className="text-blue-800 text-sm">
                   <strong>Import Preview:</strong> {editedContacts.length} contacts will be imported to your HubSpot CRM.
-                  Each contact will have a note indicating they were "Imported from IntentScout".
+                  Personalized email content for each sequence step will be imported with each contact.
                 </div>
               </div>
 
@@ -182,17 +190,6 @@ export const ContactImportPopup: React.FC<ContactImportPopupProps> = ({
                       <h3 className="font-medium text-gray-900">
                         Contact {index + 1}: {contact.hubspot_properties.firstname} {contact.hubspot_properties.lastname}
                       </h3>
-                      {contact.hubspot_properties.linkedin_bio && (
-                        <a
-                          href={contact.hubspot_properties.linkedin_bio}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 text-xs flex items-center gap-1"
-                        >
-                          <ExternalLink className="w-3 h-3" />
-                          LinkedIn
-                        </a>
-                      )}
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -268,6 +265,55 @@ export const ContactImportPopup: React.FC<ContactImportPopupProps> = ({
                         />
                       </div>
                     </div>
+                    
+                    {/* Generated Email Content */}
+                    {contact.generated_emails && contact.generated_emails.length > 0 && (
+                      <div className="mt-6">
+                        <h4 className="text-sm font-medium text-gray-900 mb-3">
+                          Generated Email Content ({contact.generated_emails.length} emails)
+                        </h4>
+                        <div className="space-y-3">
+                          {contact.generated_emails.map((email, emailIndex) => (
+                            <div key={emailIndex} className="bg-white border border-gray-200 rounded-lg p-3">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-xs font-medium text-blue-600">
+                                  Step {email.sequence_step}: {email.block_name}
+                                </span>
+                                <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+                                  {email.status}
+                                </span>
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                                    Subject:
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={contact.hubspot_properties[`step_${email.sequence_step}_subject`] || email.subject}
+                                    onChange={(e) => handleContactPropertyChange(index, `step_${email.sequence_step}_subject`, e.target.value)}
+                                    className="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                  />
+                                </div>
+                                
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                                    Body:
+                                  </label>
+                                  <textarea
+                                    value={contact.hubspot_properties[`step_${email.sequence_step}_body`] || email.body}
+                                    onChange={(e) => handleContactPropertyChange(index, `step_${email.sequence_step}_body`, e.target.value)}
+                                    rows={3}
+                                    className="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

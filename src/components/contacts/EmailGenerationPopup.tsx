@@ -386,14 +386,14 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
               {!validationResult.is_valid && (
                 <div className="space-y-2">
                   {validationResult.validation_results
-                    .filter(result => !result.is_valid)
-                    .map((result, index) => (
+                    .filter((result: any) => !result.is_valid)
+                    .map((result: any, index: number) => (
                       <div key={index} className="bg-white bg-opacity-60 rounded-lg p-3">
                         <div className="font-medium text-sm text-gray-900 mb-1">
                           {result.contact_name}
                         </div>
                         <div className="text-xs text-gray-600 space-y-1">
-                          {result.missing_source_details.map((detail, idx) => (
+                          {result.missing_source_details.map((detail: any, idx: number) => (
                             <div key={idx} className="flex items-center gap-2">
                               <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full flex-shrink-0"></span>
                               <span>{detail.source}: {detail.issue}</span>

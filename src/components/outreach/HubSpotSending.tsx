@@ -52,6 +52,7 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
   const [isLoadingSequences, setIsLoadingSequences] = useState(false)
   const [isSavingConfig, setIsSavingConfig] = useState(false)
   const [isImportingCompany, setIsImportingCompany] = useState(false)
+  const [isEnrollingInSequence, setIsEnrollingInSequence] = useState(false)
 
   // Company import status
   const [companyImportStatus, setCompanyImportStatus] = useState<{
@@ -318,6 +319,32 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
     checkContactImportStatus()
   }
 
+  const handleSequenceEnrollment = async () => {
+    if (!signalId || !selectedSequence || !senderEmail || !contactImportStatus.imported) return
+    
+    try {
+      setIsEnrollingInSequence(true)
+      
+      // For now, we'll assume all imported contacts should be enrolled
+      // In a more sophisticated implementation, we might let users select specific contacts
+      const response = await api.settings.enrollContactsInSequence(signalId, {
+        sequence_id: selectedSequence.id,
+        sender_email: senderEmail,
+        contact_ids: [] // Empty array means enroll all contacts from the import
+      })
+      
+      if (response.data) {
+        console.log('Enrollment successful:', response.data)
+        // Could show success notification here
+      }
+    } catch (error) {
+      console.error('Failed to enroll contacts in sequence:', error)
+      // Could show error notification here
+    } finally {
+      setIsEnrollingInSequence(false)
+    }
+  }
+
   const isFullyConfigured = hubspotConfig.is_connected && senderEmail && selectedSequence
   const canSaveConfig = senderEmail && selectedSequence && !isSavingConfig
 
@@ -515,11 +542,26 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
                     <span className="hidden sm:inline">2</span>
                   </button>
                   <button
-                    disabled
-                    className="flex-1 px-2 py-1 rounded text-xs font-medium bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1"
-                    title="Enroll in Sequence"
+                    onClick={handleSequenceEnrollment}
+                    disabled={!contactImportStatus.imported || isEnrollingInSequence}
+                    className={`flex-1 px-2 py-1 rounded text-xs font-medium flex items-center justify-center gap-1 ${
+                      contactImportStatus.imported && !isEnrollingInSequence
+                        ? 'bg-orange-500 hover:bg-orange-600 text-white'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                    title={
+                      contactImportStatus.imported
+                        ? isEnrollingInSequence
+                          ? 'Enrolling in Sequence...'
+                          : 'Enroll in Sequence'
+                        : 'Import Contacts First'
+                    }
                   >
-                    <ExternalLink className="w-3 h-3" />
+                    {isEnrollingInSequence ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <ExternalLink className="w-3 h-3" />
+                    )}
                     <span className="hidden sm:inline">3</span>
                   </button>
                 </div>
