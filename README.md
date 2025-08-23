@@ -25,7 +25,7 @@ cp .env.example .env
 Required environment variables:
 - `VITE_SUPABASE_URL` - Your Supabase project URL
 - `VITE_SUPABASE_ANON_KEY` - Your Supabase anonymous key  
-- `VITE_API_BASE_URL` - Backend API URL (defaults to https://api-ic-v1.yazvinski.com)
+- `VITE_API_BASE_URL` - Backend API URL (defaults to https://api.intentscout.ai/)
 
 ### Development
 
