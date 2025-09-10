@@ -23,7 +23,7 @@ export const StatsOverview = ({ totalSignals, currentIndex, currentSignal }: Pro
       
       <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
         <div className="text-2xl font-bold text-purple-600">
-          {currentSignal?.citedJobs?.length || 0}
+          {(currentSignal?.intentScore?.citations?.length) || (currentSignal?.citedJobs?.length) || 0}
         </div>
         <div className="text-xs text-gray-600 uppercase tracking-wider">Evidence Points</div>
       </div>

@@ -355,6 +355,20 @@ export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onRej
 
   const company = signal.company
   const jobs = signal.jobs || []
+  const citationIds: string[] = (signal as any)?.citations || []
+
+  // Build cited jobs list in the order of citations if provided
+  const citedJobs = citationIds.length
+    ? citationIds
+        .map((cid) =>
+          jobs.find((job: any) =>
+            job?.pageHtmlBackblazeUuid === cid ||
+            job?.id === cid ||
+            (typeof job?.jobUrl === 'string' && job.jobUrl.includes(cid))
+          )
+        )
+        .filter(Boolean)
+    : jobs
   
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -528,11 +542,11 @@ export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onRej
               
               // Find the job that matches this citation ID (Backblaze UUID)
               const citationId = match[1]
-              const jobIndex = jobs.findIndex(job => 
-                job.pageHtmlBackblazeUuid === citationId ||
-                job.id === citationId || 
-                job.jobUrl?.includes(citationId) ||
-                citationId.includes(job.id)
+              const jobIndex = citedJobs.findIndex((job: any) => 
+                job?.pageHtmlBackblazeUuid === citationId ||
+                job?.id === citationId || 
+                (typeof job?.jobUrl === 'string' && job.jobUrl.includes(citationId)) ||
+                (typeof job?.id === 'string' && citationId.includes(job.id))
               )
               
               parts.push(
@@ -540,7 +554,7 @@ export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onRej
                   key={`citation-${citationNumber}`}
                   className="inline-flex items-center justify-center w-5 h-5 bg-orange-100 text-orange-600 rounded-full text-xs font-semibold mx-1 hover:bg-orange-200 transition-colors cursor-pointer"
                   onClick={() => toggleJobExpansion(jobIndex >= 0 ? jobIndex : citationNumber - 1)}
-                  title={jobIndex >= 0 ? jobs[jobIndex]?.title : `Job ${citationNumber}`}
+                  title={jobIndex >= 0 ? citedJobs[jobIndex]?.title : `Job ${citationNumber}`}
                 >
                   {citationNumber}
                 </button>
@@ -563,13 +577,13 @@ export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onRej
       </div>
 
       {/* Job Citations */}
-      {jobs.length > 0 && (
+      {citedJobs.length > 0 && (
         <div className="mb-6">
           <h4 className="text-sm font-medium text-gray-900 mb-3">
-            Evidence from Job Postings ({jobs.length})
+            Evidence from Job Postings ({citedJobs.length})
           </h4>
           <div className="space-y-3">
-            {jobs.map((job, index) => (
+            {citedJobs.map((job, index) => (
               <JobCitationCard
                 key={job.id || index}
                 job={job}
