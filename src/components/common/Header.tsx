@@ -50,12 +50,6 @@ export const Header = ({ activeTab, setActiveTab }: HeaderProps) => {
           >
             Outreach
           </button>
-          <button
-            className="px-4 py-2 font-medium rounded-lg transition-all text-gray-600 hover:bg-gray-100 hover:text-gray-800"
-            onClick={() => navigate('/usg-demo')}
-          >
-            USG Demo
-          </button>
         </nav>
         
         <div className="flex items-center space-x-3 pl-4 border-l border-gray-200">

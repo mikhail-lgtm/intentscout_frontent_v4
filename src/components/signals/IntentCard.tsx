@@ -585,7 +585,7 @@ export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onRej
           <div className="space-y-3">
             {citedJobs.map((job, index) => (
               <JobCitationCard
-                key={job.id || index}
+                key={job?.id || index}
                 job={job}
                 citationIndex={index}
                 isExpanded={expandedJobs.has(index)}
