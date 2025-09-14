@@ -88,6 +88,9 @@ const getScoreLabel = (score: number) => {
   return 'Low Fit'
 }
 
+// Convert spec_fit (0-1) to intent score (0-5) like in sidebar
+const getIntentScore = (spec_fit: number) => Math.round(spec_fit * 5)
+
 export const USGProjectCard: React.FC<USGProjectCardProps> = ({ lead, isLoading = false }) => {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
 
@@ -152,7 +155,7 @@ export const USGProjectCard: React.FC<USGProjectCardProps> = ({ lead, isLoading 
             <div className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-white" />
               <span className="text-xl font-bold text-white">
-                {(lead.spec_fit * 10).toFixed(1)}
+                {getIntentScore(lead.spec_fit)}
               </span>
             </div>
           </div>
@@ -172,15 +175,15 @@ export const USGProjectCard: React.FC<USGProjectCardProps> = ({ lead, isLoading 
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <TrendingUp className="w-4 h-4" />
-            <span>Spec Fit: {(lead.spec_fit * 100).toFixed(0)}%</span>
+            <span>Intent Score: {getIntentScore(lead.spec_fit)}/5</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Building className="w-4 h-4" />
-            <span>Urgency: {(lead.urgency * 100).toFixed(0)}%</span>
+            <span>Urgency: {Math.round(lead.urgency * 5)}/5</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <span className="w-4 h-4 flex items-center justify-center text-xs">🎯</span>
-            <span>Confidence: {(lead.confidence * 100).toFixed(0)}%</span>
+            <span>Confidence: {Math.round(lead.confidence * 5)}/5</span>
           </div>
           {lead.project_url && (
             <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -202,13 +205,13 @@ export const USGProjectCard: React.FC<USGProjectCardProps> = ({ lead, isLoading 
           <h4 className="text-sm font-medium text-gray-900 mb-3">Qualification Scores</h4>
           <div className="flex flex-wrap gap-2">
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getScoreBadgeColor(lead.spec_fit)}`}>
-              Spec Fit: {getScoreLabel(lead.spec_fit)} ({(lead.spec_fit * 100).toFixed(0)}%)
+              Intent Score: {getIntentScore(lead.spec_fit)}/5 ({getScoreLabel(lead.spec_fit)})
             </span>
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getScoreBadgeColor(lead.urgency)}`}>
-              Urgency: {getScoreLabel(lead.urgency)} ({(lead.urgency * 100).toFixed(0)}%)
+              Urgency: {Math.round(lead.urgency * 5)}/5 ({getScoreLabel(lead.urgency)})
             </span>
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getScoreBadgeColor(lead.confidence)}`}>
-              Confidence: {getScoreLabel(lead.confidence)} ({(lead.confidence * 100).toFixed(0)}%)
+              Confidence: {Math.round(lead.confidence * 5)}/5 ({getScoreLabel(lead.confidence)})
             </span>
           </div>
         </div>
