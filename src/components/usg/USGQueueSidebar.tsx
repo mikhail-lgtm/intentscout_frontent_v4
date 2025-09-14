@@ -147,78 +147,185 @@ export const USGQueueSidebar: React.FC<USGQueueSidebarProps> = ({
         </div>
       </div>
 
-      {/* Queue Items - Scrollable */}
+      {/* Queue Items - Scrollable with Sections */}
       {leads.length > 0 ? (
         <div className="flex-1 overflow-y-auto custom-scrollbar">
-          <div className="space-y-2 pb-2">
-            {leads.map((lead, actualIndex) => {
-              const isCurrentLead = actualIndex === currentIndex
-              const fitLevel = lead.spec_fit >= 0.7 ? 'high' : lead.spec_fit >= 0.5 ? 'medium' : 'low'
-              
-              return (
-                <div
-                  key={lead.id}
-                  onClick={() => onLeadSelect && onLeadSelect(actualIndex)}
-                  className={`p-3 border rounded-lg transition-all duration-200 flex items-center gap-3 group
-                    ${onLeadSelect ? 'cursor-pointer' : ''} 
-                    ${
-                      isCurrentLead
-                        ? "border-blue-500 bg-blue-50 shadow-sm"
-                        : fitLevel === 'high'
-                        ? "border-green-200 bg-green-50"
-                        : fitLevel === 'medium'
-                        ? "border-yellow-200 bg-yellow-50"
-                        : "border-red-200 bg-red-50 hover:bg-gray-50 hover:border-gray-300"
-                    }`}
-                >
-                  {/* Position indicator */}
-                  <div className={`w-6 h-6 rounded-full text-xs font-semibold flex items-center justify-center flex-shrink-0
-                    ${isCurrentLead 
-                      ? 'bg-blue-500 text-white' 
-                      : fitLevel === 'high'
-                      ? 'bg-green-500 text-white'
-                      : fitLevel === 'medium'
-                      ? 'bg-yellow-500 text-white'
-                      : 'bg-red-500 text-white'
-                    }`}
-                  >
-                    {actualIndex + 1}
-                  </div>
-
-                  {/* Project icon */}
-                  <div className="relative flex-shrink-0">
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center text-blue-600 font-semibold text-xs">
-                      <Building className="w-4 h-4" />
-                    </div>
-                  </div>
-
-                  {/* Project info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900 truncate">
-                      {lead.project_name}
-                    </div>
-                    <div className="text-xs text-gray-500 truncate">
-                      {lead.location}
-                    </div>
-                  </div>
-
-                  {/* Score indicator */}
-                  <div className="flex-shrink-0 flex items-center gap-1">
-                    <TrendingUp className={`w-3 h-3 ${getScoreBadgeColor(lead.spec_fit)}`} />
-                    <span className={`text-xs font-medium ${getScoreBadgeColor(lead.spec_fit)}`}>
-                      {(lead.spec_fit * 10).toFixed(1)}
-                    </span>
-                  </div>
+          <div className="pb-2">
+            {/* High Fit Section */}
+            {highFitCount > 0 && (
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2 px-1">
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <h4 className="text-sm font-semibold text-green-700">HIGH FIT ({highFitCount})</h4>
+                  <div className="flex-1 h-px bg-green-200"></div>
                 </div>
-              )
-            })}
+                <div className="space-y-2">
+                  {leads.filter(lead => lead.spec_fit >= 0.7).map((lead, filteredIndex) => {
+                    const actualIndex = leads.findIndex(l => l.id === lead.id)
+                    const isCurrentLead = actualIndex === currentIndex
+
+                    return (
+                      <div
+                        key={lead.id}
+                        onClick={() => onLeadSelect && onLeadSelect(actualIndex)}
+                        className={`p-3 border rounded-lg transition-all duration-200 flex items-center gap-3 group cursor-pointer
+                          ${isCurrentLead
+                            ? "border-blue-500 bg-blue-50 shadow-sm"
+                            : "border-green-200 bg-green-50 hover:border-green-300"
+                          }`}
+                      >
+                        {/* Position indicator */}
+                        <div className={`w-6 h-6 rounded-full text-xs font-semibold flex items-center justify-center flex-shrink-0
+                          ${isCurrentLead ? 'bg-blue-500 text-white' : 'bg-green-500 text-white'}`}>
+                          {actualIndex + 1}
+                        </div>
+
+                        {/* Project icon */}
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
+                          ${isCurrentLead ? 'bg-blue-100' : 'bg-green-100'}`}>
+                          <Building className={`w-4 h-4 ${isCurrentLead ? 'text-blue-600' : 'text-green-600'}`} />
+                        </div>
+
+                        {/* Project info */}
+                        <div className="min-w-0 flex-1">
+                          <div className={`text-sm font-medium truncate mb-0.5 ${isCurrentLead ? 'text-blue-900' : 'text-green-900'}`}>
+                            {lead.project_name || "Untitled Project"}
+                          </div>
+                          <div className={`text-xs truncate ${isCurrentLead ? 'text-blue-600' : 'text-green-600'}`}>
+                            {lead.location}
+                          </div>
+                        </div>
+
+                        {/* Fit score */}
+                        <div className={`text-right flex-shrink-0 ${isCurrentLead ? 'text-blue-600' : 'text-green-600'}`}>
+                          <div className="text-xs font-medium">{Math.round(lead.spec_fit * 100)}%</div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Medium Fit Section */}
+            {mediumFitCount > 0 && (
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2 px-1">
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                  <h4 className="text-sm font-semibold text-yellow-700">MEDIUM FIT ({mediumFitCount})</h4>
+                  <div className="flex-1 h-px bg-yellow-200"></div>
+                </div>
+                <div className="space-y-2">
+                  {leads.filter(lead => lead.spec_fit >= 0.5 && lead.spec_fit < 0.7).map((lead) => {
+                    const actualIndex = leads.findIndex(l => l.id === lead.id)
+                    const isCurrentLead = actualIndex === currentIndex
+
+                    return (
+                      <div
+                        key={lead.id}
+                        onClick={() => onLeadSelect && onLeadSelect(actualIndex)}
+                        className={`p-3 border rounded-lg transition-all duration-200 flex items-center gap-3 group cursor-pointer
+                          ${isCurrentLead
+                            ? "border-blue-500 bg-blue-50 shadow-sm"
+                            : "border-yellow-200 bg-yellow-50 hover:border-yellow-300"
+                          }`}
+                      >
+                        {/* Position indicator */}
+                        <div className={`w-6 h-6 rounded-full text-xs font-semibold flex items-center justify-center flex-shrink-0
+                          ${isCurrentLead ? 'bg-blue-500 text-white' : 'bg-yellow-500 text-white'}`}>
+                          {actualIndex + 1}
+                        </div>
+
+                        {/* Project icon */}
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
+                          ${isCurrentLead ? 'bg-blue-100' : 'bg-yellow-100'}`}>
+                          <Building className={`w-4 h-4 ${isCurrentLead ? 'text-blue-600' : 'text-yellow-600'}`} />
+                        </div>
+
+                        {/* Project info */}
+                        <div className="min-w-0 flex-1">
+                          <div className={`text-sm font-medium truncate mb-0.5 ${isCurrentLead ? 'text-blue-900' : 'text-yellow-900'}`}>
+                            {lead.project_name || "Untitled Project"}
+                          </div>
+                          <div className={`text-xs truncate ${isCurrentLead ? 'text-blue-600' : 'text-yellow-600'}`}>
+                            {lead.location}
+                          </div>
+                        </div>
+
+                        {/* Fit score */}
+                        <div className={`text-right flex-shrink-0 ${isCurrentLead ? 'text-blue-600' : 'text-yellow-600'}`}>
+                          <div className="text-xs font-medium">{Math.round(lead.spec_fit * 100)}%</div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Archive Section */}
+            {lowFitCount > 0 && (
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2 px-1">
+                  <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                  <h4 className="text-sm font-semibold text-gray-600">ARCHIVE ({lowFitCount})</h4>
+                  <div className="flex-1 h-px bg-gray-200"></div>
+                </div>
+                <div className="space-y-2">
+                  {leads.filter(lead => lead.spec_fit < 0.5).map((lead) => {
+                    const actualIndex = leads.findIndex(l => l.id === lead.id)
+                    const isCurrentLead = actualIndex === currentIndex
+
+                    return (
+                      <div
+                        key={lead.id}
+                        onClick={() => onLeadSelect && onLeadSelect(actualIndex)}
+                        className={`p-3 border rounded-lg transition-all duration-200 flex items-center gap-3 group cursor-pointer opacity-75 hover:opacity-100
+                          ${isCurrentLead
+                            ? "border-blue-500 bg-blue-50 shadow-sm opacity-100"
+                            : "border-gray-200 bg-gray-50 hover:border-gray-300"
+                          }`}
+                      >
+                        {/* Position indicator */}
+                        <div className={`w-6 h-6 rounded-full text-xs font-semibold flex items-center justify-center flex-shrink-0
+                          ${isCurrentLead ? 'bg-blue-500 text-white' : 'bg-gray-400 text-white'}`}>
+                          {actualIndex + 1}
+                        </div>
+
+                        {/* Project icon */}
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
+                          ${isCurrentLead ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                          <Building className={`w-4 h-4 ${isCurrentLead ? 'text-blue-600' : 'text-gray-500'}`} />
+                        </div>
+
+                        {/* Project info */}
+                        <div className="min-w-0 flex-1">
+                          <div className={`text-sm font-medium truncate mb-0.5 ${isCurrentLead ? 'text-blue-900' : 'text-gray-700'}`}>
+                            {lead.project_name || "Untitled Project"}
+                          </div>
+                          <div className={`text-xs truncate ${isCurrentLead ? 'text-blue-600' : 'text-gray-500'}`}>
+                            {lead.location}
+                          </div>
+                        </div>
+
+                        {/* Fit score */}
+                        <div className={`text-right flex-shrink-0 ${isCurrentLead ? 'text-blue-600' : 'text-gray-500'}`}>
+                          <div className="text-xs font-medium">{Math.round(lead.spec_fit * 100)}%</div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       ) : (
-        <div className="text-center py-8 text-gray-500 text-sm">
-          No projects to display
+        <div className="flex-1 flex items-center justify-center text-gray-500 text-sm">
+          No projects in queue
         </div>
       )}
+
     </div>
   )
 }

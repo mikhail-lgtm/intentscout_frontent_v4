@@ -137,6 +137,17 @@ export const USGDemoPage = () => {
             <span>Source: ConstructConnect</span>
             {usingFallback && <span className="text-orange-600">Demo Data</span>}
             <span>Projects: {leads.length}</span>
+            {leads.length > 0 && (
+              <>
+                <span>|</span>
+                <span className="text-green-600 font-medium">
+                  {leads.filter(l => l.spec_fit >= 0.7).length} High Fit
+                </span>
+                <span className="text-yellow-600 font-medium">
+                  {leads.filter(l => l.spec_fit >= 0.5 && l.spec_fit < 0.7).length} Medium Fit
+                </span>
+              </>
+            )}
           </div>
         </div>
       </div>
