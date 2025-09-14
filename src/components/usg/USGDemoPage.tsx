@@ -14,10 +14,54 @@ interface Lead {
   project_url?: string
 }
 
+// Demo data for fallback (safe for production)
+const DEMO_LEADS: Lead[] = [
+  {
+    id: "cc-0",
+    organization_id: "org_usg_demo",
+    project_name: "Replacement of Emergency Doors at Metrorail Station",
+    location: "Miami, FL 33131",
+    bid_due: "Oct 15, 2025",
+    spec_fit: 0.85,
+    urgency: 0.7,
+    confidence: 0.9,
+    reason_codes: ["has_bid_due", "has_project_name", "fire_rated_materials", "drywall_specs"],
+    description: "Renovation of a transportation facility in Miami, Florida. This project involves removing and installing seventy-one (71) fire-rated three-hour (3) stainless steel doors, frames, hinges, including all hardware listed. Door, frame, and hardware must have the same fire-resistance rating of three hours.",
+    project_url: "https://app.constructconnect.com/project/5880869/p?sourceType=3"
+  },
+  {
+    id: "cc-1", 
+    organization_id: "org_usg_demo",
+    project_name: "Pan American Wastewater Reclamation Facility",
+    location: "North Port, FL 34287",
+    bid_due: "Sep 13, 2025",
+    spec_fit: 0.65,
+    urgency: 0.8,
+    confidence: 0.75,
+    reason_codes: ["has_bid_due", "has_project_name", "construction_specs"],
+    description: "Renovation of a water/sewer project in North Port, Florida. The City of North Port is requesting sealed bids for construction services to construct the Pan American Wastewater Reclamation Facility Centrifuge Building in its entirety.",
+    project_url: "https://app.constructconnect.com/project/5899156/p?sourceType=3"
+  },
+  {
+    id: "cc-2",
+    organization_id: "org_usg_demo", 
+    project_name: "Blue Heron Park Pickleball Court Expansion",
+    location: "Jupiter, FL 33458",
+    bid_due: "Sep 25, 2025",
+    spec_fit: 0.45,
+    urgency: 0.6,
+    confidence: 0.7,
+    reason_codes: ["has_bid_due", "has_project_name"],
+    description: "Expansion of recreational facilities including new court surfaces, lighting, and support structures. Project includes site preparation and infrastructure improvements.",
+    project_url: "https://app.constructconnect.com/project/5880868/p?sourceType=3"
+  }
+]
+
 export const USGDemoPage = () => {
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [usingFallback, setUsingFallback] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -27,14 +71,22 @@ export const USGDemoPage = () => {
         console.log('🔍 Fetching /api/usg/leads...')
         const res = await fetch('/api/usg/leads')
         console.log('📡 Response:', res.status, res.statusText)
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`)
+        }
+        
         const data = await res.json()
         console.log('📊 Data received:', data)
         console.log('📋 Number of leads:', data?.length || 0)
         setLeads(data)
+        setUsingFallback(false)
+        
       } catch (e: any) {
-        console.error('❌ Error:', e)
-        setError(e.message || 'Failed to load')
+        console.error('❌ API Error, using fallback data:', e)
+        setLeads(DEMO_LEADS)
+        setUsingFallback(true)
+        setError(null) // Clear error since we have fallback
       } finally {
         setLoading(false)
       }
@@ -50,7 +102,7 @@ export const USGDemoPage = () => {
       {!loading && !error && (
         <div>
           <div className="mb-4 text-sm text-gray-600">
-            Found {leads.length} projects
+            Found {leads.length} projects {usingFallback && '(demo data)'}
           </div>
           <div className="overflow-x-auto bg-white border rounded-md">
             <table className="min-w-full text-sm">
