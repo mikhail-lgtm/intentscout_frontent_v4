@@ -70,27 +70,32 @@ export const USGDemoPage = () => {
 
   const currentLead = leads[currentIndex] || null
 
-  // Data fetching
+  // Data fetching - Load from static JSON file
   const fetchData = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      console.log('🔍 Fetching /api/usg/leads...')
-      const res = await fetch('/api/usg/leads')
-      console.log('📡 Response:', res.status, res.statusText)
-      
+      console.log('Fetching static USG projects...')
+      const res = await fetch('/usg_projects.json')
+      console.log('Response:', res.status, res.statusText)
+
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}`)
       }
-      
+
       const data = await res.json()
-      console.log('📊 Data received:', data)
-      console.log('📋 Number of leads:', data?.length || 0)
-      setLeads(data)
-      setUsingFallback(false)
-      
+      console.log('Static data received:', data)
+      console.log('Number of leads:', data?.length || 0)
+
+      if (data && Array.isArray(data) && data.length > 0) {
+        setLeads(data)
+        setUsingFallback(false)
+      } else {
+        throw new Error('No data in static file')
+      }
+
     } catch (e: any) {
-      console.error('❌ API Error, using fallback data:', e)
+      console.error('Static file error, using fallback data:', e)
       setLeads(DEMO_LEADS)
       setUsingFallback(true)
       setError(null) // Clear error since we have fallback
@@ -141,10 +146,10 @@ export const USGDemoPage = () => {
               <>
                 <span>|</span>
                 <span className="text-green-600 font-medium">
-                  {leads.filter(l => l.spec_fit >= 0.7).length} High Fit
+                  {leads.filter(l => Math.round(l.spec_fit * 5) >= 4).length} Score 4-5
                 </span>
-                <span className="text-yellow-600 font-medium">
-                  {leads.filter(l => l.spec_fit >= 0.5 && l.spec_fit < 0.7).length} Medium Fit
+                <span className="text-blue-600 font-medium">
+                  {leads.filter(l => Math.round(l.spec_fit * 5) === 3).length} Score 3
                 </span>
               </>
             )}
