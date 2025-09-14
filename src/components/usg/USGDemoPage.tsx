@@ -1,14 +1,17 @@
-import { useEffect, useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
+import { Calendar, Filter, RotateCcw, Building, TrendingUp } from 'lucide-react'
+import { USGProjectCard } from './USGProjectCard'
+import { USGQueueSidebar } from './USGQueueSidebar'
 
 interface Lead {
   id: string
   organization_id: string
-  project_name?: string
-  location?: string
-  bid_due?: string
-  spec_fit?: number
-  urgency?: number
-  confidence?: number
+  project_name: string
+  location: string
+  bid_due: string
+  spec_fit: number
+  urgency: number
+  confidence: number
   reason_codes?: string[]
   description?: string
   project_url?: string
@@ -58,118 +61,191 @@ const DEMO_LEADS: Lead[] = [
 ]
 
 export const USGDemoPage = () => {
+  // State management
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [usingFallback, setUsingFallback] = useState(false)
+  const [currentIndex, setCurrentIndex] = useState(0)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true)
-      setError(null)
-      try {
-        console.log('🔍 Fetching /api/usg/leads...')
-        const res = await fetch('/api/usg/leads')
-        console.log('📡 Response:', res.status, res.statusText)
-        
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}`)
-        }
-        
-        const data = await res.json()
-        console.log('📊 Data received:', data)
-        console.log('📋 Number of leads:', data?.length || 0)
-        setLeads(data)
-        setUsingFallback(false)
-        
-      } catch (e: any) {
-        console.error('❌ API Error, using fallback data:', e)
-        setLeads(DEMO_LEADS)
-        setUsingFallback(true)
-        setError(null) // Clear error since we have fallback
-      } finally {
-        setLoading(false)
+  const currentLead = leads[currentIndex] || null
+
+  // Data fetching
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      console.log('🔍 Fetching /api/usg/leads...')
+      const res = await fetch('/api/usg/leads')
+      console.log('📡 Response:', res.status, res.statusText)
+      
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`)
       }
+      
+      const data = await res.json()
+      console.log('📊 Data received:', data)
+      console.log('📋 Number of leads:', data?.length || 0)
+      setLeads(data)
+      setUsingFallback(false)
+      
+    } catch (e: any) {
+      console.error('❌ API Error, using fallback data:', e)
+      setLeads(DEMO_LEADS)
+      setUsingFallback(true)
+      setError(null) // Clear error since we have fallback
+    } finally {
+      setLoading(false)
     }
-    fetchData()
   }, [])
 
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
+
+  // Handlers
+  const handleLeadSelect = useCallback((index: number) => {
+    setCurrentIndex(index)
+  }, [])
+
+  const handleRefresh = useCallback(() => {
+    setCurrentIndex(0)
+    fetchData()
+  }, [fetchData])
+
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-semibold mb-4">USG Demo — ConstructConnect Leads</h1>
-      {loading && <div className="text-gray-600">Loading...</div>}
-      {error && <div className="text-red-600">{error}</div>}
-      {!loading && !error && (
-        <div>
-          <div className="mb-4 text-sm text-gray-600">
-            Found {leads.length} projects {usingFallback && '(demo data)'}
+    <div className="h-full bg-gray-50 overflow-hidden flex flex-col">
+      {/* Sticky Header */}
+      <div className="flex-shrink-0 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 bg-gray-50 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <h1 className="text-xl font-bold text-gray-900">USG Demo — ConstructConnect Projects</h1>
+            
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleRefresh}
+                className="inline-flex items-center gap-2 px-3 py-1.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Refresh
+              </button>
+            </div>
           </div>
-          <div className="overflow-x-auto bg-white border rounded-md">
-            <table className="min-w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-3 py-2 text-left">Project</th>
-                  <th className="px-3 py-2 text-left">Location</th>
-                  <th className="px-3 py-2 text-left">Bid Due</th>
-                  <th className="px-3 py-2 text-left">Spec Fit</th>
-                  <th className="px-3 py-2 text-left">Urgency</th>
-                  <th className="px-3 py-2 text-left">Confidence</th>
-                  <th className="px-3 py-2 text-left">Reasons</th>
-                  <th className="px-3 py-2 text-left">Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leads.map((l) => (
-                  <tr key={l.id} className="border-t hover:bg-gray-50">
-                    <td className="px-3 py-2">
-                      {l.project_url ? (
-                        <a 
-                          href={l.project_url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 underline"
-                        >
-                          {l.project_name || '-'}
-                        </a>
-                      ) : (
-                        l.project_name || '-'
-                      )}
-                    </td>
-                    <td className="px-3 py-2">{l.location || '-'}</td>
-                    <td className="px-3 py-2">{l.bid_due || '-'}</td>
-                    <td className="px-3 py-2">
-                      <span className={`px-2 py-1 rounded text-xs ${
-                        (l.spec_fit ?? 0) >= 0.7 ? 'bg-green-100 text-green-800' : 
-                        (l.spec_fit ?? 0) >= 0.5 ? 'bg-yellow-100 text-yellow-800' : 
-                        'bg-red-100 text-red-800'
-                      }`}>
-                        {(l.spec_fit ?? 0).toFixed(2)}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2">{(l.urgency ?? 0).toFixed(2)}</td>
-                    <td className="px-3 py-2">{(l.confidence ?? 0).toFixed(2)}</td>
-                    <td className="px-3 py-2">
-                      <div className="flex flex-wrap gap-1">
-                        {l.reason_codes?.map((reason) => (
-                          <span key={reason} className="px-1 py-0.5 bg-blue-100 text-blue-800 text-xs rounded">
-                            {reason}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-3 py-2 max-w-xs">
-                      <div className="truncate" title={l.description}>
-                        {l.description?.substring(0, 100) || '-'}
-                        {l.description && l.description.length > 100 && '...'}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          
+          {/* Status Text */}
+          <div className="flex items-center gap-3 text-xs text-gray-500">
+            <span>Source: ConstructConnect</span>
+            {usingFallback && <span className="text-orange-600">Demo Data</span>}
+            <span>Projects: {leads.length}</span>
           </div>
         </div>
-      )}
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 max-w-7xl mx-auto flex gap-6 px-4 sm:px-6 lg:px-8 min-h-0 pb-6 pt-6">
+        {/* Main Content */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar" style={{ height: 'calc(100% - 2rem)' }}>
+          
+          {/* Loading Status */}
+          {loading && (
+            <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></div>
+                <div className="text-blue-700">Loading ConstructConnect projects...</div>
+              </div>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                  <span className="text-red-600 text-lg">⚠</span>
+                </div>
+                <h3 className="text-red-800 font-semibold">Error Loading Projects</h3>
+              </div>
+              <p className="text-red-600 mb-4">{error}</p>
+              <button 
+                onClick={handleRefresh}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Retry
+              </button>
+            </div>
+          )}
+
+          {/* Empty State - only show when all loading is done */}
+          {!loading && leads.length === 0 && !error && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+              <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Building className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                No Projects Found
+              </h3>
+              <p className="text-gray-600 mb-6">
+                No ConstructConnect projects are currently available. 
+                Try refreshing to check for new projects.
+              </p>
+              <div className="flex justify-center gap-3">
+                <button
+                  onClick={handleRefresh}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  Refresh
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Project Card */}
+          {(currentLead || loading) && (
+            <div className="h-full">
+              <USGProjectCard
+                lead={currentLead}
+                isLoading={loading}
+              />
+            </div>
+          )}
+
+          {/* Completion State */}
+          {!loading && leads.length > 0 && currentIndex >= leads.length && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <span className="text-green-600 text-2xl">🎉</span>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                All Projects Reviewed!
+              </h3>
+              <p className="text-gray-600 mb-6">
+                You've viewed all {leads.length} ConstructConnect projects.
+              </p>
+              <button
+                onClick={() => {
+                  setCurrentIndex(0)
+                  handleRefresh()
+                }}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Review Again
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Sidebar */}
+        <div className="w-80 flex-shrink-0 min-h-0" style={{ height: 'calc(100% - 2rem)' }}>
+          <USGQueueSidebar 
+            leads={leads}
+            currentIndex={currentIndex}
+            onLeadSelect={handleLeadSelect}
+            isLoading={loading}
+          />
+        </div>
+      </div>
     </div>
   )
 }
