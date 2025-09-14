@@ -5,6 +5,7 @@ import { SignalsPage } from '../signals/SignalsPage'
 import { OutreachPage } from '../outreach/OutreachPage'
 import { SettingsPage } from '../settings'
 import type { TabKey } from '../../types'
+import { USGDemoPage } from '../usg/USGDemoPage'
 
 export const Dashboard = () => {
   const location = useLocation()
@@ -30,6 +31,7 @@ export const Dashboard = () => {
           <Route path="/signals" element={<SignalsPage />} />
           <Route path="/outreach" element={<OutreachPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/usg-demo" element={<USGDemoPage />} />
         </Routes>
       </main>
     </div>
