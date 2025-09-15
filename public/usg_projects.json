@@ -1,84 +1,162 @@
 [
     {
-      "project_name": "Value For This",
-      "location": "Aguadilla, PR 00603",
-      "bid_due": "Sep 13, 2025",
-      "description": "Renovation of a mixed-use development in Aguadilla, Puerto Rico. Completed plans call for the renovation of a military facility. The project consists of housing renovations at Base Borinquen, Aguadilla, Puerto Rico. Work includes interior and exterior repairs to multiple housing units, such as replacement of kitchen cabinets, countertops, bathroom fixtures, doors, windows, flooring, and painting. The contractor shall provide all labor, materials, equipment, and supervision necessary to complete the renovations in accordance with applicable codes and standards. Total Estimate $700,000 - $2,050,000 *The value for this project is based on a financial range. The value is listed as the highest possible cost from the range provided by a stakeholder or official project document. This document sets forth the scope of work: Renovate interior spaces by replacing ceiling tiles with PVC panels and metal frames, new wooden doors, correcting all mappings on walls, and ceilings, painting all interior",
-      "project_url": "https://app.constructconnect.com/project/7231603/c?sourceType=3",
-      "id": "cc-5",
-      "organization_id": "org_usg_demo",
-      "spec_fit": 0.8,
-      "urgency": 0.8,
-      "confidence": 0.8,
-      "reason_codes": [
-        "has_interior_renovation",
-        "has_ceiling_work",
-        "has_government_project",
-        "has_bid_due",
-        "has_project_name",
-        "has_construction_specs",
-        "has_timeline_specified"
+      "project_name": "Michigan Avenue Warehouse Renovation",
+      "location": "Fort Myers, FL 33916",
+      "bid_due": "09/25/2025",
+      "description": "Renovation of a warehouse / distribution facility in Fort Myers, Florida. Completed plans call for the renovation of a warehouse / distribution facility. The City of Fort Myers (City) requests submittals from interested and qualified Respondents to provide: renovation of two (2) existing warehouses located at 2801 Michigan Avenue, Fort Myers, Florida 33916. Proposed City Council Approval Date: October 6, 2025 Question Deadline 09/16/2025 at 2:00 PM ET submit a question through the E-Procurement Q&A tab, email to procurementservices@fortmyers.gov' Conversion of Existing Warehouse Buildings The project involves the renovation and adaptive reuse of two (2) existing warehouse structures: o North Warehouse Building o Size: Approximately 7,100 square feet o Proposed Use: Records Department Warehouse and Office Facility o Classification: Per the current Florida Building Code (FBC), this structure is classified primarily as a Warehouse Storage Facility (S occupancy) with an incidental Business",
+      "project_url": "https://app.constructconnect.com/project/7228588/c?sourceType=3",
+      "contacts": [
+        {
+          "email": "procurementservices@fortmyers.gov",
+          "name": "Submittal Meeting"
+        },
+        {
+          "email": "procurementservices@fortmyers.gov",
+          "name": "Submittal Meeting"
+        },
+        {
+          "email": "cscott@fortmyers.gov",
+          "name": "Procurement Representative"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "General Contractor"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "General Contractor"
+        }
       ],
-      "reasoning": "The project explicitly mentions renovation of a military facility with significant interior work. The scope includes replacing ceiling tiles with PVC panels and metal frames, new wooden doors, correcting walls and ceilings, and painting, indicating active interest in interior building materials {Value For This}. The bid due date of September 13, 2025, places it in the near-term for procurement {Value For This}.",
-      "_sorting_details": {
-        "base_score": 0.8,
-        "weighted_score": 0.8,
-        "industry_bonus": 0.0,
-        "material_bonus": 0.15,
-        "urgency_bonus": 0.0,
-        "final_score": 0.9500000000000001
-      },
-      "priority_score": 0.9500000000000001
-    },
-    {
-      "project_name": "Owner Has Determined A List Of Select General Contractors To Bid On This",
-      "location": "Lake Park, FL 33403",
-      "bid_due": "Sep 12, 2025",
-      "description": "Renovation of a retail development in Lake Park, Florida. Completed plans call for the renovation of a 6,000-square-foot, one-story above grade retail development. This project has been awarded. *The owner has determined a list of select general contractors to bid on this project. *The Editorial Content Team is in the process of confirming all invited GC bidders. *Due to the direct relationship with Walmart, the only project contacts are the general contractors invited to bid. At this time Walmart works with a select group of pre-approved general contractors. Walmart is not accepting new general contractor qualifications at this time. *At this time, one GC firm has been invited to bid the project. The bid list for this project is complete from the owner.\nShow More Renovation of a retail development in Lake Park, Florida. Completed plans call for the renovation of a 6,000-square-foot, one-story above grade retail development. This project has been awarded. *The owner has determined a li",
-      "project_url": "https://app.constructconnect.com/project/7192828/c?sourceType=3",
-      "id": "cc-1",
-      "organization_id": "org_usg_demo",
-      "spec_fit": 0.8,
-      "urgency": 0.8,
-      "confidence": 0.8,
-      "reason_codes": [
-        "has_interior_renovation",
-        "has_construction_specs",
-        "has_project_name",
-        "has_bid_due",
-        "has_contractor_involvement"
+      "project_id": "5884799",
+      "structures": [
+        "Warehouse / Distribution"
       ],
-      "reasoning": "The project involves the renovation of a 6,000 sq ft retail development, clearly indicating interior renovation and build-out {has_interior_renovation}. The mention of floor plans and the upcoming bid process for general contractors suggests active exploration of interior systems {has_construction_specs, has_project_name}. While specific interior materials like drywall or ceiling systems are not explicitly mentioned, the renovation of a retail space inherently requires these components. The bid due date of September 12, 2025, places it in a near-term urgency, and the project being awarded to select GCs shows active planning stages {has_bid_due, has_contractor_involvement}.",
-      "_sorting_details": {
-        "base_score": 0.8,
-        "weighted_score": 0.8,
-        "industry_bonus": 0.0,
-        "material_bonus": 0.08,
-        "urgency_bonus": 0.0,
-        "final_score": 0.88
-      },
-      "priority_score": 0.88
-    },
-    {
-      "project_name": "Aguadilla Military Facility In Aguadilla Renovation",
-      "location": "Aguadilla, PR 00603",
-      "bid_due": "Sep 13, 2025",
-      "description": "Renovation of a military facility in Aguadilla, Puerto Rico. Completed plans call for the renovation of a military facility. Remove existing kitchen cabinets and install new PVC and laminated cabinets, along with floating floor installation throughout the house unit at USCG Housing. The contractor shall provide all labor, materials, equipment, tools, and supervision necessary for the work. Cabinet removal includes clearing the kitchen, disconnecting utilities, and disposing of old cabinets. Installation involves securing base and wall cabinets, aligning doors and hardware, and finishing with toe kicks and crown molding. Floating floor installation requires subfloor preparation, underlayment placement, plank installation with expansion gaps, and final cleaning. The contractor must also handle cleanup, final inspection, and provide care instructions for installed materials. Work must be completed within 15 days of notice to proceed, including submittal reviews and project closeout. Safet",
-      "project_url": "https://app.constructconnect.com/project/7231619/c?sourceType=3",
-      "id": "cc-7",
+      "id": "cc-27",
       "organization_id": "org_usg_demo",
       "spec_fit": 0.6,
       "urgency": 0.8,
       "confidence": 0.8,
       "reason_codes": [
         "has_interior_renovation",
+        "has_office_buildout",
         "has_government_project",
         "has_bid_due",
         "has_project_name",
         "has_timeline_specified",
-        "has_contractor_involvement"
+        "has_construction_specs"
       ],
-      "reasoning": "The project involves a renovation of a military facility {Aguadilla Military Facility In Aguadilla Renovation}. While the primary focus is on kitchen cabinets and flooring, it implies interior construction work. The bid due date of September 13, 2025 ({}) suggests an active procurement and near-term timeline for contractors to engage.",
+      "reasoning": "The project involves the renovation and adaptive reuse of existing warehouse buildings, including the conversion of one into an office facility which strongly suggests interior work {Michigan Avenue Warehouse Renovation}. The mention of 'office facility' implies the need for interior partitions and finishes. A specific bid due date of 09/25/2025 indicates active procurement {Michigan Avenue Warehouse Renovation}. The mention of a 'Question Deadline' further reinforces the active planning and procurement stage {Michigan Avenue Warehouse Renovation}.",
+      "_sorting_details": {
+        "base_score": 0.6,
+        "weighted_score": 0.7000000000000001,
+        "industry_bonus": 0.15,
+        "material_bonus": 0.08,
+        "urgency_bonus": 0.08,
+        "final_score": 1.0
+      },
+      "priority_score": 1.0
+    },
+    {
+      "project_name": "Bid (except for confidential building plans and",
+      "location": "West Palm Beach, FL 33401",
+      "bid_due": "Sep 10, 2025",
+      "description": "Renovation of a municipal facility in West Palm Beach, Florida. Completed plans call for the renovation of a municipal facility. You must attend this meeting if you intend to bid this work. Qualification of Contractors. Qualification is required in order to bid for projects under this Annual Contract. A contractor may obtain a Qualification Application for this Annual Contract by sending an email with the Project # in the subject line to: FDO-CID-Bids@pbc.gov or call (561) 233-0261. Qualification applications may also be downloaded from the Countys on-line Vendor Self-Service (VSS) system at Online, The contractor must submit the Qualification Application at least 10 days before the Quote/Bid Due Date in order for its quote/bid to be considered. Palm Beach County reserves the right to waive any bid irregularities, informalities, or technical deficiencies and to reject any and all quotes/bids.\nShow More Renovation of a municipal facility in West Palm Beach, Florida. Completed plans call",
+      "project_url": "https://app.constructconnect.com/project/7239588/c?sourceType=3",
+      "contacts": [
+        {
+          "email": "FDO-CID-Bids@pbc.gov",
+          "name": "Download Documents"
+        },
+        {
+          "email": "FDO-CID-Bids@pbc.gov",
+          "name": "Download Documents"
+        },
+        {
+          "email": "FDO-CID-Bids@pbc.gov",
+          "name": "Download Documents"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Design Team"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Design Team"
+        }
+      ],
+      "project_id": "5896815",
+      "structures": [
+        "Municipal"
+      ],
+      "id": "cc-22",
+      "organization_id": "org_usg_demo",
+      "spec_fit": 0.6,
+      "urgency": 0.6,
+      "confidence": 0.8,
+      "reason_codes": [
+        "has_interior_renovation",
+        "has_government_project",
+        "has_bid_due",
+        "has_contractor_involvement",
+        "has_project_name",
+        "has_timeline_specified"
+      ],
+      "reasoning": "The project involves the renovation of a municipal facility, indicating interior work {has_interior_renovation}. The bid due date is September 10, 2025, placing it in the medium-term urgency category {has_bid_due}. The description highlights the need for contractor qualification to bid, suggesting active exploration for interior construction services {has_contractor_involvement, has_government_project}.",
+      "_sorting_details": {
+        "base_score": 0.6,
+        "weighted_score": 0.64,
+        "industry_bonus": 0.15,
+        "material_bonus": 0.08,
+        "urgency_bonus": 0.08,
+        "final_score": 0.95
+      },
+      "priority_score": 0.95
+    },
+    {
+      "project_name": "ms, Contract Section Department of Environmental Protection Bureau of Design and Construction",
+      "location": "Tallahassee, FL 32399",
+      "bid_due": "09/19/2025",
+      "description": "Renovation of a museum in Ellenton, Florida. Completed plans call for the renovation of a museum. The Department of Environmental Protection, Bureau of Design and Construction is soliciting formal, competitive, sealed bids from Contractors licensed to work in the jurisdiction for the project listed below. PROJECT MANAGER: John Goss, Florida Department of Environmental Protection, Bureau of Design and Construction, 3800 Commonwealth Boulevard, Tallahassee, Florida, 32399. Telephone Number: (850) 245-2535, Email: Brandon.D.Williams@FloridaDEP.gov. Question Deadline 09/19/2025 All questions concerning the Bidding Documents shall be directed in (legible) writing (including bid number, Project name, company name, address, contact name and phone number, facsimile number or electronic mail address) by mail or e-mail to: Brandon Williams, Contract Section Department of Environmental Protection Bureau of Design and Construction 3800 Commonwealth Blvd., MS520 Tallahassee, FL 32399-3000 Phone: (8",
+      "project_url": "https://app.constructconnect.com/project/7241736/c?sourceType=3",
+      "contacts": [
+        {
+          "email": "Brandon.D.Williams@FloridaDEP.go",
+          "name": "Brandon Williams"
+        },
+        {
+          "email": "Brandon.D.Williams@FloridaDEP.gov",
+          "name": "John Goss"
+        },
+        {
+          "email": "Brandon.D.Williams@FloridaDEP.gov",
+          "name": "John Goss"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Design Team"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Design Team"
+        }
+      ],
+      "project_id": "5898970",
+      "structures": [
+        "Museum"
+      ],
+      "id": "cc-2",
+      "organization_id": "org_usg_demo",
+      "spec_fit": 0.6,
+      "urgency": 0.8,
+      "confidence": 0.8,
+      "reason_codes": [
+        "has_interior_renovation",
+        "has_bid_due",
+        "has_project_name",
+        "has_construction_specs",
+        "has_government_project"
+      ],
+      "reasoning": "The project involves a museum renovation with a clear bid due date, indicating active procurement for interior construction work. While specific interior materials like drywall or ceilings are not explicitly detailed in the provided snippet, a renovation of this nature inherently requires such materials. The mention of the Department of Environmental Protection and Bureau of Design and Construction suggests a structured procurement process often tied to specific building standards and specifications likely including Division 09.",
       "_sorting_details": {
         "base_score": 0.6,
         "weighted_score": 0.7000000000000001,
@@ -90,80 +168,179 @@
       "priority_score": 0.86
     },
     {
-      "project_name": "Ellenton Museum In Ellenton Renovation",
-      "location": "Ellenton, FL 34222",
-      "bid_due": "Sep 13, 2025",
-      "description": "Renovation of a museum in Ellenton, Florida. Completed plans call for the renovation of a museum. The Department of Environmental Protection, Bureau of Design and Construction is soliciting formal, competitive, sealed bids from Contractors licensed to work in the jurisdiction for the project listed below. PROJECT MANAGER: John Goss, Florida Department of Environmental Protection, Bureau of Design and Construction, 3800 Commonwealth Boulevard, Tallahassee, Florida, 32399. Telephone Number: (850) 245-2535, Email: Brandon.D.Williams@FloridaDEP.gov.\nShow More Renovation of a museum in Ellenton, Florida. Completed plans call for the renovation of a museum. The Department of Environmental Protection, Bureau of Design and Construction is soliciting formal, competitive, sealed bids from Contractors licensed to work in the jurisdiction for the project listed below. PROJECT MANAGER: John Goss, Florida Department of Environmental Protection, Bureau of Design and Construction, 3800 Commonwealth Bo",
-      "project_url": "https://app.constructconnect.com/project/7241736/c?sourceType=3",
-      "id": "cc-12",
-      "organization_id": "org_usg_demo",
-      "spec_fit": 0.6,
-      "urgency": 0.8,
-      "confidence": 0.8,
-      "reason_codes": [
-        "has_interior_renovation",
-        "has_bid_due",
-        "has_construction_specs",
-        "has_project_name",
-        "has_government_project"
+      "project_name": "Supply\nBuilding",
+      "location": "North Lauderdale, FL 33068",
+      "bid_due": "Sep 15, 2025",
+      "description": "This is a service / maintenance or supply contract in North Lauderdale, Florida. Contact the soliciting agency for additional information. The City of North Lauderdale is seeking qualified electrical contractors to provide on-call and project-based electrician services for a range of municipal needs. The City of North Lauderdale reserves the right to reject any or all proposals, to waive any informalities or irregularities in any proposal received, to re-advertise this RFP, or to take any other such actions that may be deemed to be in the best interest of the City.\nShow More This is a service / maintenance or supply contract in North Lauderdale, Florida. Contact the soliciting agency for additional information. The City of North Lauderdale is seeking qualified electrical contractors to provide on-call and project-based electrician services for a range of municipal needs. The City of North Lauderdale reserves the right to reject any or all proposals, to waive any informalities or irregu",
+      "project_url": "https://app.constructconnect.com/project/7247773/c?sourceType=3",
+      "contacts": [
+        {
+          "name": "Mikhail Votek"
+        },
+        {
+          "name": "Citywide Electrician"
+        },
+        {
+          "name": "Project Intelligence"
+        }
       ],
-      "reasoning": "The project is a renovation of a museum, indicating interior work is expected {has_interior_renovation}. The bid due date is September 13, 2025, suggesting an active procurement phase {has_bid_due}. The mention of \"renovation of a museum\" implies potential needs for interior finishes, partitions, and possibly acoustical or fire-rated elements common in public spaces like museums {has_construction_specs}. The involvement of the Department of Environmental Protection and Bureau of Design and Construction further suggests a formal process with clear specifications {has_project_name}.",
-      "_sorting_details": {
-        "base_score": 0.6,
-        "weighted_score": 0.7000000000000001,
-        "industry_bonus": 0.0,
-        "material_bonus": 0.08,
-        "urgency_bonus": 0.0,
-        "final_score": 0.78
-      },
-      "priority_score": 0.78
-    },
-    {
-      "project_name": "Delray Beach Residential Development In Delray Beach Renovation",
-      "location": "Delray Beach, FL 33444",
-      "bid_due": "09/12/2025",
-      "description": "Renovation of a residential development in Delray Beach, Florida. Completed plans call for the renovation of a residential development. The City of Delray Beach, Florida (\"City\") is seeking Proposals from qualified firms for professional services relating to Residential Housing Rehabilitation Programs Project Manager(s), in accordance with the terms, conditions, and specifications contained in this Request for Qualifications. All Proposers are advised to closely examine the solicitation package. The City of Delray Beach is exempt from Federal and State Taxes for tangible personal property tax. The City of Delray Beach reserves the right to accept or reject any or all Proposals, in whole or in part, with or without cause, to waive any irregularities and/or technicalities, and to award the contract on such coverage and terms it deems will best serve the interests of the City. Any questions regarding the specifications and Solicitation process must be submitted in writing through the \"Que",
-      "project_url": "https://app.constructconnect.com/project/7212728/c?sourceType=3",
-      "id": "cc-10",
+      "project_id": "5900246",
+      "structures": [
+        "Municipal"
+      ],
+      "id": "cc-19",
       "organization_id": "org_usg_demo",
       "spec_fit": 0.2,
-      "urgency": 0.6,
+      "urgency": 1.0,
       "confidence": 0.4,
       "reason_codes": [
-        "has_interior_renovation",
-        "has_project_name",
-        "has_timeline_specified"
+        "has_project_name"
       ],
-      "reasoning": "The project describes a \"Renovation of a residential development\" {project-id}, indicating some interior work. However, the focus is on \"Residential Housing Rehabilitation Programs Project Manager(s)\" {project-id}, which suggests a broader program management role rather than direct procurement of specific interior building materials from USG. The bid due date of September 12, 2025 {project-id} places it in a medium-term urgency. Confidence is low due to the lack of specific interior construction details.",
+      "reasoning": "The project description explicitly states it is a 'supply contract' and involves 'on-call and project-based electrician services' for municipal needs. This indicates a potential for purchasing materials, but the focus is solely on electrical services, not interior building materials like drywall or ceiling systems. The bid due date of September 15, 2025, implies a near-term need for the specified services {Supply Building}.",
       "_sorting_details": {
         "base_score": 0.2,
-        "weighted_score": 0.36000000000000004,
+        "weighted_score": 0.48000000000000004,
         "industry_bonus": 0.15,
-        "material_bonus": 0.08,
+        "material_bonus": 0.0,
         "urgency_bonus": 0.08,
-        "final_score": 0.6699999999999999
+        "final_score": 0.71
       },
-      "priority_score": 0.6699999999999999
+      "priority_score": 0.71
     },
     {
-      "project_name": "Metro Mover Station Renovation",
-      "location": "Miami, FL 33128",
-      "bid_due": "Sep 14, 2025",
-      "description": "Renovation of a transportation facility in Miami, Florida. Completed plans call for the renovation of a transportation facility. SCOPE OF WORK: This project involves removing and installing seventy-one (71) fire-rated three-hour (3) stainless steel doors, frames, hinges, including all hardware listed. Door, frame, and hardware must have the same fire-resistance rating of three hours. The contractor is responsible for ordering the new door with the same lock configuration as the existing door. The contractor is responsible for obtaining the Miami-Dade Building Department permit. Sixty- one (61) single doors and ten (10) double doors need to be replaced, for a total of seventy- one (71) doors. The sizes of single and double doors vary. The contractor is responsible for measuring each Metro Rail and Metro Mover station door that will be replaced. Contractors who choose not to attend the site visit will not be excused from any information or details visibly apparent or discuss during the v",
-      "project_url": "https://app.constructconnect.com/project/7244649/c?sourceType=3",
-      "id": "cc-0",
+      "project_name": "Supply\nBuilding",
+      "location": "Naples, FL 34112",
+      "bid_due": "Sep 15, 2025",
+      "description": "This is a service / maintenance or supply contract in Naples, Florida. Contact the soliciting agency for additional information. As requested by the Facilities Management Division (hereinafter, the \"Division\"), the Collier County Board of County Commissioners Procurement Services Division (hereinafter, \"County\") has issued this Construction Manager at Risk (CMAR) Request for Professional Services (RPS) Solicitation (hereinafter, \"CMAR RPS\") with the intent of obtaining proposals from interested and qualified Construction Managers (referred to as \"CM or \"Proposer\" ) in accordance with the terms, conditions and specifications stated or attached. The Proposer, at a minimum, must achieve the requirements of the Qualifications, Specifications, or Scope of Work stated. The Immokalee Government Center building was constructed in the year 1967 and is comprised of an existing 15,000 square foot facility that houses the Collier County government services, EMS, Clerk of Courts, Supervisor of Elec",
+      "project_url": "https://app.constructconnect.com/project/7248094/c?sourceType=3",
+      "contacts": [
+        {
+          "email": "olivia.puga@colliercountyfl.gov",
+          "name": "Tamiami Trail"
+        },
+        {
+          "email": "olivia.puga@colliercountyfl.gov",
+          "name": "Tamiami Trail"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Olivia Puga"
+        }
+      ],
+      "project_id": "5900260",
+      "structures": [
+        "Municipal"
+      ],
+      "id": "cc-20",
+      "organization_id": "org_usg_demo",
+      "spec_fit": 0.4,
+      "urgency": 0.2,
+      "confidence": 0.8,
+      "reason_codes": [
+        "has_project_name",
+        "has_timeline_specified",
+        "has_government_project",
+        "has_construction_specs"
+      ],
+      "reasoning": "The project involves a CMAR RPS for the Immokalee Government Center, a 1967-built facility housing government services {Project Name: Supply Building}. While the description mentions the building's purpose and age, it lacks specific details on interior renovation scope or material requirements like drywall, ceilings, or fire-rated systems. The bid due date is over a year away (Sep 15, 2025), indicating a long-term planning horizon {has_timeline_specified}. The project clearly outlines a government facility context {has_government_project} and involves a formal procurement process but needs more explicit interior construction details to elevate the intent score.",
+      "_sorting_details": {
+        "base_score": 0.4,
+        "weighted_score": 0.42000000000000004,
+        "industry_bonus": 0.15,
+        "material_bonus": 0.0,
+        "urgency_bonus": 0.08,
+        "final_score": 0.65
+      },
+      "priority_score": 0.65
+    },
+    {
+      "project_name": "PRE-BID MEETING: Not Applicable The City of Riviera Beach is seeking construction",
+      "location": "Riviera Beach, FL 33404",
+      "bid_due": "08/15/2025",
+      "description": "Site work and paving for a mixed-use development in Riviera Beach, Florida. Completed plans call for site work for a playground / park / athletic field; sidewalk / parking lot; and for paving for a sidewalk / parking lot. Reference Number 0000392491 PACIFICA Proposal No. 610-12018787 PRE-BID MEETING: Not Applicable The City of Riviera Beach is seeking construction renovation services to construct a basketball court, parking lot hardscape, and landscaping at the Lindsay Davis Center(1150 28th Street, Riviera Beach, Florida 33404). Question Deadline 08/15/2025 at 4:00 PM ET Questions are submitted online Yes, Prospective bidders must submit any questions regarding this solicitation electronically in online by the due date and time specified in the solicitation. Only questions submitted via online will be accepted and addressed. Responses to questions received during the solicitation time period are posted on the website at online in an addendum. Buyer Preferences, Guidelines & Requiremen",
+      "project_url": "https://app.constructconnect.com/project/7192392/c?sourceType=3",
+      "contacts": [
+        {
+          "email": "construction@cc.com",
+          "name": "Riviera Beach"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Riviera Beach"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Riviera Beach"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Riviera Beach"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Riviera Beach"
+        }
+      ],
+      "project_id": "5856577",
+      "structures": [
+        "Playgrounds / Parks / Athletic Fields"
+      ],
+      "id": "cc-26",
+      "organization_id": "org_usg_demo",
+      "spec_fit": 0.2,
+      "urgency": 0.8,
+      "confidence": 0.6,
+      "reason_codes": [
+        "has_government_project",
+        "has_education_facility",
+        "has_timeline_specified",
+        "has_bid_due"
+      ],
+      "reasoning": "The project focuses on site work, paving, and a basketball court at the Lindsay Davis Center {0000392491}. While the Lindsay Davis Center is an institutional facility, the scope described does not directly involve interior building materials or systems such as drywall, ceilings, or partitions. The mention of 'renovation services' is broad and could potentially include interior work, but the explicit details lean towards exterior and site improvements {0000392491}. The bid due date of 08/15/2025 indicates a near-term procurement process {0000392491}.",
+      "_sorting_details": {
+        "base_score": 0.2,
+        "weighted_score": 0.45999999999999996,
+        "industry_bonus": 0.0,
+        "material_bonus": 0.08,
+        "urgency_bonus": 0.08,
+        "final_score": 0.6199999999999999
+      },
+      "priority_score": 0.6199999999999999
+    },
+    {
+      "project_name": "Supply\nBuilding",
+      "location": "Seminole Way Hollywood, FL 33314",
+      "bid_due": "Sep 15, 2025",
+      "description": "This is a service / maintenance or supply contract in Hollywood, Florida. Contact the soliciting agency for additional information. The Seminole Tribe of Florida is soliciting Statements of Qualifications (SOQ) from qualified vendors to provide residential renovation services in Tribal-wide on an as-needed basis.\nShow More This is a service / maintenance or supply contract in Hollywood, Florida. Contact the soliciting agency for additional information. The Seminole Tribe of Florida is soliciting Statements of Qualifications (SOQ) from qualified vendors to provide residential renovation services in Tribal-wide on an as-needed basis.",
+      "project_url": "https://app.constructconnect.com/project/7248086/c?sourceType=3",
+      "contacts": [
+        {
+          "name": "Mikhail Votek"
+        },
+        {
+          "name": "Residential Renovation"
+        },
+        {
+          "name": "Project Intelligence"
+        }
+      ],
+      "project_id": "5900259",
+      "structures": [
+        "Residential Subdivision"
+      ],
+      "id": "cc-14",
       "organization_id": "org_usg_demo",
       "spec_fit": 0.4,
       "urgency": 0.6,
       "confidence": 0.6,
       "reason_codes": [
         "has_interior_renovation",
-        "has_fire_rating",
+        "has_government_project",
         "has_bid_due",
         "has_project_name",
         "has_timeline_specified"
       ],
-      "reasoning": "The project focuses on renovation of a transportation facility, which includes the replacement of seventy-one fire-rated doors and frames {Metro Mover Station Renovation}. While fire-rated materials are mentioned, there is no specific indication of USG's interior building materials like drywall, wallboard systems, or ceiling solutions being part of the scope. The bid due date is relatively far out, suggesting a medium-term timeline. The details provided offer a clear picture of the renovation type.",
+      "reasoning": "The project involves residential renovation services on an as-needed basis for the Seminole Tribe of Florida, indicating interior work for housing {project-id}. While the description is general, the mention of renovation services suggests a need for interior building materials like drywall and partition systems {project-id}. The bid due date of September 15, 2025, points to a medium-term timeline for potential procurement {project-id}.",
       "_sorting_details": {
         "base_score": 0.4,
         "weighted_score": 0.5,
@@ -175,44 +352,228 @@
       "priority_score": 0.58
     },
     {
-      "project_name": "Construction Project 16",
-      "location": "Punta Gorda, FL 33955",
-      "bid_due": "Sep 13, 2025",
-      "description": "This is a service / maintenance or supply contract in Punta Gorda, Florida. Contact the soliciting agency for additional information. This is a service / maintenance or supply contract in Punta Gorda, Florida. Contact the soliciting agency for additional information.",
-      "project_url": "https://app.constructconnect.com/project/7247418/c?sourceType=3",
-      "id": "cc-15",
-      "organization_id": "org_usg_demo",
-      "spec_fit": 0.2,
-      "urgency": 0.8,
-      "confidence": 0.4,
-      "reason_codes": [
-        "has_bid_due",
-        "has_project_name"
+      "project_name": "Miami-Dade County - Public Housing and Community Development",
+      "location": "Miami, FL 33128",
+      "bid_due": "09/10/2025",
+      "description": "Site work and new construction of a library in Key Biscayne, Florida. Completed plans call for the construction of a 20,000-square-foot, two-story above grade library; and for site work for a library. CONTRACTOR shall review all documents, plans, and scope of work provided by Miami-Dade County Library System, Capital Programs Division for work to be completed. The CONTRACTOR shall protect all existing components: included, but not limited to walkways, trees, pond, benches and other existing site furnishings including perimeter fence, if applicable. The CONTRACTOR shall perform the WORK complete, in place, tested, and ready for continuous occupancy, and shall include repairs, replacements, and restoration required as a result of damage caused during the construction. CONTRACTOR shall furnish all labor, materials, equipment, services, and incidentals to complete all work required by these contract documents and as can be inferred and necessary for the proper completion of the WORK, wheth",
+      "project_url": "https://app.constructconnect.com/project/7164045/c?sourceType=3",
+      "contacts": [
+        {
+          "email": "Cga@mdpls.org",
+          "name": "Question Deadline"
+        },
+        {
+          "email": "Clerkbcc@miamidade.gov",
+          "name": "All Requests"
+        },
+        {
+          "email": "Cga@mdpls.org",
+          "name": "Question Deadline"
+        },
+        {
+          "email": "clerkbcc@miamidade.gov",
+          "name": "County Commissioners"
+        },
+        {
+          "email": "Cga@mdpls.org",
+          "name": "Question Deadline"
+        }
       ],
-      "reasoning": "The project description indicates a service/maintenance or supply contract, with a bid due date of September 13, 2025. However, it lacks specific details regarding interior construction or material needs, making the intent for USG products difficult to ascertain. The bid due date suggests a medium-term urgency {Project Name: Construction Project 16} {Bid Due: Sep 13, 2025}.",
+      "project_id": "5835260",
+      "structures": [
+        "Library"
+      ],
+      "id": "cc-3",
+      "organization_id": "org_usg_demo",
+      "spec_fit": 0.4,
+      "urgency": 0.6,
+      "confidence": 0.8,
+      "reason_codes": [
+        "has_project_name",
+        "has_construction_specs",
+        "has_timeline_specified",
+        "has_bid_due"
+      ],
+      "reasoning": "The project involves the new construction of a library, which will require interior building materials like drywall and potentially ceiling systems {project-id}. The bid due date of 09/10/2025 suggests an active procurement phase, placing it in medium-term urgency {project-id}.",
       "_sorting_details": {
-        "base_score": 0.2,
-        "weighted_score": 0.42,
+        "base_score": 0.4,
+        "weighted_score": 0.54,
         "industry_bonus": 0.0,
         "material_bonus": 0.0,
         "urgency_bonus": 0.0,
-        "final_score": 0.42
+        "final_score": 0.54
       },
-      "priority_score": 0.42
+      "priority_score": 0.54
+    },
+    {
+      "project_name": "Miami-Dade County - Public Housing and Community Development",
+      "location": "Miami, FL 33128",
+      "bid_due": "09/10/2025",
+      "description": "Site work and new construction of a library in Key Biscayne, Florida. Completed plans call for the construction of a 20,000-square-foot, two-story above grade library; and for site work for a library. CONTRACTOR shall review all documents, plans, and scope of work provided by Miami-Dade County Library System, Capital Programs Division for work to be completed. The CONTRACTOR shall protect all existing components: included, but not limited to walkways, trees, pond, benches and other existing site furnishings including perimeter fence, if applicable. The CONTRACTOR shall perform the WORK complete, in place, tested, and ready for continuous occupancy, and shall include repairs, replacements, and restoration required as a result of damage caused during the construction. CONTRACTOR shall furnish all labor, materials, equipment, services, and incidentals to complete all work required by these contract documents and as can be inferred and necessary for the proper completion of the WORK, wheth",
+      "project_url": "https://app.constructconnect.com/project/5835260/p?sourceType=3",
+      "contacts": [
+        {
+          "email": "Cga@mdpls.org",
+          "name": "Question Deadline"
+        },
+        {
+          "email": "Clerkbcc@miamidade.gov",
+          "name": "All Requests"
+        },
+        {
+          "email": "Cga@mdpls.org",
+          "name": "Question Deadline"
+        },
+        {
+          "email": "clerkbcc@miamidade.gov",
+          "name": "County Commissioners"
+        },
+        {
+          "email": "Cga@mdpls.org",
+          "name": "Question Deadline"
+        }
+      ],
+      "project_id": "5835260",
+      "structures": [
+        "Library"
+      ],
+      "id": "cc-13",
+      "organization_id": "org_usg_demo",
+      "spec_fit": 0.4,
+      "urgency": 0.6,
+      "confidence": 0.6,
+      "reason_codes": [
+        "has_project_name",
+        "has_timeline_specified",
+        "has_government_project",
+        "has_bid_due"
+      ],
+      "reasoning": "The project describes the new construction of a library, which will inherently involve interior building materials. While there are no explicit mentions of drywall, ceilings, or specific interior systems, the project is for a public facility with a defined bid due date, suggesting active planning and future procurement needs. {Project Name} {Bid Due}",
+      "_sorting_details": {
+        "base_score": 0.4,
+        "weighted_score": 0.5,
+        "industry_bonus": 0.0,
+        "material_bonus": 0.0,
+        "urgency_bonus": 0.0,
+        "final_score": 0.5
+      },
+      "priority_score": 0.5
+    },
+    {
+      "project_name": "NE 38 th Street, Lighthouse Point, FL 33064. The scope of this project includes construction",
+      "location": "Lighthouse Point, FL 33064",
+      "bid_due": "Sep 15, 2025",
+      "description": "Demolition, site work, paving and addition to a mixed-use development in Lighthouse Point, Florida. Completed plans call for the addition of a 1,800-square-foot, one-story above grade library; for the demolition of a library; for site work for a library; sidewalk / parking lot; water / sewer project; and for paving for a sidewalk / parking lot. The City of Lighthouse Point is seeking bids for the construction of a new City Library Addition. The new facility consists of a one-story approximately 1,800 square foot addition with a two-hour connection to the existing Library as part of the existing City Hall Complex. The building will be constructed of masonry block and painted stucco finish, wood trusses, and a new standing seam metal roof. All exterior windows and doors will be impact rated. New electrical, mechanical, and plumbing systems will be provided and will tie into existing utilities. Site work includes selective demolition as needed to construct new building, site drainage, uti",
+      "project_url": "https://app.constructconnect.com/project/5953017/c?sourceType=3",
+      "contacts": [
+        {
+          "email": "construction@cc.com",
+          "name": "Design Team"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Design Team"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Design Team"
+        }
+      ],
+      "project_id": "4819885",
+      "structures": [
+        "Library"
+      ],
+      "id": "cc-21",
+      "organization_id": "org_usg_demo",
+      "spec_fit": 0.4,
+      "urgency": 0.6,
+      "confidence": 0.6,
+      "reason_codes": [
+        "has_project_name"
+      ],
+      "reasoning": "The project focuses on site work, demolition, and exterior construction elements for a library addition {Project Name}. While it mentions a connection to an existing library, there are no explicit details or specifications regarding interior building materials such as drywall, wallboard systems, ceiling tiles, grid systems, or specific fire-rated assemblies that align with USG's product offerings. The intent is primarily for exterior building components and site improvements {Project Name}.",
+      "_sorting_details": {
+        "base_score": 0.4,
+        "weighted_score": 0.5,
+        "industry_bonus": 0.0,
+        "material_bonus": 0.0,
+        "urgency_bonus": 0.0,
+        "final_score": 0.5
+      },
+      "priority_score": 0.5
+    },
+    {
+      "project_name": "Performance Bond is Required for This Project. Question Deadline 08/29",
+      "location": "Boynton Beach, FL 33437",
+      "bid_due": "08/29/2025",
+      "description": "Site work and paving for a mixed-use development in Boynton Beach, Florida. Completed plans call for site work for a road / highway; for paving for a road / highway; sidewalk / parking lot; sidewalk / parking lot; and water / sewer project. Counties : Palm Beach FINANCIAL PROJECT ID(S): 448437-1-52-01, 448437-1-52-02 Road Name: SR 804/ E of Orchid Grv Tr-e of Palm Iss Dr - Res Limits: 93200000 Project(s): 44843715201(*) Federal Aid No: N/A Project(s): 44843715202 Federal Aid No: N/A Total Roadway Length: 1.190 Miles Contract Days: 175 Total Bridge Length: 0.000 Miles Total Proposal Length: 1.190 Miles Contract Execution Days: 10 Special Start Date: N/A Aquis/Flexible Start Time: 60 Description: The Improvements under this Contract consist of, but are not limited to, MOT (standard, traffic control officer, low-profile barrier, pedestrian LCD, arrow board, PCMS, signalization, traffic detection, barricade), monitor existing structures (inspection, settlement), traffic monitoring site (se",
+      "project_url": "https://app.constructconnect.com/project/7204125/c?sourceType=3",
+      "contacts": [
+        {
+          "email": "construction@cc.com",
+          "name": "Fort Lauderdale"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Fort Lauderdale"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Fort Lauderdale"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Fort Lauderdale"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Fort Lauderdale"
+        }
+      ],
+      "project_id": "5866069",
+      "structures": [
+        "Roads / Highways"
+      ],
+      "id": "cc-17",
+      "organization_id": "org_usg_demo",
+      "spec_fit": 0.0,
+      "urgency": 0.8,
+      "confidence": 0.4,
+      "reason_codes": [],
+      "reasoning": "The project description focuses exclusively on site work, paving, and road infrastructure, with no mention of interior construction or building materials.",
+      "_sorting_details": {
+        "base_score": 0.0,
+        "weighted_score": 0.32,
+        "industry_bonus": 0.15,
+        "material_bonus": 0.0,
+        "urgency_bonus": 0.0,
+        "final_score": 0.47
+      },
+      "priority_score": 0.47
     },
     {
       "project_name": "Renovation Of A Water / Sewer",
-      "location": "North Port, FL 34287",
-      "bid_due": "Sep 13, 2025",
-      "description": "Renovation of a water / sewer project in North Port, Florida. Completed plans call for the renovation of a water / sewer project. The City of North Port is requesting sealed bids to secure the services of an experienced, professional, licensed, and qualified Contractor capable of providing construction services in accordance with the specifications and drawings to construct the Pan American Wastewater Reclamation Facility Centrifuge Building in its entirety. All potential Bidders are recommended to attend the non-mandatory pre-bid conference FOLLOWED by Site Visit. This meeting is to provide bidders with project overview and City's specific expectations for the bid documents and address any questions you may have. The site visit immediately following the meeting will be your only opportunity to walk the project area and see the conditions firsthand. . All questions and clarifications must be submitted via e-mail by OCTOBER 1, 2025, by 2:00 PM The City of North Port does not discriminat",
-      "project_url": "https://app.constructconnect.com/project/6080377/c?sourceType=3",
-      "id": "cc-13",
+      "location": "Englewood, FL 34223",
+      "bid_due": "Sep 15, 2025",
+      "description": "Renovation of a water / sewer project in Englewood, Florida. Completed plans call for the renovation of a water / sewer project. The Englewood Water District is requesting sealed bids to secure the services of an experienced, competent and responsible Contractor capable of replacing filter media supplied by the District and replacement of the wheeler floor plates (if needed) at the Lime Plant, per the attached specifications. The Englewood Water District is currently receiving sealed bids from qualified candidates to provide goods/services as identified in the specifications. Note: All Prospective Bidders Are Hereby Cautioned Not to Contact Any Member of the Englewood Water District Staff or Officials Other Than the Specified Contact Person. The Englewood Water District Has the Right to Reject Any and All Bids in Whole, in Part, for Any Reason Whatsoever, to Waive Informalities and to Award Separate Contracts for Each Individual Items, or a Single Contract for All Items, Whichever is D",
+      "project_url": "https://app.constructconnect.com/project/7248312/c?sourceType=3",
+      "contacts": [
+        {
+          "email": "construction@cc.com",
+          "name": "Bee Ling"
+        }
+      ],
+      "project_id": "5900317",
+      "structures": [
+        "Water / Sewer"
+      ],
+      "id": "cc-25",
       "organization_id": "org_usg_demo",
       "spec_fit": 0.0,
       "urgency": 0.4,
       "confidence": 0.2,
       "reason_codes": [],
-      "reasoning": "The project involves the renovation of a wastewater reclamation facility's centrifuge building, which typically focuses on exterior and specialized mechanical/process systems, not interior building materials like drywall or ceiling systems. The description lacks any mention of interior finishes or scope that would indicate a need for USG products. {Project Name: Renovation Of A Water / Sewer}",
+      "reasoning": "The project focuses on water/sewer infrastructure and does not mention any interior building materials or renovation components.",
       "_sorting_details": {
         "base_score": 0.0,
         "weighted_score": 0.16,
@@ -224,20 +585,40 @@
       "priority_score": 0.32
     },
     {
-      "project_name": "Pompano Beach Water Infrastructure Project",
-      "location": "Pompano Beach, FL 33060",
-      "bid_due": "8/29/2025",
-      "description": "Site work for a mixed-use development in Pompano Beach, Florida. Completed plans call for site work for a playground / park / athletic field; and water / sewer project. The City of Pompano Beach (the \"City\") is interested in receiving bids for the Invitation to Bid (ITB) ITB25-060 Hillsboro Marina & Roy Rogers Park Seawall and Dock Improvements. The goal for this ITB is ten percent (10%) for Local Vendor participation The City of Pompano Beach is undertaking a grant-funded construction project within the area of the Hillsboro Marina (Hillsboro Inlet Fishing Center) and Roy Rogers Park (formerly known as Hillsboro Inlet Park). These two adjacent public waterfront facilities are located on the south side of the Hillsboro Inlet and lie on either side of the SR A1A bridge. They are connected by a road that runs beneath the southern approach to the bridge. The project area is a highly utilized recreational and marine operations corridor that supports both public use and commercial charter s",
-      "project_url": "https://app.constructconnect.com/project/7205409/c?sourceType=3",
-      "id": "cc-6",
+      "project_name": "Water Treatment Plant Improvement",
+      "location": "Golf, FL 33436",
+      "bid_due": "Sep 15, 2025",
+      "description": "Site work for a civil project in Village of Golf, Florida. Completed plans call for site work for a water / sewer project. The Village of Golf (Village) is accepting bids from qualified and responsible contractors to furnish and assume full responsibility for all labor, material, construction equipment and machinery, transportation, tools, appliances, fuel, power, light, telephone, water, sanitary facilities, temporary facilities and all other facilities and incidentals necessary, including supervision, servicing, taxes, bonds and insurance, permitting fees, traffic control, security, miscellaneous costs, warranties, general conditions, overhead and profit to perform the work of water treatment plant improvements located within the Village. Funds for this project are anticipated to be derived from the State Revolving Fund (SRF) loan. Therefore, the successful Contractor must comply with all applicable state and federal guidelines Any and all questions regarding the bid documents shall ",
+      "project_url": "https://app.constructconnect.com/project/5900305/p?sourceType=3",
+      "contacts": [
+        {
+          "email": "rachel.forberger@mockroos.com",
+          "name": "Download Documents"
+        },
+        {
+          "email": "dlynn@villageofgolf.org",
+          "name": "Village Clerk"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Donn Lynn"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Donn Lynn"
+        }
+      ],
+      "project_id": "5900305",
+      "structures": [
+        "Water / Sewer"
+      ],
+      "id": "cc-8",
       "organization_id": "org_usg_demo",
       "spec_fit": 0.0,
       "urgency": 0.4,
       "confidence": 0.2,
-      "reason_codes": [
-        "has_project_name"
-      ],
-      "reasoning": "This project focuses entirely on water infrastructure, seawall, dock improvements, and site work for parks and athletic fields, with no mention of interior building construction or materials.",
+      "reason_codes": [],
+      "reasoning": "The project description focuses entirely on site work for a water treatment plant improvement, with no mention of interior building materials or scope.",
       "_sorting_details": {
         "base_score": 0.0,
         "weighted_score": 0.16,
@@ -249,133 +630,324 @@
       "priority_score": 0.31
     },
     {
-      "project_name": "Palmetto Bay Park Improvement Project",
-      "location": "Palmetto Bay, FL 33157",
-      "bid_due": "09/15/2025",
-      "description": "Site work for a playground / park / athletic field in Palmetto Bay, Florida. Completed plans call for site work for a playground / park / athletic field. To be considered, all interested Parties must request copies of the bid documents and submit one (1) original and a flash drive containing a copy of the entire original submission in one (1) sealed package clearly marked with the bid titled Coral Reef Park Tennis Court Fencing Replacement Project ITB# 2025-12-017. THE PACKAGE MUST BE CLEARLY LABELED TO THE ATTENTION OF THE VILLAGE CLERK, INCLUDING THE PACKAGE TITLE. A bid guaranty in the amount of five percent (5%) of the bid must accompany each bid in accordance with the Invitation to Bid (ITB). The respondent shall bear all costs associated with the preparation and submission of the response to the solicitation. The bid document can be obtained by visiting our website Online and by clicking Bids & RFPs. If you cannot download the documents please contact Alessia Bencomo, Procurement",
-      "project_url": "https://app.constructconnect.com/project/7234958/c?sourceType=3",
-      "id": "cc-8",
-      "organization_id": "org_usg_demo",
-      "spec_fit": 0.0,
-      "urgency": 0.6,
-      "confidence": 0.2,
-      "reason_codes": [],
-      "reasoning": "The project description focuses exclusively on site work for a park, playground, and athletic field, with no mention of interior construction or building materials. The bid due date indicates medium-term urgency for site work procurement, but there are no signals for USG interior products. {Palmetto Bay Park Improvement Project}",
-      "_sorting_details": {
-        "base_score": 0.0,
-        "weighted_score": 0.22,
-        "industry_bonus": 0.0,
-        "material_bonus": 0.0,
-        "urgency_bonus": 0.08,
-        "final_score": 0.3
-      },
-      "priority_score": 0.3
-    },
-    {
-      "project_name": "Big Pine Key Water Infrastructure Project",
-      "location": "Big Pine Key, FL 33043",
-      "bid_due": "09/19/2025",
-      "description": "Site work for a civil project in Big Pine Key, Florida. Completed plans call for site work for a water / sewer project. Such bids shall be for the following: Refurbishment of FKAA Wastewater Transmission Lift Station No.2, Big Pine Key, FL 33043 Any questions should be directed to David Jackson, Purchasing Manager in writing via email to djackson@fkaa.com. The Governing Board of Directors of the Florida Keys Aqueduct Authority reserves the right to reject any and all bids, in whole or in part, to waive any irregularities or informalities in any bid, and to award to any party considered to be in the best interest of the Authority. The worksite is located near the SW corner of Watson Blvd. and Key Deer Blvd. on Big Pine Key, FL 33034. Coordinates 24.69070* N 81.37065* W Question Deadline 09/19/2025: Questions regarding this bid should be directed in writing via email to David Jackson, Purchasing Manager at djackson@fkaa.com. Any questions concerning conditions and specifications should b",
-      "project_url": "https://app.constructconnect.com/project/7245850/c?sourceType=3",
-      "id": "cc-19",
-      "organization_id": "org_usg_demo",
-      "spec_fit": 0.0,
-      "urgency": 0.6,
-      "confidence": 0.2,
-      "reason_codes": [],
-      "reasoning": "This project description focuses entirely on water infrastructure and site work, with no mention of interior building materials or construction.",
-      "_sorting_details": {
-        "base_score": 0.0,
-        "weighted_score": 0.22,
-        "industry_bonus": 0.0,
-        "material_bonus": 0.0,
-        "urgency_bonus": 0.08,
-        "final_score": 0.3
-      },
-      "priority_score": 0.3
-    },
-    {
-      "project_name": "Marathon Housing Renovation",
-      "location": "Marathon, FL 33050",
-      "bid_due": "Sep 13, 2025",
-      "description": "This is a service / maintenance or supply contract in Marathon, Florida. Contact the soliciting agency for additional information. 70Z028-25-Q-BMBMARATHONLANDSCAPING The U.S. Coast Guard Base Miami Beach requires recurring tree care, landscaping, lawn maintenance, and shrubbery maintenance services for Grassy Key Housing in Marathon, Florida. Services must be performed in accordance with the attached Statement of Work (SOW). This is a firm-fixed-price service contract awarded using simplified acquisition procedures under FAR Parts 12 and 13. The evaluation will be conducted on a Lowest Price Technically Acceptable (LPTA) basis, considering technical capability, past performance, and price. The contract includes a base year period of performance from date of award through August 31, 2026. Vendors must be registered in SAM.gov prior to award, and invoices will be submitted through the Invoice Processing Platform (IPP).\nShow More This is a service / maintenance or supply contract in Marat",
-      "project_url": "https://app.constructconnect.com/project/7227929/c?sourceType=3",
-      "id": "cc-14",
+      "project_name": "Water Treatment Plant Improvement",
+      "location": "Golf, FL 33436",
+      "bid_due": "Sep 15, 2025",
+      "description": "Site work for a civil project in Village of Golf, Florida. Completed plans call for site work for a water / sewer project. The Village of Golf (Village) is accepting bids from qualified and responsible contractors to furnish and assume full responsibility for all labor, material, construction equipment and machinery, transportation, tools, appliances, fuel, power, light, telephone, water, sanitary facilities, temporary facilities and all other facilities and incidentals necessary, including supervision, servicing, taxes, bonds and insurance, permitting fees, traffic control, security, miscellaneous costs, warranties, general conditions, overhead and profit to perform the work of water treatment plant improvements located within the Village. Funds for this project are anticipated to be derived from the State Revolving Fund (SRF) loan. Therefore, the successful Contractor must comply with all applicable state and federal guidelines Any and all questions regarding the bid documents shall ",
+      "project_url": "https://app.constructconnect.com/project/7247968/c?sourceType=3",
+      "contacts": [
+        {
+          "email": "dlynn@villageofgolf.org",
+          "name": "Village Clerk"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Donn Lynn"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Donn Lynn"
+        }
+      ],
+      "project_id": "5900305",
+      "structures": [
+        "Water / Sewer"
+      ],
+      "id": "cc-23",
       "organization_id": "org_usg_demo",
       "spec_fit": 0.0,
       "urgency": 0.4,
       "confidence": 0.2,
       "reason_codes": [],
-      "reasoning": "The project description focuses exclusively on exterior landscaping and tree care services for housing units, with no mention of interior construction, renovation, or specific building materials.",
+      "reasoning": "The project description focuses exclusively on site work and civil infrastructure for a water treatment plant, with no mention of interior building materials or systems relevant to USG products.",
       "_sorting_details": {
         "base_score": 0.0,
         "weighted_score": 0.16,
-        "industry_bonus": 0.0,
+        "industry_bonus": 0.15,
         "material_bonus": 0.0,
-        "urgency_bonus": 0.12,
+        "urgency_bonus": 0.0,
+        "final_score": 0.31
+      },
+      "priority_score": 0.31
+    },
+    {
+      "project_name": "of County Commissioners seeks to contract with a qualified CONTRACTOR to provide construction",
+      "location": "Fort Myers Beach, FL 33931",
+      "bid_due": "09/07/2025",
+      "description": "Site work and renovation of a water / sewer project in Fort Myers Beach, Florida. Completed plans call for site work for a water / sewer project; and for the renovation of a water / sewer project. The Lee County Board of County Commissioners seeks to contract with a qualified CONTRACTOR to provide construction demolition, reconstruction, and upgrades to improve capacity, efficiency, and resiliency of the Fort Myers Beach Water Reclamation Facility. The project includes phased construction of new structures, advanced treatment systems, and significant subsurface and site improvements. The completed facility will achieve a permitted capacity of 6 MGD while incorporating modern technologies, enhanced infrastructure, and flood-resilient design features. Question Deadline 09/07/2025 at 12:00 PM ET Questions regarding this solicitation are to be submitted electronically\nShow More Site work and renovation of a water / sewer project in Fort Myers Beach, Florida. Completed plans call for site w",
+      "project_url": "https://app.constructconnect.com/project/6383902/c?sourceType=3",
+      "contacts": [
+        {
+          "email": "construction@cc.com",
+          "name": "General Contractor"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "General Contractor"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "General Contractor"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "General Contractor"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "General Contractor"
+        }
+      ],
+      "project_id": "5179438",
+      "structures": [
+        "Water / Sewer"
+      ],
+      "id": "cc-16",
+      "organization_id": "org_usg_demo",
+      "spec_fit": 0.0,
+      "urgency": 0.4,
+      "confidence": 0.4,
+      "reason_codes": [
+        "has_project_name"
+      ],
+      "reasoning": "The project focuses on site work, water/sewer infrastructure, and facility renovation for a water reclamation plant. There are no mentions of interior building materials, drywall, ceilings, or partitions, indicating no direct interest in USG interior products.",
+      "_sorting_details": {
+        "base_score": 0.0,
+        "weighted_score": 0.2,
+        "industry_bonus": 0.0,
+        "material_bonus": 0.08,
+        "urgency_bonus": 0.0,
         "final_score": 0.28
       },
       "priority_score": 0.28
     },
     {
-      "project_name": "Naples School Renovation",
-      "location": "Naples, FL 34120",
-      "bid_due": "08/14/2025",
-      "description": "Site work and paving for a mixed-use development in Naples, Florida. Completed plans call for site work for a road / highway; for paving for a road / highway; sidewalk / parking lot; and sidewalk / parking lot. This Project is Funded in Whole or in Part by the U.s. Department of Housing and Urbandevelopment (Hud) Through the Community Development Block Grant (Cdbg) Program. The Workincludes, but is Not Limited to: 1. Replacing Existing Led Street Lighting 2. Improve Pedestrian and Motorist Safety on South 1st Street 3. Permitting, Construction, and Associated Activities for Street Lighting Improvements All Work Must Comply With Federal Labor Standards, Davis-bacon Wage Rates, Baba, Section 3requirements, and Equal Opportunity Employment Regulations. Question Deadline 08/14/2025 at 5:00 PM ET Project Location: South 1st Street (Immokalee Road -c.r. 846 E) From School Rd. / Seminolecrossing Trail to Eustis Ave. The Collier County Reserves the Right to Reject Any or All Bids, Waive Inform",
-      "project_url": "https://app.constructconnect.com/project/7058490/c?sourceType=3",
-      "id": "cc-11",
+      "project_name": "lexible Start Time: 120 Days Please read the full advertisement Description: The Improvement",
+      "location": "Indian River Shores, FL 32963",
+      "bid_due": "10/22/2025",
+      "description": "Demolition, site work, paving, outdoor lighting and new construction of a mixed-use development in Indian River Shores, Florida. Completed plans call for site work for a road / highway; sidewalk / parking lot; for paving for a sidewalk / parking lot; for outdoor lighting for a road / highway; road / highway; bridge / tunnel; for the construction of a bridge / tunnel; bridge / tunnel; and bridge / tunnel. Counties: Indian River Road Name: SR A1A (Jimmy Buffett Memorial Hwy) Over Sebastian Inlet Limits: 88070000 Project(s): 44561815201(*) Federal Aid No: D424104B Total Roadway Length: 1.465 Miles Total Bridge Length: 0.292 Miles Total Proposal Length: 1.757 Miles Contract Days: 1715 Contract Execution Days: 10 Special Start Date: N/A Aquis/Flexible Start Time: 120 Days Please read the full advertisement Description: The Improvements under this Contract consist of, but are not limited to, MOT (standard, special detour, traffic control officer, barrier, crash cushion, PCMS, barricade, remo",
+      "project_url": "https://app.constructconnect.com/project/7231889/c?sourceType=3",
+      "contacts": [
+        {
+          "email": "construction@cc.com",
+          "name": "Blanca Tapia"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Blanca Tapia"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Blanca Tapia"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Blanca Tapia"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Blanca Tapia"
+        }
+      ],
+      "project_id": "5887351",
+      "structures": [
+        "Roads / Highways"
+      ],
+      "id": "cc-5",
       "organization_id": "org_usg_demo",
       "spec_fit": 0.0,
-      "urgency": 0.0,
+      "urgency": 0.2,
       "confidence": 0.2,
       "reason_codes": [],
-      "reasoning": "The project description focuses exclusively on site work and paving for a road/highway, with no mention of interior construction or USG building materials.",
+      "reasoning": "The project description focuses entirely on exterior work including demolition, site work, paving, outdoor lighting, roads, highways, and bridges. There is no mention of interior building materials or systems that would align with USG's product offerings.",
       "_sorting_details": {
         "base_score": 0.0,
-        "weighted_score": 0.04000000000000001,
-        "industry_bonus": 0.2,
-        "material_bonus": 0.0,
-        "urgency_bonus": 0.0,
-        "final_score": 0.24000000000000002
-      },
-      "priority_score": 0.24000000000000002
-    },
-    {
-      "project_name": "Pembroke Pines Construction Project",
-      "location": "Pembroke Pines, FL 33028",
-      "bid_due": "07/25/2025",
-      "description": "Site work for a road / highway in Pembroke Pines, Florida. Completed plans call for site work for a road / highway. Counties : Broward Road Name: SR-93/I-75 From SR-823/Sheridan St to S of I-595 - Landscape Limits: 86075000 Project(s): 44131915201(*) Federal Aid No: N/A Total Roadway Length: 13.532 Miles Contract Days: 1013 Total Bridge Length: 0.000 Miles Total Proposal Length: 13.532 Miles Contract Execution Days: 10 Special Start Date: N/A Aquis/Flexible Start Time: Description: The Work Under This Contract Consists of Landscaping Along the Sr 93/i-75 Mainline From South of Sr 822/sheridan St to South Of I-595. This is a Lump Sum Contract With Only One Pay Item Listed in the Contract. Pre-qualified: Contractor Does Not Need to Be Pre-qualified. Performance Bond: A Contract / Performance Bond is Required for This Project. Required Submittal With Bid: Experience Form Landscaping 850-070-09 Please Read Standard Specifications for Road and Bridge Construction Fy 2025-26 (Section 7-13) f",
-      "project_url": "https://app.constructconnect.com/project/7163623/c?sourceType=3",
-      "id": "cc-3",
-      "organization_id": "org_usg_demo",
-      "spec_fit": 0.0,
-      "urgency": 0.0,
-      "confidence": 0.0,
-      "reason_codes": [],
-      "reasoning": "The project description exclusively details site work, road, and highway construction, with no mention of interior building elements or materials.",
-      "_sorting_details": {
-        "base_score": 0.0,
-        "weighted_score": 0.0,
+        "weighted_score": 0.1,
         "industry_bonus": 0.15,
         "material_bonus": 0.0,
-        "urgency_bonus": 0.08,
-        "final_score": 0.22999999999999998
+        "urgency_bonus": 0.0,
+        "final_score": 0.25
       },
-      "priority_score": 0.22999999999999998
+      "priority_score": 0.25
     },
     {
-      "project_name": "Miami Office Building Renovation",
-      "location": "Miami, FL 33133",
-      "bid_due": "09/03/2025",
-      "description": "Site work for a municipal facility in Miami, Florida. Completed plans call for site work for a municipal facility. Reference Number 0000395942 Bid Intent Not Available IFB to Remove and Replace Picket Fence and Furnish and Install Chain Link Fence at Thelma Gibson Gardens The Purpose of This Solicitation is to Establish a Contract for One Time Installation of Picket Fences and Chain Link Fences at Thelma Gibson Heritage Gardens. Failure to Complete, Sign, and Upload the Following Documents Will Render Your Bid Non-responsive: 1. Certification Statement; 2. Certification Section, Inclusive of References; 3. Attachment a-bid Price Sheet; 4. Attachment B-anti-human Trafficking Affidavit (Must Be Notarized); and 5. Attachment E-certification Regarding Lobbying Form. All Uploads Shall Be in the Pdf File Format. No Other File Format Will Be Accepted by the City. Question Deadline 09/03/2025 at 5:00 PM ET Questions are submitted online No, Contracting Officer: Soto, Teresa Contracting Officer",
-      "project_url": "https://app.constructconnect.com/project/7224186/c?sourceType=3",
-      "id": "cc-17",
+      "project_name": "lexible Start Time: 120 Days Please read the full advertisement Description: The Improvement",
+      "location": "Indian River Shores, FL 32963",
+      "bid_due": "10/22/2025",
+      "description": "Demolition, site work, paving, outdoor lighting and new construction of a mixed-use development in Indian River Shores, Florida. Completed plans call for site work for a road / highway; sidewalk / parking lot; for paving for a sidewalk / parking lot; for outdoor lighting for a road / highway; road / highway; bridge / tunnel; for the construction of a bridge / tunnel; bridge / tunnel; and bridge / tunnel. Counties: Indian River Road Name: SR A1A (Jimmy Buffett Memorial Hwy) Over Sebastian Inlet Limits: 88070000 Project(s): 44561815201(*) Federal Aid No: D424104B Total Roadway Length: 1.465 Miles Total Bridge Length: 0.292 Miles Total Proposal Length: 1.757 Miles Contract Days: 1715 Contract Execution Days: 10 Special Start Date: N/A Aquis/Flexible Start Time: 120 Days Please read the full advertisement Description: The Improvements under this Contract consist of, but are not limited to, MOT (standard, special detour, traffic control officer, barrier, crash cushion, PCMS, barricade, remo",
+      "project_url": "https://app.constructconnect.com/project/5887351/p?sourceType=3",
+      "contacts": [
+        {
+          "email": "construction@cc.com",
+          "name": "Blanca Tapia"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Blanca Tapia"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Blanca Tapia"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Blanca Tapia"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Blanca Tapia"
+        }
+      ],
+      "project_id": "5887351",
+      "structures": [
+        "Roads / Highways"
+      ],
+      "id": "cc-6",
+      "organization_id": "org_usg_demo",
+      "spec_fit": 0.0,
+      "urgency": 0.2,
+      "confidence": 0.2,
+      "reason_codes": [],
+      "reasoning": "The project description focuses exclusively on exterior work such as demolition, site work, paving, outdoor lighting, bridge construction, and roadwork. There is no mention of interior building materials, renovation, or build-out.",
+      "_sorting_details": {
+        "base_score": 0.0,
+        "weighted_score": 0.1,
+        "industry_bonus": 0.15,
+        "material_bonus": 0.0,
+        "urgency_bonus": 0.0,
+        "final_score": 0.25
+      },
+      "priority_score": 0.25
+    },
+    {
+      "project_name": "Miami Nature-Based Playground Including Play Equipment Construction",
+      "location": "Miami, FL 33186",
+      "bid_due": "09/10/2025",
+      "description": "Demolition and site work for a mixed-use development in Miami, Florida. Completed plans call for the demolition of a playground / park / athletic field; for site work for a playground / park / athletic field; and water / sewer project. SCOPE OF WORK: CONTRACTOR shall review all documents, specifications, plans, and scope of work provided by Miami-Dade County Parks, Recreation, and Open Spaces Department for work to be completed. Furnish all labor, equipment, and materials required to comply with the intent of the WORK described in the contract documents including but not limited to: Construction scope of work to include demolition of the existing playground, construction of a nature-based playground including play equipment, furnishings, engineered wood fiber (EWF), poured in-place rubber (PIP), new irrigation system, hose bibb, and others, per drawings. Approximate total area of usable space is 4,782 SF. All requests for information (RFI) must be submitted in writing by 08/29/2025 to ",
+      "project_url": "https://app.constructconnect.com/project/7204985/c?sourceType=3",
+      "contacts": [
+        {
+          "email": "Penelope.Quintas@miamidade.gov",
+          "name": "Deerwood Bonita"
+        },
+        {
+          "email": "clerkbcc@miamidade.gov",
+          "name": "Question Deadline"
+        },
+        {
+          "email": "Jeffery.BecarCavero@miamidade.gov",
+          "name": "Bid Date"
+        },
+        {
+          "email": "Penelope.Quintas@miamidade.gov",
+          "name": "Deerwood Bonita"
+        },
+        {
+          "email": "Penelope.Quintas@miamidade.gov",
+          "name": "Deerwood Bonita"
+        }
+      ],
+      "project_id": "5866764",
+      "structures": [
+        "Playgrounds / Parks / Athletic Fields"
+      ],
+      "id": "cc-9",
+      "organization_id": "org_usg_demo",
+      "spec_fit": 0.0,
+      "urgency": 0.4,
+      "confidence": 0.2,
+      "reason_codes": [],
+      "reasoning": "This project focuses exclusively on exterior site work, demolition, and the installation of outdoor play equipment and surfacing materials. There are no mentions of interior building materials or systems such as drywall, ceiling tiles, or interior partitions.",
+      "_sorting_details": {
+        "base_score": 0.0,
+        "weighted_score": 0.16,
+        "industry_bonus": 0.0,
+        "material_bonus": 0.0,
+        "urgency_bonus": 0.08,
+        "final_score": 0.24
+      },
+      "priority_score": 0.24
+    },
+    {
+      "project_name": "e contractors to furnish and assume full responsibility for all labor, material, construction",
+      "location": "Golf, FL 33436",
+      "bid_due": "Sep 15, 2025",
+      "description": "Site work for a civil project in Village of Golf, Florida. Completed plans call for site work for a water / sewer project. The Village of Golf (Village) is accepting bids from qualified and responsible contractors to furnish and assume full responsibility for all labor, material, construction equipment and machinery, transportation, tools, appliances, fuel, power, light, telephone, water, sanitary facilities, temporary facilities and all other facilities and incidentals necessary, including supervision, servicing, taxes, bonds and insurance, permitting fees, traffic control, security, miscellaneous costs, warranties, general conditions, overhead and profit to perform the work of pump station and manhole rehabilitation located within the Village. Any and all questions regarding the bid documents shall be directed to the Village Clerk, 21 Country Road, Village of Golf, FL 33436 or via email to: dlynn@villageofgolf.org. No Bid may be withdrawn for a period of 180 days after the scheduled ",
+      "project_url": "https://app.constructconnect.com/project/5900257/p?sourceType=3",
+      "contacts": [
+        {
+          "email": "rachel.forberger@mockroos.com",
+          "name": "Download Documents"
+        },
+        {
+          "email": "dlynn@villageofgolf.org",
+          "name": "Village Clerk"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Donn Lynn"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Donn Lynn"
+        }
+      ],
+      "project_id": "5900257",
+      "structures": [
+        "Water / Sewer"
+      ],
+      "id": "cc-7",
+      "organization_id": "org_usg_demo",
+      "spec_fit": 0.0,
+      "urgency": 0.6,
+      "confidence": 0.2,
+      "reason_codes": [],
+      "reasoning": "The project description focuses solely on site work for a civil water/sewer project, including pump station and manhole rehabilitation. There is no mention of interior construction, building materials, or any elements related to USG's product categories.",
+      "_sorting_details": {
+        "base_score": 0.0,
+        "weighted_score": 0.22,
+        "industry_bonus": 0.0,
+        "material_bonus": 0.0,
+        "urgency_bonus": 0.0,
+        "final_score": 0.22
+      },
+      "priority_score": 0.22
+    },
+    {
+      "project_name": "Supply\nBuilding",
+      "location": "Guaynabo, PR 00934",
+      "bid_due": "Aug 18, 2025",
+      "description": "This is a service / maintenance or supply contract in Guaynabo, Puerto Rico. Contact the soliciting agency for additional information. A/C duct cleaning, repair, and replacement services are required at Fort Buchanan, Puerto Rico. The contract will be awarded as a Firm Fixed-Price type under a Total Small Business Set-Aside. All responsible small businesses capable of fulfilling the requirement are encouraged to submit a quote. The applicable NAICS code is 561790 with a size standard of $9,000,000.00, and the Product Service Code is J041 (Other Services to Buildings and Dwellings). Quotes must include required certifications and be submitted by the deadline stated in the solicitation. Only vendors registered in the System for Award Management (SAM) will be eligible for award. Location: Fort Buchanan, 190th MP BN, Building 511, South Terminal Road, Fort Buchanan, PR 00934, United States Written questions must be furnished to the Government no later than: August 25, 2025 at 12:00 Noon (P",
+      "project_url": "https://app.constructconnect.com/project/7152450/c?sourceType=3",
+      "contacts": [
+        {
+          "email": "jose.m.lopezfeliciano.civ@army.mil",
+          "name": "Question Deadline"
+        },
+        {
+          "email": "felix.r.marrero2.civ@army.mil",
+          "name": "Bid Date"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Fort Buchanan"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Fort Buchanan"
+        }
+      ],
+      "project_id": "5826977",
+      "structures": [
+        "Military"
+      ],
+      "id": "cc-15",
       "organization_id": "org_usg_demo",
       "spec_fit": 0.0,
       "urgency": 0.0,
       "confidence": 0.2,
       "reason_codes": [],
-      "reasoning": "The project description focuses exclusively on exterior site work, specifically fence installation, with no mention of interior building materials {0000395942}.",
+      "reasoning": "The project description focuses on HVAC maintenance and supply contracts (NAICS 561790, PSC J041) and does not mention any interior building materials or construction scope.",
       "_sorting_details": {
         "base_score": 0.0,
         "weighted_score": 0.04000000000000001,
@@ -387,18 +959,85 @@
       "priority_score": 0.19
     },
     {
-      "project_name": "Sunrise Every Nature Construction",
-      "location": "Sunrise, FL 33351",
-      "bid_due": "04/25/2025",
-      "description": "Site work for a water / sewer project in Sunrise, Florida. Completed plans call for site work for a water / sewer project.The Stormwater Pump Station No. 5 is located at 9140 Sunrise Lakes Boulevard. It services drainage basin No. 5, which is approximately 312 acres and is bounded by Pine Island Road on the east, Nob Hill Road on the west, the South Florida Water Management District C-13 Canal on the north, and Northwest 27th Street on the south. This stormwater pumping station, constructed in 1973, has reached the end of its service life and requires replacement. The City of Sunrise requires a qualified Contractor to demolish the existing station, filling the stilling pond adjacent to it, and constructing the new station. The Contractor shall be responsible for permitting, inspections, furnishing all materials, labor, tools, equipment, dewatering, water, light, power, transportation, superintendence, temporary construction of every nature, and all other services and facilities necessa",
-      "project_url": "https://app.constructconnect.com/project/6963230/c?sourceType=3",
-      "id": "cc-4",
+      "project_name": "OHLA Building Inc - OHLA USA, Inc",
+      "location": "Key West Nas, FL 33040",
+      "bid_due": "04/23/2025",
+      "description": "Site work and paving for a road / highway in Key West Nas, Florida. Completed plans call for site work for a road / highway; and for paving for a road / highway. Counties: Monroe Road Name: Sr 5 (Us 1 / N Roosevelt Blvd) Limits: From N of Eisenhower Dr to S Roosevelt Blvd Project(s): 44601115201(*) Federal Aid No: D624057B Total Roadway Length: 2.517 Miles Total Bridge Length: 0.034 Miles Total Proposal Length: 2.551 Miles Contract Days: 300 Contract Execution Days: 10 Special Start Date: N/A Aquis/Flexible Start Time: 60 Days Please read the full advertisement Description: The Improvements Under This Contract Consist of Resurfacing Along State Road 5/us-1/north Roosevelt Boulevard From North of Eisenhower Drive to South Roosevelt Boulevard in Monroe County. Question Deadline 04/23/2025 at 5:00 PM ET, Questions posted to this site will be responded to by the Department. For questions posted after this time, an answer cannot be assured. For all questions posted before the deadline, FDOT",
+      "project_url": "https://app.constructconnect.com/project/7043219/c?sourceType=3",
+      "contacts": [
+        {
+          "email": "construction@cc.com",
+          "name": "Bid Value"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Bid Value"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Bid Value"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Bid Value"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Bid Value"
+        }
+      ],
+      "project_id": "5738636",
+      "structures": [
+        "Roads / Highways"
+      ],
+      "id": "cc-28",
+      "organization_id": "org_usg_demo",
+      "spec_fit": 0.0,
+      "urgency": 0.0,
+      "confidence": 0.2,
+      "reason_codes": [],
+      "reasoning": "The project description focuses exclusively on site work, paving, and road resurfacing, with no mention of interior construction or building materials.",
+      "_sorting_details": {
+        "base_score": 0.0,
+        "weighted_score": 0.04000000000000001,
+        "industry_bonus": 0.15,
+        "material_bonus": 0.0,
+        "urgency_bonus": 0.0,
+        "final_score": 0.19
+      },
+      "priority_score": 0.19
+    },
+    {
+      "project_name": "bid (Except for Confidential Building Plans and",
+      "location": "Boca Raton, FL 33498",
+      "bid_due": "Sep 15, 2025",
+      "description": "Site work and paving for a sidewalk / parking lot in Boca Raton, Florida. Completed plans call for site work for a sidewalk / parking lot; and for paving for a sidewalk / parking lot. Annual Contract: Asphalt, Pavers & Pathway Pbso Substation 7 - Parking Lot Resurfacing General Description of the Project: Resurface the Parking Lot Invitation for Quote/bid. Palm Beach County Reserves the Right to Waive Any Bid Irregularities, Informalities, or Technical Deficiencies and to Reject Any and All Quotes/bids.\nShow More Site work and paving for a sidewalk / parking lot in Boca Raton, Florida. Completed plans call for site work for a sidewalk / parking lot; and for paving for a sidewalk / parking lot. Annual Contract: Asphalt, Pavers & Pathway Pbso Substation 7 - Parking Lot Resurfacing General Description of the Project: Resurface the Parking Lot Invitation for Quote/bid. Palm Beach County Reserves the Right to Waive Any Bid Irregularities, Informalities, or Technical Deficiencies and to Reje",
+      "project_url": "https://app.constructconnect.com/project/7239608/c?sourceType=3",
+      "contacts": [
+        {
+          "email": "Fdo-cid-bids@pbc.gov",
+          "name": "Confidential Building"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "West Palm"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "West Palm"
+        }
+      ],
+      "project_id": "5893812",
+      "structures": [
+        "Sidewalks / Parking Lot"
+      ],
+      "id": "cc-0",
       "organization_id": "org_usg_demo",
       "spec_fit": 0.0,
       "urgency": 0.4,
       "confidence": 0.2,
       "reason_codes": [],
-      "reasoning": "The project is solely focused on site work for a water/sewer project and the replacement of a stormwater pump station, with no mention of interior building materials or construction.",
+      "reasoning": "The project description focuses entirely on site work and paving for sidewalks and parking lots, with no mention of interior construction or USG building materials.",
       "_sorting_details": {
         "base_score": 0.0,
         "weighted_score": 0.16,
@@ -410,43 +1049,276 @@
       "priority_score": 0.16
     },
     {
-      "project_name": "Scope Of The",
-      "location": "Lauderdale Lakes, FL 33319",
-      "bid_due": "Sep 13, 2025",
-      "description": "Site work and paving for a mixed-use development in Lauderdale Lakes, Florida. Completed plans call for site work for a playground / park / athletic field; for paving for a playground / park / athletic field; road / highway; and road / highway. The scope of the project consists of the removal and disposal of existing asphalt walkway, installation of approximately 3,000 linear feet of new flex pave fitness trial (9ft wide), furnishing and installation of new fitness stations with equipment, new bike racks, water fountain and benches. Included as an attachment to the ITB25-6310-21B 1.Plans: Otis Gray Park Improvements 2.Schedule of Bid Items 3.Good Faith Effort Evaluation Form Installation of 3,000 linear feet of new flex pave fitness trial (9ft wide), new fitness stations with equipment, new bike racks, water fountain and benches. Strategic Connection: Goal 3: Maintain and Improve Public Infrastructure The scope of the project consists of the removal and disposal of existing asphalt wal",
-      "project_url": "https://app.constructconnect.com/project/7231729/c?sourceType=3",
-      "id": "cc-9",
+      "project_name": "Fort Myers Park Improvement Project",
+      "location": "Fort Myers, FL 33908",
+      "bid_due": "09/22/2025",
+      "description": "Site work for a mixed-use development in Fort Myers, Florida. Completed plans call for site work for a playground / park / athletic field; and sidewalk / parking lot. Foradditional instructions, visit online or contact Procurement Management at(239)533-8881. August 29,2025 Question Deadline 09/22/2025 at 5:00 PM ET Questions regarding this solicitation are to be submitted electronically at https://leegov.ionwave.net under the questions tab for this solicitation.\nShow More Site work for a mixed-use development in Fort Myers, Florida. Completed plans call for site work for a playground / park / athletic field; and sidewalk / parking lot. Foradditional instructions, visit online or contact Procurement Management at(239)533-8881. August 29,2025 Question Deadline 09/22/2025 at 5:00 PM ET Questions regarding this solicitation are to be submitted electronically at https://leegov.ionwave.net under the questions tab for this solicitation.",
+      "project_url": "https://app.constructconnect.com/project/7230570/c?sourceType=3",
+      "contacts": [
+        {
+          "email": "construction@cc.com",
+          "name": "Design Team"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Design Team"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Design Team"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Design Team"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Design Team"
+        }
+      ],
+      "project_id": "5891501",
+      "structures": [
+        "Playgrounds / Parks / Athletic Fields"
+      ],
+      "id": "cc-12",
       "organization_id": "org_usg_demo",
       "spec_fit": 0.0,
-      "urgency": 0.0,
+      "urgency": 0.4,
+      "confidence": 0.2,
+      "reason_codes": [],
+      "reasoning": "The project description focuses exclusively on site work, including playgrounds, park areas, athletic fields, sidewalks, and parking lots, with no mention of interior building construction or materials. {Fort Myers Park Improvement Project}",
+      "_sorting_details": {
+        "base_score": 0.0,
+        "weighted_score": 0.16,
+        "industry_bonus": 0.0,
+        "material_bonus": 0.0,
+        "urgency_bonus": 0.0,
+        "final_score": 0.16
+      },
+      "priority_score": 0.16
+    },
+    {
+      "project_name": "Citywide Culvert Headwall Improvement Project Phase VII",
+      "location": "Tamarac, FL 33068",
+      "bid_due": "10/06/2025",
+      "description": "Site work for a bridge / tunnel in Tamarac, Florida. Completed plans call for site work for a bridge / tunnel. CITYWIDE CULVERT HEADWALL IMPROVEMENT PROJECT PHASE VII The City of Tamarac is hereby requesting bids, from qualified contractors, for the construction of the Citywide Culvert Headwall Improvement Project - Phase VII (ITB No. 25-08B). The proposed project sites (3 locations) include the following: Location No. 1 - NW 70th Avenue, north of NW 80th Court; Location No. 2 - NW 79th Avenue, south of NW 60th Street (East and West Side); and Location No. 3 - Westwood Drive, north of NW 74th Court (East Side). Refer to Exhibits 1-3, Location Maps for the referenced locations. The work shall include, but not be limited to, demolition of existing headwalls, the construction of new aluminum sheet piling headwall and/or riprap installation, improvements to existing drainage system, asphaltic concrete pavement restoration, striping, concrete sidewalk and curb replacement, guardrail restora",
+      "project_url": "https://app.constructconnect.com/project/7246846/c?sourceType=3",
+      "contacts": [
+        {
+          "name": "Mikhail Votek"
+        },
+        {
+          "name": "Citywide Culvert"
+        },
+        {
+          "name": "Headwall Improvement"
+        }
+      ],
+      "project_id": "5899206",
+      "structures": [
+        "Bridges / Tunnels"
+      ],
+      "id": "cc-1",
+      "organization_id": "org_usg_demo",
+      "spec_fit": 0.0,
+      "urgency": 0.2,
       "confidence": 0.2,
       "reason_codes": [
         "has_project_name"
       ],
-      "reasoning": "The project description focuses solely on site work, paving, and outdoor amenities like a fitness trail and playground equipment. There is no mention of interior building materials or systems, which are the focus for USG product qualification.",
+      "reasoning": "This project focuses on site work, specifically culvert headwall improvements, bridge/tunnel construction, and drainage systems. There is no mention of interior building materials, renovation, or specific interior systems that would indicate buying intent for USG products.",
       "_sorting_details": {
         "base_score": 0.0,
-        "weighted_score": 0.04000000000000001,
+        "weighted_score": 0.1,
         "industry_bonus": 0.0,
         "material_bonus": 0.0,
         "urgency_bonus": 0.0,
-        "final_score": 0.04000000000000001
+        "final_score": 0.1
       },
-      "priority_score": 0.04000000000000001
+      "priority_score": 0.1
     },
     {
-      "project_name": "Resurface The Parking Lot Invitation For Quote/Bid",
-      "location": "Boca Raton, FL 33498",
-      "bid_due": "Sep 13, 2025",
-      "description": "Site work and paving for a sidewalk / parking lot in Boca Raton, Florida. Completed plans call for site work for a sidewalk / parking lot; and for paving for a sidewalk / parking lot. Annual Contract: Asphalt, Pavers & Pathway Pbso Substation 7 - Parking Lot Resurfacing General Description of the Project: Resurface the Parking Lot Invitation for Quote/bid. Palm Beach County Reserves the Right to Waive Any Bid Irregularities, Informalities, or Technical Deficiencies and to Reject Any and All Quotes/bids.\nShow More Site work and paving for a sidewalk / parking lot in Boca Raton, Florida. Completed plans call for site work for a sidewalk / parking lot; and for paving for a sidewalk / parking lot. Annual Contract: Asphalt, Pavers & Pathway Pbso Substation 7 - Parking Lot Resurfacing General Description of the Project: Resurface the Parking Lot Invitation for Quote/bid. Palm Beach County Reserves the Right to Waive Any Bid Irregularities, Informalities, or Technical Deficiencies and to Reje",
-      "project_url": "https://app.constructconnect.com/project/7239608/c?sourceType=3",
-      "id": "cc-16",
+      "project_name": "Sanitary Sewer Gravity Main - CIPP Project",
+      "location": "Boynton Beach, FL 33435",
+      "bid_due": "09/15/2025",
+      "description": "Site work for a water / sewer project in Boynton Beach, Florida. Completed plans call for site work for a water / sewer project. The project estimate is SEVEN HUNDRED FIFTY THOUSAND DOLLARS AND ZERO CENTS ($750,000.00). The City of Boynton Beach \"City\" Utilities Department is requesting sealed bids from qualified and experienced firms to provide Cured-In-Place Pipelining installation of 730 linear feet of existing 6-inch sanitary sewer pipe (Chapel Hill, 410 SE 12th Ave), 6,700 linear feet of an existing 8-inch diameter sanitary sewer pipe (SE 20th Ave, San Castle, Brighton Lakes, Heart of Boynton, Rolling Green) and 580 linear feet of existing 10-inch diameter sanitary sewer pipe (Heart of Boynton) and 910 linear feet of existing 12-inch diameter sanitary sewer pipe (Rolling Green). Cured-in-place Pipelining for the installation of a cured-in-place pipe liner using a resin-impregnated flexible tube method that is formed to the original conduit by use of a hydrostatic head. Question De",
+      "project_url": "https://app.constructconnect.com/project/7223175/c?sourceType=3",
+      "contacts": [
+        {
+          "email": "construction@cc.com",
+          "name": "Akisha Mayo"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Akisha Mayo"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Akisha Mayo"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Akisha Mayo"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Akisha Mayo"
+        }
+      ],
+      "project_id": "5881039",
+      "structures": [
+        "Water / Sewer"
+      ],
+      "id": "cc-10",
+      "organization_id": "org_usg_demo",
+      "spec_fit": 0.0,
+      "urgency": 0.2,
+      "confidence": 0.2,
+      "reason_codes": [],
+      "reasoning": "This project focuses exclusively on exterior sanitary sewer gravity main rehabilitation using CIPP technology. There are no mentions of interior building construction or materials within the provided description.",
+      "_sorting_details": {
+        "base_score": 0.0,
+        "weighted_score": 0.1,
+        "industry_bonus": 0.0,
+        "material_bonus": 0.0,
+        "urgency_bonus": 0.0,
+        "final_score": 0.1
+      },
+      "priority_score": 0.1
+    },
+    {
+      "project_name": "Sunrise Water Infrastructure Project",
+      "location": "Sunrise, FL 33322",
+      "bid_due": "10/02/2025",
+      "description": "Site work for a water / sewer project in Sunrise, Florida. Completed plans call for site work for a water / sewer project. Directional Boring for STEP System Question Deadline 10/02/2025 Site work for a water / sewer project in Sunrise, Florida. Completed plans call for site work for a water / sewer project. Directional Boring for STEP System Question Deadline 10/02/2025",
+      "project_url": "https://app.constructconnect.com/project/7236188/c?sourceType=3",
+      "contacts": [
+        {
+          "email": "purchase@covb.org",
+          "name": "North Drive"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Design Team"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Design Team"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Design Team"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Design Team"
+        }
+      ],
+      "project_id": "5892043",
+      "structures": [
+        "Water / Sewer"
+      ],
+      "id": "cc-11",
+      "organization_id": "org_usg_demo",
+      "spec_fit": 0.0,
+      "urgency": 0.2,
+      "confidence": 0.2,
+      "reason_codes": [],
+      "reasoning": "The project description focuses solely on water infrastructure, with no mention of interior building materials or scope for commercial or institutional facilities. {Sunrise Water Infrastructure Project}",
+      "_sorting_details": {
+        "base_score": 0.0,
+        "weighted_score": 0.1,
+        "industry_bonus": 0.0,
+        "material_bonus": 0.0,
+        "urgency_bonus": 0.0,
+        "final_score": 0.1
+      },
+      "priority_score": 0.1
+    },
+    {
+      "project_name": "e contractors to furnish and assume full responsibility for all labor, material, construction",
+      "location": "Golf, FL 33436",
+      "bid_due": "Sep 15, 2025",
+      "description": "Site work for a civil project in Village of Golf, Florida. Completed plans call for site work for a water / sewer project. The Village of Golf (Village) is accepting bids from qualified and responsible contractors to furnish and assume full responsibility for all labor, material, construction equipment and machinery, transportation, tools, appliances, fuel, power, light, telephone, water, sanitary facilities, temporary facilities and all other facilities and incidentals necessary, including supervision, servicing, taxes, bonds and insurance, permitting fees, traffic control, security, miscellaneous costs, warranties, general conditions, overhead and profit to perform the work of pump station and manhole rehabilitation located within the Village. Any and all questions regarding the bid documents shall be directed to the Village Clerk, 21 Country Road, Village of Golf, FL 33436 or via email to: dlynn@villageofgolf.org. No Bid may be withdrawn for a period of 180 days after the scheduled ",
+      "project_url": "https://app.constructconnect.com/project/7247958/c?sourceType=3",
+      "contacts": [
+        {
+          "email": "rachel.forberger@mockroos.com",
+          "name": "Download Documents"
+        },
+        {
+          "email": "dlynn@villageofgolf.org",
+          "name": "Village Clerk"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Donn Lynn"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Donn Lynn"
+        }
+      ],
+      "project_id": "5900257",
+      "structures": [
+        "Water / Sewer"
+      ],
+      "id": "cc-18",
+      "organization_id": "org_usg_demo",
+      "spec_fit": 0.0,
+      "urgency": 0.2,
+      "confidence": 0.2,
+      "reason_codes": [],
+      "reasoning": "The project description focuses entirely on site work, water/sewer projects, and pump station/manhole rehabilitation. There is no mention of interior construction, renovations, or building materials, indicating no intent interest {project-id}.",
+      "_sorting_details": {
+        "base_score": 0.0,
+        "weighted_score": 0.1,
+        "industry_bonus": 0.0,
+        "material_bonus": 0.0,
+        "urgency_bonus": 0.0,
+        "final_score": 0.1
+      },
+      "priority_score": 0.1
+    },
+    {
+      "project_name": "Sunrise Water Infrastructure Project",
+      "location": "Sunrise, FL 33322",
+      "bid_due": "10/02/2025",
+      "description": "Site work for a water / sewer project in Sunrise, Florida. Completed plans call for site work for a water / sewer project. Directional Boring for STEP System Question Deadline 10/02/2025 Site work for a water / sewer project in Sunrise, Florida. Completed plans call for site work for a water / sewer project. Directional Boring for STEP System Question Deadline 10/02/2025",
+      "project_url": "https://app.constructconnect.com/project/5892043/p?sourceType=3",
+      "contacts": [
+        {
+          "email": "purchase@covb.org",
+          "name": "North Drive"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Design Team"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Design Team"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Design Team"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Design Team"
+        }
+      ],
+      "project_id": "5892043",
+      "structures": [
+        "Water / Sewer"
+      ],
+      "id": "cc-29",
       "organization_id": "org_usg_demo",
       "spec_fit": 0.0,
       "urgency": 0.0,
       "confidence": 0.2,
       "reason_codes": [],
-      "reasoning": "The project description focuses exclusively on exterior site work and paving, with no mention of interior building materials or renovation needs. {Project Name: Resurface The Parking Lot Invitation For Quote/Bid}",
+      "reasoning": "The project description focuses solely on site work and infrastructure for a water/sewer project, with no mention of interior building materials or construction.",
       "_sorting_details": {
         "base_score": 0.0,
         "weighted_score": 0.04000000000000001,
@@ -458,18 +1330,44 @@
       "priority_score": 0.04000000000000001
     },
     {
-      "project_name": "Construction Project 3",
-      "location": "Location TBD",
-      "bid_due": "Date TBD",
-      "description": "Project description not available",
-      "project_url": "https://app.constructconnect.com/project/7163737/c?sourceType=3",
-      "id": "cc-2",
+      "project_name": "Administration Building",
+      "location": "Arcadia, FL 34266",
+      "bid_due": "Sep 12, 2025",
+      "description": "Demolition, site work and addition to a water / sewer project in Arcadia, Florida. Completed plans call for the addition of a water / sewer project; for the demolition of a water / sewer project; and for site work for a water / sewer project.GENERAL DeSoto County is seeking qualified Contractors to perform an expansion of treatment capacity and other auxiliary improvements to the existing DeSoto County Regional Wastewater Treatment Plant (DCR WWTP). The DCR WWTP is an extended aeration facility, located on a 160-acre County owned parcel on SE Highway 31, with a current permitted capacity of 0.950 million gallons per day (MGD) average daily flow. DeSoto County is proceeding with the first phase of the expansion to increase the DCR WWTP treatment and disposal capacity to 1.4 MGD. The adjacent 600-acre sprayfield site used for effluent disposal is presently leased by the County from a private landowner. The Base Scope includes the following proposed improvements: demolition work; site civ",
+      "project_url": "https://app.constructconnect.com/project/6071617/c?sourceType=3",
+      "contacts": [
+        {
+          "email": "construction@cc.com",
+          "name": "General Contractor"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "General Contractor"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "General Contractor"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "General Contractor"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "General Contractor"
+        }
+      ],
+      "project_id": "4919478",
+      "structures": [
+        "Water / Sewer"
+      ],
+      "id": "cc-4",
       "organization_id": "org_usg_demo",
       "spec_fit": 0.0,
       "urgency": 0.0,
       "confidence": 0.0,
       "reason_codes": [],
-      "reasoning": "No project description available to analyze.",
+      "reasoning": "The project description focuses exclusively on demolition, site work, and essential infrastructure improvements (water/sewer treatment plant expansion), with no mention of interior construction or building materials.",
       "_sorting_details": {
         "base_score": 0.0,
         "weighted_score": 0.0,
@@ -481,18 +1379,46 @@
       "priority_score": 0.0
     },
     {
-      "project_name": "Big Pine Key Park Improvement Project",
-      "location": "Big Pine Key, FL 33043",
-      "bid_due": "08/19/2024",
-      "description": "Demolition, site work and paving for a mixed-use development in Big Pine Key, Florida. Completed plans call for the demolition of a playground / park / athletic field; for site work for a playground / park / athletic field; sidewalk / parking lot; and for paving for a sidewalk / parking lot. The Scope of Work includes the demolition of existing concrete pads, pavement walk and installation of three (3) new Pickleball Courts, pickleball court surfacing, associated fencing, nets, concrete walkways and two additional gravel parking areas at Blue Heron Park. The County reserves the right to waive any proposal/bid irregularity. Question Deadline 08/19/2024 at 5:00 PM ET\nShow More Demolition, site work and paving for a mixed-use development in Big Pine Key, Florida. Completed plans call for the demolition of a playground / park / athletic field; for site work for a playground / park / athletic field; sidewalk / parking lot; and for paving for a sidewalk / parking lot. The Scope of Work inclu",
-      "project_url": "https://app.constructconnect.com/project/5494003/p?sourceType=3",
-      "id": "cc-18",
+      "project_name": "Avenue, Fort Pierce, Florida. The work associated with this project consists of construction",
+      "location": "Fort Pierce, FL 34950",
+      "bid_due": "Sep 15, 2025",
+      "description": "Site work and paving for a road / highway in Fort Pierce, Florida. Completed plans call for site work for a road / highway; and for paving for a road / highway. The City of Fort Pierce is requesting bids from FDOT pre-qualified contractors for Florida SUN Trail - Highwayman Trail Gap from Indian Hills Drive to Georgia Avenue, Fort Pierce, Florida. The work associated with this project consists of construction of a 1.4 mile, 12' wide concrete multi-use path, three pedestrian boardwalk bridges, and harmonization of existing features. All inquiries will be in a written format and addressed to the Project Engineer with a copy to the Purchasing Manager: Selena Griffett, P.E. City of Fort Pierce 100 North U.S. #1 Fort Pierce, FL 34950 Phone: (772) 460-6847 Email: sgriffett@cityoffortpierce.com and Latonya Hubbard Purchasing Agent City of Fort Pierce 100 North U.S. #1 Fort Pierce, FL 34950 Fax: (772) 467-3848 Email: purchasing@cityoffortpierce.com\nShow More Site work and paving for a road / h",
+      "project_url": "https://app.constructconnect.com/project/6664581/c?sourceType=3",
+      "contacts": [
+        {
+          "email": "sgriffett@cityoffortpierce.com",
+          "name": "Project Engineer"
+        },
+        {
+          "email": "purchasing@cityoffortpierce.com",
+          "name": "Latonya Hubbard"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Fort Pierce"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Fort Pierce"
+        },
+        {
+          "email": "construction@cc.com",
+          "name": "Fort Pierce"
+        }
+      ],
+      "project_id": "5422199",
+      "structures": [
+        "Roads / Highways"
+      ],
+      "id": "cc-24",
       "organization_id": "org_usg_demo",
       "spec_fit": 0.0,
       "urgency": 0.0,
       "confidence": 0.0,
-      "reason_codes": [],
-      "reasoning": "The project focuses solely on exterior site work, demolition, and paving, with no mention of interior construction or building materials.",
+      "reason_codes": [
+        "has_project_name"
+      ],
+      "reasoning": "The project description focuses entirely on site work and paving for a road/highway, with no mention of interior construction, building materials, or any scope related to USG's product offerings.",
       "_sorting_details": {
         "base_score": 0.0,
         "weighted_score": 0.0,
