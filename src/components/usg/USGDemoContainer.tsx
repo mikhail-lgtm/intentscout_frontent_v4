@@ -20,7 +20,22 @@ export const useDemoContext = () => {
 
 export const USGDemoContainer = () => {
   const [activeTab, setActiveTab] = useState<DemoTabKey>("projects")
-  const [approvedProjects, setApprovedProjects] = useState<string[]>([])
+
+  // Load approved projects from localStorage
+  const [approvedProjects, setApprovedProjectsState] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('usg-demo-approved-projects')
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+
+  // Save to localStorage when approved projects change
+  const setApprovedProjects = (projects: string[]) => {
+    setApprovedProjectsState(projects)
+    localStorage.setItem('usg-demo-approved-projects', JSON.stringify(projects))
+  }
 
   const renderContent = () => {
     switch (activeTab) {

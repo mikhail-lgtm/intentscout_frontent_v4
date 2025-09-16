@@ -13,6 +13,7 @@ interface Lead {
   reason_codes?: string[]
   description?: string
   project_url?: string
+  decision?: 'approve' | 'reject' | null
 }
 
 interface USGQueueSidebarProps {

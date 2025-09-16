@@ -19,7 +19,10 @@ const DemoOutreachSidebar = ({
   selectedProject?: any
   onProjectSelect: (project: any) => void
 }) => {
+  console.log('DemoOutreachSidebar received approved projects:', approvedProjects)
+  console.log('Available demo projects:', DEMO_PROJECTS.map(p => p.id))
   const approvedProjectsData = DEMO_PROJECTS.filter(p => approvedProjects.includes(p.id))
+  console.log('Filtered approved projects data:', approvedProjectsData)
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 h-full">
@@ -441,6 +444,8 @@ export const USGOutreachPage = () => {
   const { approvedProjects } = useDemoContext()
   const [showSequenceBuilder, setShowSequenceBuilder] = useState(false)
   const [selectedProject, setSelectedProject] = useState<any>(null)
+
+  console.log('USGOutreachPage approved projects:', approvedProjects)
 
   return (
     <div className="h-full bg-gray-50 overflow-hidden flex flex-col">
