@@ -72,7 +72,11 @@ export const USGDemoPage = () => {
   const [usingFallback, setUsingFallback] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
 
-  const currentLead = leads[currentIndex] || null
+  // Get current lead with updated decision from context
+  const currentLead = leads[currentIndex] ? {
+    ...leads[currentIndex],
+    decision: approvedProjects.includes(leads[currentIndex].id) ? 'approve' as const : null
+  } : null
 
   // Data fetching - Load from static JSON file
   const fetchData = useCallback(async () => {
@@ -123,12 +127,6 @@ export const USGDemoPage = () => {
   }, [fetchData])
 
   const handleDecisionChange = useCallback((leadId: string, decision: 'approve' | 'reject' | null) => {
-    setLeads(prevLeads =>
-      prevLeads.map(lead =>
-        lead.id === leadId ? { ...lead, decision } : lead
-      )
-    )
-
     // Update approved projects in context
     if (decision === 'approve') {
       setApprovedProjects([...approvedProjects.filter(id => id !== leadId), leadId])
@@ -163,7 +161,7 @@ export const USGDemoPage = () => {
               <>
                 <span>|</span>
                 <span className="text-green-600 font-medium">
-                  {leads.filter(l => Math.round(l.spec_fit * 5) >= 4).length} Score 4-5
+                  {approvedProjects.length} Approved
                 </span>
                 <span className="text-blue-600 font-medium">
                   {leads.filter(l => Math.round(l.spec_fit * 5) === 3).length} Score 3

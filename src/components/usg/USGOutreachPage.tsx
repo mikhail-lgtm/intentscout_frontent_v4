@@ -10,7 +10,15 @@ const DEMO_PROJECTS = [
 ]
 
 // Demo components (simplified versions of the real ones)
-const DemoOutreachSidebar = ({ approvedProjects }: { approvedProjects: string[] }) => {
+const DemoOutreachSidebar = ({
+  approvedProjects,
+  selectedProject,
+  onProjectSelect
+}: {
+  approvedProjects: string[]
+  selectedProject?: any
+  onProjectSelect: (project: any) => void
+}) => {
   const approvedProjectsData = DEMO_PROJECTS.filter(p => approvedProjects.includes(p.id))
 
   return (
@@ -29,10 +37,23 @@ const DemoOutreachSidebar = ({ approvedProjects }: { approvedProjects: string[] 
       ) : (
         <div className="space-y-3">
           {approvedProjectsData.map((project) => (
-            <div key={project.id} className="p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+            <div
+              key={project.id}
+              onClick={() => onProjectSelect(project)}
+              className={`p-3 border rounded-lg cursor-pointer transition-all duration-200 ${
+                selectedProject?.id === project.id
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+              }`}
+            >
               <div className="font-medium text-sm">{project.name}</div>
               <div className="text-xs text-gray-500">{project.project}</div>
-              <div className="text-xs text-green-600 mt-1">Score: {project.score}</div>
+              <div className="flex items-center justify-between mt-1">
+                <div className="text-xs text-green-600">Score: {project.score}</div>
+                {selectedProject?.id === project.id && (
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -41,105 +62,385 @@ const DemoOutreachSidebar = ({ approvedProjects }: { approvedProjects: string[] 
   )
 }
 
-const DemoIntentCard = () => (
-  <div className="p-6">
-    <h3 className="text-lg font-semibold text-gray-900 mb-4">Intent Signals</h3>
-    <div className="space-y-4">
-      <div className="border-l-4 border-green-500 pl-4">
-        <div className="font-medium">High Intent Signal Detected</div>
-        <div className="text-sm text-gray-600 mt-1">
-          Company is actively seeking construction materials with specific fire-rating requirements.
-        </div>
-        <div className="text-xs text-green-600 mt-2">Confidence: 90%</div>
-      </div>
-      <div className="border-l-4 border-blue-500 pl-4">
-        <div className="font-medium">Project Timeline Signal</div>
-        <div className="text-sm text-gray-600 mt-1">
-          Bid due date indicates urgent procurement needs.
-        </div>
-        <div className="text-xs text-blue-600 mt-2">Confidence: 75%</div>
-      </div>
-    </div>
-  </div>
-)
+const DemoIntentCard = ({ selectedProject }: { selectedProject?: any }) => {
+  const [isExpanded, setIsExpanded] = useState(false)
 
-const DemoHubSpotSending = () => (
-  <div className="p-6">
-    <h3 className="text-lg font-semibold text-gray-900 mb-4">HubSpot Integration</h3>
-    <div className="space-y-4">
-      <div className="bg-gray-50 rounded-lg p-4">
-        <div className="text-sm font-medium text-gray-700 mb-2">Demo Mode</div>
-        <div className="text-xs text-gray-600">
-          HubSpot integration would sync contacts and track email campaigns here.
+  if (!selectedProject) {
+    return (
+      <div className="p-6 flex items-center justify-center h-full">
+        <div className="text-center text-gray-500">
+          <div className="text-lg font-medium mb-2">No Project Selected</div>
+          <div className="text-sm">Select an approved project from the sidebar to view intent signals.</div>
         </div>
       </div>
-      <button className="w-full px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm">
-        Configure HubSpot (Demo)
-      </button>
-    </div>
-  </div>
-)
+    )
+  }
 
-const DemoContactsComponent = () => (
-  <div>
-    <h3 className="text-lg font-semibold text-gray-900 mb-4">Contacts</h3>
-    <div className="space-y-3">
-      <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-        <div>
-          <div className="font-medium text-sm">Mike Johnson</div>
-          <div className="text-xs text-gray-500">Project Manager</div>
-          <div className="text-xs text-gray-500">mike.johnson@miamimetro.com</div>
+  return (
+    <div className="p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">Intent Signals</h3>
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <span className="text-xs text-green-600 font-medium">Live Analysis</span>
         </div>
-        <button className="px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600">
-          Contact
+      </div>
+
+      <div className="space-y-4">
+        <div className="border-l-4 border-green-500 pl-4 bg-green-50 rounded-r-lg p-3 transition-all duration-200 hover:bg-green-100">
+          <div className="flex items-center justify-between">
+            <div className="font-medium text-green-800">High Intent Signal Detected</div>
+            <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Score: {selectedProject.score}</span>
+          </div>
+          <div className="text-sm text-green-700 mt-1">
+            {selectedProject.name} is actively seeking construction materials with specific requirements for {selectedProject.project}.
+          </div>
+          <div className="text-xs text-green-600 mt-2 flex items-center gap-2">
+            <span>Confidence: 90%</span>
+            <span>•</span>
+            <span>Updated 2 min ago</span>
+          </div>
+        </div>
+
+        <div className="border-l-4 border-blue-500 pl-4 bg-blue-50 rounded-r-lg p-3 transition-all duration-200 hover:bg-blue-100">
+          <div className="font-medium text-blue-800">Project Timeline Signal</div>
+          <div className="text-sm text-blue-700 mt-1">
+            Bid due date indicates urgent procurement needs for this construction project.
+          </div>
+          <div className="text-xs text-blue-600 mt-2">Confidence: 75%</div>
+        </div>
+
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="w-full text-left border-l-4 border-orange-500 pl-4 bg-orange-50 rounded-r-lg p-3 transition-all duration-200 hover:bg-orange-100"
+        >
+          <div className="flex items-center justify-between">
+            <div className="font-medium text-orange-800">Technical Specification Signals</div>
+            <span className="text-orange-600">{isExpanded ? '−' : '+'}</span>
+          </div>
+          {isExpanded && (
+            <div className="mt-2 space-y-2">
+              <div className="text-sm text-orange-700">Fire-rating requirements detected</div>
+              <div className="text-sm text-orange-700">Steel construction materials specified</div>
+              <div className="text-sm text-orange-700">3-hour rating compliance needed</div>
+            </div>
+          )}
         </button>
       </div>
-      <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-        <div>
-          <div className="font-medium text-sm">Sarah Davis</div>
-          <div className="text-xs text-gray-500">Procurement Lead</div>
-          <div className="text-xs text-gray-500">s.davis@northporteng.com</div>
-        </div>
-        <button className="px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600">
-          Contact
+
+      <div className="mt-6 pt-4 border-t border-gray-200">
+        <button className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium">
+          Generate AI Insights
         </button>
       </div>
     </div>
-  </div>
-)
+  )
+}
 
-const DemoEmailDrafting = () => (
-  <div className="p-6">
-    <h3 className="text-lg font-semibold text-gray-900 mb-4">Email Drafting</h3>
-    <div className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Subject Line</label>
-        <input
-          type="text"
-          value="Fire-Rated Door Solutions for Your Miami Project"
-          readOnly
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm"
-        />
+const DemoHubSpotSending = ({ selectedProject }: { selectedProject?: any }) => {
+  const [isConfigured, setIsConfigured] = useState(false)
+  const [isSending, setIsSending] = useState(false)
+  const [emailsSent, setEmailsSent] = useState(0)
+
+  const handleConfigure = () => {
+    setIsConfigured(true)
+  }
+
+  const handleSendEmails = async () => {
+    setIsSending(true)
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    setEmailsSent(prev => prev + Math.floor(Math.random() * 3) + 1)
+    setIsSending(false)
+  }
+
+  return (
+    <div className="p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">HubSpot Integration</h3>
+        <div className={`w-2 h-2 rounded-full ${isConfigured ? 'bg-green-500' : 'bg-gray-400'}`}></div>
       </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Email Content</label>
-        <textarea
-          value="Hi Mike,&#10;&#10;I noticed your upcoming emergency door replacement project at the Metrorail station. We specialize in 3-hour fire-rated steel doors and have successfully completed similar transit projects.&#10;&#10;Would you be interested in discussing how we can support your project requirements?"
-          readOnly
-          rows={6}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm"
-        />
-      </div>
-      <button className="w-full px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm">
-        Generate with AI (Demo)
-      </button>
+
+      {!isConfigured ? (
+        <div className="space-y-4">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="text-sm font-medium text-yellow-800 mb-2">Setup Required</div>
+            <div className="text-xs text-yellow-700">
+              Connect your HubSpot account to sync contacts and send personalized emails.
+            </div>
+          </div>
+          <button
+            onClick={handleConfigure}
+            className="w-full px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium"
+          >
+            Configure HubSpot
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="text-sm font-medium text-green-800 mb-2">Connected</div>
+            <div className="text-xs text-green-700">
+              HubSpot integration is active. Ready to send emails.
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 text-center">
+            <div className="bg-gray-50 rounded-lg p-3">
+              <div className="text-lg font-bold text-gray-900">{emailsSent}</div>
+              <div className="text-xs text-gray-600">Emails Sent</div>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-3">
+              <div className="text-lg font-bold text-gray-900">{selectedProject ? '3' : '0'}</div>
+              <div className="text-xs text-gray-600">Contacts Found</div>
+            </div>
+          </div>
+
+          <button
+            onClick={handleSendEmails}
+            disabled={isSending || !selectedProject}
+            className={`w-full px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              isSending
+                ? 'bg-gray-400 text-white cursor-not-allowed'
+                : selectedProject
+                ? 'bg-green-500 text-white hover:bg-green-600'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            {isSending ? 'Sending...' : 'Send Personalized Emails'}
+          </button>
+
+          {!selectedProject && (
+            <div className="text-xs text-gray-500 text-center">
+              Select a project to send emails
+            </div>
+          )}
+        </div>
+      )}
     </div>
-  </div>
-)
+  )
+}
+
+const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) => {
+  const [contactedIds, setContactedIds] = useState<string[]>([])
+  const [isSearching, setIsSearching] = useState(false)
+
+  const contacts = selectedProject ? [
+    { id: '1', name: 'Mike Johnson', role: 'Project Manager', email: 'mike.johnson@miamimetro.com', linkedin: true },
+    { id: '2', name: 'Sarah Davis', role: 'Procurement Lead', email: 's.davis@northporteng.com', linkedin: false },
+    { id: '3', name: 'Tom Wilson', role: 'Construction Director', email: 't.wilson@company.com', linkedin: true }
+  ] : []
+
+  const handleContact = (contactId: string) => {
+    setContactedIds(prev => [...prev, contactId])
+  }
+
+  const handleFindMore = async () => {
+    setIsSearching(true)
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    setIsSearching(false)
+  }
+
+  if (!selectedProject) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center text-gray-500">
+          <div className="text-lg font-medium mb-2">No Contacts</div>
+          <div className="text-sm">Select a project to view contacts.</div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">Contacts ({contacts.length})</h3>
+        <button
+          onClick={handleFindMore}
+          disabled={isSearching}
+          className={`px-3 py-1 text-xs rounded-lg font-medium transition-colors ${
+            isSearching
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-blue-500 text-white hover:bg-blue-600'
+          }`}
+        >
+          {isSearching ? 'Searching...' : 'Find More'}
+        </button>
+      </div>
+
+      <div className="space-y-3">
+        {contacts.map((contact) => (
+          <div
+            key={contact.id}
+            className={`p-3 border rounded-lg transition-all duration-200 ${
+              contactedIds.includes(contact.id)
+                ? 'border-green-200 bg-green-50'
+                : 'border-gray-200 hover:border-gray-300'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <div className="font-medium text-sm">{contact.name}</div>
+                  {contact.linkedin && (
+                    <div className="w-3 h-3 bg-blue-600 rounded-sm"></div>
+                  )}
+                  {contactedIds.includes(contact.id) && (
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                      Contacted
+                    </span>
+                  )}
+                </div>
+                <div className="text-xs text-gray-500">{contact.role}</div>
+                <div className="text-xs text-gray-500">{contact.email}</div>
+              </div>
+              <button
+                onClick={() => handleContact(contact.id)}
+                disabled={contactedIds.includes(contact.id)}
+                className={`px-3 py-1 text-xs rounded font-medium transition-colors ${
+                  contactedIds.includes(contact.id)
+                    ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                    : 'bg-blue-500 text-white hover:bg-blue-600'
+                }`}
+              >
+                {contactedIds.includes(contact.id) ? 'Contacted' : 'Contact'}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-gray-200">
+        <div className="text-xs text-gray-500 text-center">
+          Found {contacts.length} decision makers for {selectedProject.name}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const DemoEmailDrafting = ({ selectedProject }: { selectedProject?: any }) => {
+  const [subject, setSubject] = useState('')
+  const [content, setContent] = useState('')
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [isGenerated, setIsGenerated] = useState(false)
+
+  const generateEmail = async () => {
+    if (!selectedProject) return
+
+    setIsGenerating(true)
+    await new Promise(resolve => setTimeout(resolve, 2000))
+
+    setSubject(`${selectedProject.project} - Partnership Opportunity`)
+    setContent(`Hi there,
+
+I noticed your ${selectedProject.project} and wanted to reach out about a potential partnership opportunity.
+
+We specialize in construction materials and have successfully completed similar projects. Our solutions could be a great fit for your requirements.
+
+Would you be interested in discussing how we can support your project needs?
+
+Best regards,
+Your Sales Team`)
+
+    setIsGenerated(true)
+    setIsGenerating(false)
+  }
+
+  const handleEdit = () => {
+    setIsGenerated(false)
+  }
+
+  if (!selectedProject) {
+    return (
+      <div className="p-6 flex items-center justify-center h-full">
+        <div className="text-center text-gray-500">
+          <div className="text-lg font-medium mb-2">No Project Selected</div>
+          <div className="text-sm">Select a project to draft personalized emails.</div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">Email Drafting</h3>
+        {isGenerated && (
+          <button
+            onClick={handleEdit}
+            className="text-xs text-blue-600 hover:text-blue-800"
+          >
+            Edit
+          </button>
+        )}
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Subject Line</label>
+          <input
+            type="text"
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            readOnly={isGenerated}
+            placeholder="Enter email subject..."
+            className={`w-full px-3 py-2 border border-gray-300 rounded-lg text-sm ${
+              isGenerated ? 'bg-gray-50' : 'bg-white'
+            }`}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Email Content</label>
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            readOnly={isGenerated}
+            placeholder="Enter email content..."
+            rows={8}
+            className={`w-full px-3 py-2 border border-gray-300 rounded-lg text-sm ${
+              isGenerated ? 'bg-gray-50' : 'bg-white'
+            }`}
+          />
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            onClick={generateEmail}
+            disabled={isGenerating}
+            className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              isGenerating
+                ? 'bg-gray-400 text-white cursor-not-allowed'
+                : 'bg-green-500 text-white hover:bg-green-600'
+            }`}
+          >
+            {isGenerating ? 'Generating...' : 'Generate with AI'}
+          </button>
+
+          {isGenerated && (
+            <button
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
+            >
+              Send
+            </button>
+          )}
+        </div>
+
+        {isGenerated && (
+          <div className="text-xs text-green-600 text-center">
+            Email generated for {selectedProject.name}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
 
 export const USGOutreachPage = () => {
   const { approvedProjects } = useDemoContext()
   const [showSequenceBuilder, setShowSequenceBuilder] = useState(false)
+  const [selectedProject, setSelectedProject] = useState<any>(null)
 
   return (
     <div className="h-full bg-gray-50 overflow-hidden flex flex-col">
@@ -161,7 +462,11 @@ export const USGOutreachPage = () => {
       <div className="flex-1 flex gap-6 px-4 sm:px-6 lg:px-8 pb-6 min-h-0">
         {/* Sidebar */}
         <div className="w-80 flex-shrink-0 min-h-0">
-          <DemoOutreachSidebar approvedProjects={approvedProjects} />
+          <DemoOutreachSidebar
+            approvedProjects={approvedProjects}
+            selectedProject={selectedProject}
+            onProjectSelect={setSelectedProject}
+          />
         </div>
 
         {/* Main Content - 2x2 Grid Layout */}
@@ -169,22 +474,22 @@ export const USGOutreachPage = () => {
           <div className="grid grid-cols-2 grid-rows-2 gap-4 h-full max-w-6xl mx-auto">
             {/* Top-left: Intent Signals */}
             <div className="overflow-y-auto custom-scrollbar bg-white rounded-lg shadow-sm border border-gray-200">
-              <DemoIntentCard />
+              <DemoIntentCard selectedProject={selectedProject} />
             </div>
 
             {/* Top-right: HubSpot Sending */}
             <div className="overflow-y-auto custom-scrollbar bg-white rounded-lg shadow-sm border border-gray-200">
-              <DemoHubSpotSending />
+              <DemoHubSpotSending selectedProject={selectedProject} />
             </div>
 
             {/* Bottom-left: Contacts */}
             <div className="overflow-y-auto custom-scrollbar bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <DemoContactsComponent />
+              <DemoContactsComponent selectedProject={selectedProject} />
             </div>
 
             {/* Bottom-right: Email Notes */}
             <div className="overflow-y-auto custom-scrollbar bg-white rounded-lg shadow-sm border border-gray-200">
-              <DemoEmailDrafting />
+              <DemoEmailDrafting selectedProject={selectedProject} />
             </div>
           </div>
         </div>
