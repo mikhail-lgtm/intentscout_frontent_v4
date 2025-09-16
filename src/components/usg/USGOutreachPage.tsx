@@ -29,12 +29,22 @@ const DemoOutreachSidebar = ({
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
         Approved Signals ({approvedProjectsData.length})
       </h3>
+      <div className="mb-4 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
+        <div>Debug: Received {approvedProjects.length} approved IDs</div>
+        <div>IDs: [{approvedProjects.join(', ')}]</div>
+        <div>Filtered: {approvedProjectsData.length} projects</div>
+      </div>
+
       {approvedProjectsData.length === 0 ? (
         <div className="text-center py-8">
           <div className="text-gray-500 text-sm">
             No approved projects yet.
             <br />
             Go to Projects tab and approve some signals to see them here.
+            <br />
+            <div className="mt-2 text-xs">
+              Available project IDs: {DEMO_PROJECTS.map(p => p.id).join(', ')}
+            </div>
           </div>
         </div>
       ) : (

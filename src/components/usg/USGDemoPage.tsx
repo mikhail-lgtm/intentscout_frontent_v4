@@ -170,6 +170,12 @@ export const USGDemoPage = () => {
               >
                 Clear Likes
               </button>
+              <button
+                onClick={() => setApprovedProjects(['cc-0', 'cc-1'])}
+                className="inline-flex items-center gap-2 px-3 py-1.5 border border-green-300 text-green-700 rounded-lg text-sm font-medium hover:bg-green-50 transition-colors"
+              >
+                Test Likes
+              </button>
             </div>
           </div>
 
@@ -182,7 +188,7 @@ export const USGDemoPage = () => {
               <>
                 <span>|</span>
                 <span className="text-green-600 font-medium">
-                  {approvedProjects.length} Approved
+                  {approvedProjects.length} Approved ({approvedProjects.join(', ')})
                 </span>
                 <span className="text-blue-600 font-medium">
                   {leads.filter(l => Math.round(l.spec_fit * 5) === 3).length} Score 3
