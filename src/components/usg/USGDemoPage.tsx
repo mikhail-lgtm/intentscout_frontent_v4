@@ -120,12 +120,12 @@ export const USGDemoPage = () => {
 
   return (
     <div className="h-full bg-gray-50 overflow-hidden flex flex-col">
-      {/* Sticky Header */}
+      {/* Compact Header */}
       <div className="flex-shrink-0 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 bg-gray-50 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <h1 className="text-xl font-bold text-gray-900">USG Demo — ConstructConnect Projects</h1>
-            
+            <h1 className="text-lg font-semibold text-gray-900">ConstructConnect Projects</h1>
+
             <div className="flex items-center gap-2">
               <button
                 onClick={handleRefresh}
@@ -136,7 +136,7 @@ export const USGDemoPage = () => {
               </button>
             </div>
           </div>
-          
+
           {/* Status Text */}
           <div className="flex items-center gap-3 text-xs text-gray-500">
             <span>Source: ConstructConnect</span>
