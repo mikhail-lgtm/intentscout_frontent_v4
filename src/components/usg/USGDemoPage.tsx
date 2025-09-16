@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { Calendar, Filter, RotateCcw, Building, TrendingUp } from 'lucide-react'
 import { USGProjectCard } from './USGProjectCard'
 import { USGQueueSidebar } from './USGQueueSidebar'
+import { useDemoContext } from './USGDemoContainer'
 
 interface Lead {
   id: string
@@ -15,6 +16,7 @@ interface Lead {
   reason_codes?: string[]
   description?: string
   project_url?: string
+  decision?: 'approve' | 'reject' | null
 }
 
 // Demo data for fallback (safe for production)
@@ -61,6 +63,8 @@ const DEMO_LEADS: Lead[] = [
 ]
 
 export const USGDemoPage = () => {
+  const { approvedProjects, setApprovedProjects } = useDemoContext()
+
   // State management
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(false)
@@ -117,6 +121,21 @@ export const USGDemoPage = () => {
     setCurrentIndex(0)
     fetchData()
   }, [fetchData])
+
+  const handleDecisionChange = useCallback((leadId: string, decision: 'approve' | 'reject' | null) => {
+    setLeads(prevLeads =>
+      prevLeads.map(lead =>
+        lead.id === leadId ? { ...lead, decision } : lead
+      )
+    )
+
+    // Update approved projects in context
+    if (decision === 'approve') {
+      setApprovedProjects([...approvedProjects.filter(id => id !== leadId), leadId])
+    } else {
+      setApprovedProjects(approvedProjects.filter(id => id !== leadId))
+    }
+  }, [approvedProjects, setApprovedProjects])
 
   return (
     <div className="h-full bg-gray-50 overflow-y-auto">
@@ -218,6 +237,7 @@ export const USGDemoPage = () => {
               <USGProjectCard
                 lead={currentLead}
                 isLoading={loading}
+                onDecisionChange={handleDecisionChange}
               />
             )}
 

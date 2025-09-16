@@ -1,29 +1,45 @@
 import { useState, useCallback } from 'react'
 import { Settings } from 'lucide-react'
+import { useDemoContext } from './USGDemoContainer'
+
+// Demo projects data
+const DEMO_PROJECTS = [
+  { id: "cc-0", name: "Miami Metro Construction", project: "Emergency Doors Project", score: 4.5 },
+  { id: "cc-1", name: "North Port Engineering", project: "Wastewater Facility", score: 3.8 },
+  { id: "cc-2", name: "Jupiter Parks & Recreation", project: "Pickleball Courts", score: 3.2 }
+]
 
 // Demo components (simplified versions of the real ones)
-const DemoOutreachSidebar = () => (
-  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 h-full">
-    <h3 className="text-lg font-semibold text-gray-900 mb-4">Demo Signals</h3>
-    <div className="space-y-3">
-      <div className="p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-        <div className="font-medium text-sm">Miami Metro Construction</div>
-        <div className="text-xs text-gray-500">Emergency Doors Project</div>
-        <div className="text-xs text-green-600 mt-1">Score: 4.5</div>
-      </div>
-      <div className="p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-        <div className="font-medium text-sm">North Port Engineering</div>
-        <div className="text-xs text-gray-500">Wastewater Facility</div>
-        <div className="text-xs text-blue-600 mt-1">Score: 3.8</div>
-      </div>
-      <div className="p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-        <div className="font-medium text-sm">Jupiter Parks & Recreation</div>
-        <div className="text-xs text-gray-500">Pickleball Courts</div>
-        <div className="text-xs text-orange-600 mt-1">Score: 3.2</div>
-      </div>
+const DemoOutreachSidebar = ({ approvedProjects }: { approvedProjects: string[] }) => {
+  const approvedProjectsData = DEMO_PROJECTS.filter(p => approvedProjects.includes(p.id))
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 h-full">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        Approved Signals ({approvedProjectsData.length})
+      </h3>
+      {approvedProjectsData.length === 0 ? (
+        <div className="text-center py-8">
+          <div className="text-gray-500 text-sm">
+            No approved projects yet.
+            <br />
+            Go to Projects tab and approve some signals to see them here.
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {approvedProjectsData.map((project) => (
+            <div key={project.id} className="p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+              <div className="font-medium text-sm">{project.name}</div>
+              <div className="text-xs text-gray-500">{project.project}</div>
+              <div className="text-xs text-green-600 mt-1">Score: {project.score}</div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
-  </div>
-)
+  )
+}
 
 const DemoIntentCard = () => (
   <div className="p-6">
@@ -122,6 +138,7 @@ const DemoEmailDrafting = () => (
 )
 
 export const USGOutreachPage = () => {
+  const { approvedProjects } = useDemoContext()
   const [showSequenceBuilder, setShowSequenceBuilder] = useState(false)
 
   return (
@@ -144,7 +161,7 @@ export const USGOutreachPage = () => {
       <div className="flex-1 flex gap-6 px-4 sm:px-6 lg:px-8 pb-6 min-h-0">
         {/* Sidebar */}
         <div className="w-80 flex-shrink-0 min-h-0">
-          <DemoOutreachSidebar />
+          <DemoOutreachSidebar approvedProjects={approvedProjects} />
         </div>
 
         {/* Main Content - 2x2 Grid Layout */}

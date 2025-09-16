@@ -22,6 +22,12 @@ export const Dashboard = () => {
     }
   }, [location.pathname])
 
+  const isDemoRoute = location.pathname === '/usg-demo'
+
+  if (isDemoRoute) {
+    return <USGDemoContainer />
+  }
+
   return (
     <div className="flex flex-col h-screen bg-gray-100 antialiased">
       <Header activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -31,7 +37,6 @@ export const Dashboard = () => {
           <Route path="/signals" element={<SignalsPage />} />
           <Route path="/outreach" element={<OutreachPage />} />
           <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/usg-demo" element={<USGDemoContainer />} />
         </Routes>
       </main>
     </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Building, Calendar, ExternalLink, MapPin, ChevronDown, ChevronUp, TrendingUp, Clock, Award, Target, Users, Hash, Layers, Brain } from 'lucide-react'
+import { Building, Calendar, ExternalLink, MapPin, ChevronDown, ChevronUp, TrendingUp, Clock, Award, Target, Users, Hash, Layers, Brain, ThumbsUp, ThumbsDown, Minus } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 
 interface Contact {
@@ -23,11 +23,13 @@ interface Lead {
   structures?: string[]
   project_id?: string
   reasoning?: string
+  decision?: 'approve' | 'reject' | null
 }
 
 interface USGProjectCardProps {
   lead: Lead | null
   isLoading?: boolean
+  onDecisionChange?: (leadId: string, decision: 'approve' | 'reject' | null) => void
 }
 
 const SkeletonProjectCard: React.FC = () => {
@@ -151,8 +153,14 @@ const getScoreLabel = (score: number) => {
 // Convert spec_fit (0-1) to intent score (0-5) like in sidebar
 const getIntentScore = (spec_fit: number) => Math.round(spec_fit * 5)
 
-export const USGProjectCard: React.FC<USGProjectCardProps> = ({ lead, isLoading = false }) => {
+export const USGProjectCard: React.FC<USGProjectCardProps> = ({ lead, isLoading = false, onDecisionChange }) => {
   const [isReasoningExpanded, setIsReasoningExpanded] = useState(false)
+
+  const handleDecision = (decision: 'approve' | 'reject' | null) => {
+    if (lead && onDecisionChange) {
+      onDecisionChange(lead.id, decision)
+    }
+  }
 
   if (isLoading) {
     return <SkeletonProjectCard />
@@ -357,8 +365,66 @@ export const USGProjectCard: React.FC<USGProjectCardProps> = ({ lead, isLoading 
           </div>
         )}
 
+        {/* Decision Buttons */}
+        <div className="flex justify-center pt-4 pb-4">
+          <div className="relative bg-gray-100 rounded-full p-1 shadow-inner backdrop-blur-sm">
+            {/* Sliding Background Indicator */}
+            <div
+              className={`absolute top-2 bottom-2 left-2 right-2 w-[76px] rounded-full transition-all duration-300 ease-out shadow-inner ${
+                lead?.decision === 'reject'
+                  ? 'translate-x-0 bg-red-500 shadow-md'
+                  : lead?.decision === 'approve'
+                  ? 'translate-x-[160px] bg-green-500 shadow-md'
+                  : 'translate-x-[80px] bg-gray-300 shadow-sm'
+              }`}
+            />
+
+            {/* Three State Buttons */}
+            <div className="relative flex">
+              {/* Reject State */}
+              <button
+                onClick={() => handleDecision(lead?.decision === 'reject' ? null : 'reject')}
+                className={`group relative z-10 w-20 h-12 rounded-full flex items-center justify-center transition-all duration-200 ${
+                  lead?.decision === 'reject'
+                    ? 'text-white'
+                    : 'text-red-500 hover:text-red-700'
+                }`}
+              >
+                <div className="absolute inset-1 rounded-full bg-red-500/15 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-inner" />
+                <ThumbsDown size={18} className="relative z-10" />
+              </button>
+
+              {/* Neutral State */}
+              <button
+                onClick={() => handleDecision(null)}
+                className={`group relative z-10 w-20 h-12 rounded-full flex items-center justify-center transition-all duration-200 ${
+                  !lead?.decision
+                    ? 'text-white'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <div className="absolute inset-1 rounded-full bg-gray-200/25 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-inner" />
+                <Minus size={18} className="relative z-10" />
+              </button>
+
+              {/* Approve State */}
+              <button
+                onClick={() => handleDecision(lead?.decision === 'approve' ? null : 'approve')}
+                className={`group relative z-10 w-20 h-12 rounded-full flex items-center justify-center transition-all duration-200 ${
+                  lead?.decision === 'approve'
+                    ? 'text-white'
+                    : 'text-green-500 hover:text-green-700'
+                }`}
+              >
+                <div className="absolute inset-1 rounded-full bg-green-500/15 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-inner" />
+                <ThumbsUp size={18} className="relative z-10" />
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Action Buttons */}
-        <div className="flex justify-center pt-4">
+        <div className="flex justify-center">
           {lead.project_url && (
             <a
               href={lead.project_url}
