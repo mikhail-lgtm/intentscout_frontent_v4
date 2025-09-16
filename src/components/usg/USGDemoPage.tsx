@@ -119,22 +119,20 @@ export const USGDemoPage = () => {
   }, [fetchData])
 
   return (
-    <div className="h-full bg-gray-50 overflow-hidden flex flex-col">
-      {/* Compact Header */}
-      <div className="flex-shrink-0 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 bg-gray-50 border-b border-gray-200">
-        <div className="flex items-center justify-between">
+    <div className="h-full bg-gray-50 overflow-y-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-6">
-            <h1 className="text-lg font-semibold text-gray-900">ConstructConnect Projects</h1>
+            <h1 className="text-2xl font-bold text-gray-900">ConstructConnect Projects</h1>
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleRefresh}
-                className="inline-flex items-center gap-2 px-3 py-1.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
-              >
-                <RotateCcw className="w-4 h-4" />
-                Refresh
-              </button>
-            </div>
+            <button
+              onClick={handleRefresh}
+              className="inline-flex items-center gap-2 px-3 py-1.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Refresh
+            </button>
           </div>
 
           {/* Status Text */}
@@ -155,12 +153,11 @@ export const USGDemoPage = () => {
             )}
           </div>
         </div>
-      </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 max-w-7xl mx-auto flex gap-6 px-4 sm:px-6 lg:px-8 min-h-0 pb-6 pt-6">
-        {/* Main Content */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar" style={{ height: 'calc(100% - 2rem)' }}>
+        {/* Main Content Area */}
+        <div className="flex gap-6">
+          {/* Main Content */}
+          <div className="flex-1">
           
           {/* Loading Status */}
           {loading && (
@@ -216,15 +213,13 @@ export const USGDemoPage = () => {
             </div>
           )}
 
-          {/* Project Card */}
-          {(currentLead || loading) && (
-            <div className="h-full">
+            {/* Project Card */}
+            {(currentLead || loading) && (
               <USGProjectCard
                 lead={currentLead}
                 isLoading={loading}
               />
-            </div>
-          )}
+            )}
 
           {/* Completion State */}
           {!loading && leads.length > 0 && currentIndex >= leads.length && (
@@ -250,16 +245,17 @@ export const USGDemoPage = () => {
               </button>
             </div>
           )}
-        </div>
+          </div>
 
-        {/* Sidebar */}
-        <div className="w-80 flex-shrink-0 min-h-0" style={{ height: 'calc(100% - 2rem)' }}>
-          <USGQueueSidebar 
-            leads={leads}
-            currentIndex={currentIndex}
-            onLeadSelect={handleLeadSelect}
-            isLoading={loading}
-          />
+          {/* Sidebar */}
+          <div className="w-80 flex-shrink-0">
+            <USGQueueSidebar
+              leads={leads}
+              currentIndex={currentIndex}
+              onLeadSelect={handleLeadSelect}
+              isLoading={loading}
+            />
+          </div>
         </div>
       </div>
     </div>
