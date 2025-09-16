@@ -265,11 +265,14 @@ export const useSignals = (date: string, filters: FilterOptions) => {
       })
 
       // Apply vertical filter if specified
-      const filteredSignals = filters.vertical 
-        ? combinedSignals.filter(signal => 
+      let filteredSignals = filters.vertical
+        ? combinedSignals.filter(signal =>
             signal.company.vertical?.toLowerCase() === filters.vertical.toLowerCase()
           )
         : combinedSignals
+
+      // Hide signals with 0 score
+      filteredSignals = filteredSignals.filter(signal => signal.intentScore > 0)
 
       setSignals(filteredSignals)
 

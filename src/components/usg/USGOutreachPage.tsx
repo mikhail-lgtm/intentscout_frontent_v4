@@ -31,18 +31,20 @@ const DemoOutreachSidebar = ({
         const res = await fetch('/usg_projects.json')
         if (res.ok) {
           const data = await res.json()
-          // Convert to outreach format
-          const outreachProjects = data.map((project: any) => ({
-            id: project.id || `project-${Math.random()}`, // Use the 'id' field that matches demo data
-            name: project.project_name,
-            project: project.description ? project.description.substring(0, 50) + '...' : 'Construction Project',
-            score: getIntentScore(project.spec_fit || 0.8),
-            location: project.location,
-            bid_due: project.bid_due,
-            contacts: project.contacts || [],
-            // Include all original data
-            ...project
-          }))
+          // Convert to outreach format and filter out 0 score projects
+          const outreachProjects = data
+            .filter((project: any) => project.spec_fit > 0) // Hide projects with 0 spec_fit
+            .map((project: any) => ({
+              id: project.id || `project-${Math.random()}`, // Use the 'id' field that matches demo data
+              name: project.project_name,
+              project: project.description ? project.description.substring(0, 50) + '...' : 'Construction Project',
+              score: getIntentScore(project.spec_fit || 0.8),
+              location: project.location,
+              bid_due: project.bid_due,
+              contacts: project.contacts || [],
+              // Include all original data
+              ...project
+            }))
           setRealProjects(outreachProjects)
         } else {
           // Fallback to demo data

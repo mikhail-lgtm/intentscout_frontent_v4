@@ -97,7 +97,9 @@ export const USGDemoPage = () => {
       console.log('Number of leads:', data?.length || 0)
 
       if (data && Array.isArray(data) && data.length > 0) {
-        setLeads(data)
+        // Filter out projects with 0 spec_fit (0 score)
+        const filteredData = data.filter((project: any) => project.spec_fit > 0)
+        setLeads(filteredData)
         setUsingFallback(false)
       } else {
         throw new Error('No data in static file')
@@ -105,7 +107,9 @@ export const USGDemoPage = () => {
 
     } catch (e: any) {
       console.error('Static file error, using fallback data:', e)
-      setLeads(DEMO_LEADS)
+      // Filter fallback data as well
+      const filteredFallback = DEMO_LEADS.filter(project => project.spec_fit > 0)
+      setLeads(filteredFallback)
       setUsingFallback(true)
       setError(null) // Clear error since we have fallback
     } finally {
