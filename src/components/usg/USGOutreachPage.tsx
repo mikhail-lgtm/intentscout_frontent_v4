@@ -1,12 +1,15 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Settings } from 'lucide-react'
 import { useDemoContext } from './USGDemoContainer'
 
-// Demo projects data
-const DEMO_PROJECTS = [
-  { id: "cc-0", name: "Miami Metro Construction", project: "Emergency Doors Project", score: 4.5 },
-  { id: "cc-1", name: "North Port Engineering", project: "Wastewater Facility", score: 3.8 },
-  { id: "cc-2", name: "Jupiter Parks & Recreation", project: "Pickleball Courts", score: 3.2 }
+// Convert spec_fit (0-1) to intent score (1-5)
+const getIntentScore = (spec_fit: number) => Math.round(spec_fit * 5)
+
+// Demo projects data - will be replaced with real data
+const DEMO_PROJECTS_FALLBACK = [
+  { id: "cc-0", name: "Miami Metro Construction", project: "Emergency Doors Project", score: 4 },
+  { id: "cc-1", name: "North Port Engineering", project: "Wastewater Facility", score: 4 },
+  { id: "cc-2", name: "Jupiter Parks & Recreation", project: "Pickleball Courts", score: 3 }
 ]
 
 // Demo components (simplified versions of the real ones)
@@ -19,7 +22,42 @@ const DemoOutreachSidebar = ({
   selectedProject?: any
   onProjectSelect: (project: any) => void
 }) => {
-  const approvedProjectsData = DEMO_PROJECTS.filter(p => approvedProjects.includes(p.id))
+  const [realProjects, setRealProjects] = useState<any[]>([])
+
+  // Load real projects data
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const res = await fetch('/usg_projects.json')
+        if (res.ok) {
+          const data = await res.json()
+          // Convert to outreach format
+          const outreachProjects = data.map((project: any) => ({
+            id: project.id || `project-${Math.random()}`, // Use the 'id' field that matches demo data
+            name: project.project_name,
+            project: project.description ? project.description.substring(0, 50) + '...' : 'Construction Project',
+            score: getIntentScore(project.spec_fit || 0.8),
+            location: project.location,
+            bid_due: project.bid_due,
+            contacts: project.contacts || [],
+            // Include all original data
+            ...project
+          }))
+          setRealProjects(outreachProjects)
+        } else {
+          // Fallback to demo data
+          setRealProjects(DEMO_PROJECTS_FALLBACK)
+        }
+      } catch (error) {
+        console.error('Error loading projects:', error)
+        setRealProjects(DEMO_PROJECTS_FALLBACK)
+      }
+    }
+
+    fetchProjects()
+  }, [])
+
+  const approvedProjectsData = realProjects.filter(p => approvedProjects.includes(p.id))
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 h-full">
@@ -223,11 +261,16 @@ const DemoHubSpotSending = ({ selectedProject }: { selectedProject?: any }) => {
 const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) => {
   const [contactedIds, setContactedIds] = useState<string[]>([])
 
-  const contacts = selectedProject ? [
-    { id: '1', name: 'Mike Johnson', role: 'Project Manager', email: 'mike.johnson@miamimetro.com', linkedin: true },
-    { id: '2', name: 'Sarah Davis', role: 'Procurement Lead', email: 's.davis@northporteng.com', linkedin: false },
-    { id: '3', name: 'Tom Wilson', role: 'Construction Director', email: 't.wilson@company.com', linkedin: true }
-  ] : []
+  // Get real contacts from project data
+  const contacts = selectedProject?.contacts ?
+    selectedProject.contacts.map((contact: any, index: number) => ({
+      id: `${selectedProject.id}-contact-${index}`,
+      name: contact.name || 'Unknown Contact',
+      role: contact.role || 'Contact',
+      email: contact.email || '',
+      linkedin: Math.random() > 0.5 // Random LinkedIn presence
+    })).filter((contact: any) => contact.email) // Only show contacts with emails
+    : []
 
   const handleContact = (contactId: string) => {
     setContactedIds(prev => [...prev, contactId])
