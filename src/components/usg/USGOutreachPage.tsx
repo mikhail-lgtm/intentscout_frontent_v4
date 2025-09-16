@@ -294,7 +294,7 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
       </div>
 
       <div className="space-y-3">
-        {contacts.map((contact) => (
+        {contacts.map((contact: any) => (
           <div
             key={contact.id}
             className={`p-3 border rounded-lg transition-all duration-200 ${
