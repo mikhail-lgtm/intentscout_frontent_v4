@@ -128,15 +128,12 @@ export const USGDemoPage = () => {
   }, [fetchData])
 
   const handleDecisionChange = useCallback((leadId: string, decision: 'approve' | 'reject' | null) => {
-    console.log('Decision change:', leadId, decision)
     // Update approved projects in context
     if (decision === 'approve') {
       const newApprovedProjects = [...approvedProjects.filter(id => id !== leadId), leadId]
-      console.log('Setting approved projects:', newApprovedProjects)
       setApprovedProjects(newApprovedProjects)
     } else {
       const newApprovedProjects = approvedProjects.filter(id => id !== leadId)
-      console.log('Removing from approved projects:', newApprovedProjects)
       setApprovedProjects(newApprovedProjects)
     }
 
@@ -164,18 +161,6 @@ export const USGDemoPage = () => {
                 <RotateCcw className="w-4 h-4" />
                 Refresh
               </button>
-              <button
-                onClick={() => setApprovedProjects([])}
-                className="inline-flex items-center gap-2 px-3 py-1.5 border border-red-300 text-red-700 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors"
-              >
-                Clear Likes
-              </button>
-              <button
-                onClick={() => setApprovedProjects(['cc-0', 'cc-1'])}
-                className="inline-flex items-center gap-2 px-3 py-1.5 border border-green-300 text-green-700 rounded-lg text-sm font-medium hover:bg-green-50 transition-colors"
-              >
-                Test Likes
-              </button>
             </div>
           </div>
 
@@ -188,7 +173,7 @@ export const USGDemoPage = () => {
               <>
                 <span>|</span>
                 <span className="text-green-600 font-medium">
-                  {approvedProjects.length} Approved ({approvedProjects.join(', ')})
+                  {approvedProjects.length} Approved
                 </span>
                 <span className="text-blue-600 font-medium">
                   {leads.filter(l => Math.round(l.spec_fit * 5) === 3).length} Score 3

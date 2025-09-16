@@ -19,32 +19,19 @@ const DemoOutreachSidebar = ({
   selectedProject?: any
   onProjectSelect: (project: any) => void
 }) => {
-  console.log('DemoOutreachSidebar received approved projects:', approvedProjects)
-  console.log('Available demo projects:', DEMO_PROJECTS.map(p => p.id))
   const approvedProjectsData = DEMO_PROJECTS.filter(p => approvedProjects.includes(p.id))
-  console.log('Filtered approved projects data:', approvedProjectsData)
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 h-full">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
         Approved Signals ({approvedProjectsData.length})
       </h3>
-      <div className="mb-4 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
-        <div>Debug: Received {approvedProjects.length} approved IDs</div>
-        <div>IDs: [{approvedProjects.join(', ')}]</div>
-        <div>Filtered: {approvedProjectsData.length} projects</div>
-      </div>
-
       {approvedProjectsData.length === 0 ? (
         <div className="text-center py-8">
           <div className="text-gray-500 text-sm">
             No approved projects yet.
             <br />
             Go to Projects tab and approve some signals to see them here.
-            <br />
-            <div className="mt-2 text-xs">
-              Available project IDs: {DEMO_PROJECTS.map(p => p.id).join(', ')}
-            </div>
           </div>
         </div>
       ) : (
@@ -235,7 +222,6 @@ const DemoHubSpotSending = ({ selectedProject }: { selectedProject?: any }) => {
 
 const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) => {
   const [contactedIds, setContactedIds] = useState<string[]>([])
-  const [isSearching, setIsSearching] = useState(false)
 
   const contacts = selectedProject ? [
     { id: '1', name: 'Mike Johnson', role: 'Project Manager', email: 'mike.johnson@miamimetro.com', linkedin: true },
@@ -245,12 +231,6 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
 
   const handleContact = (contactId: string) => {
     setContactedIds(prev => [...prev, contactId])
-  }
-
-  const handleFindMore = async () => {
-    setIsSearching(true)
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    setIsSearching(false)
   }
 
   if (!selectedProject) {
@@ -268,17 +248,6 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
     <div>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900">Contacts ({contacts.length})</h3>
-        <button
-          onClick={handleFindMore}
-          disabled={isSearching}
-          className={`px-3 py-1 text-xs rounded-lg font-medium transition-colors ${
-            isSearching
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-500 text-white hover:bg-blue-600'
-          }`}
-        >
-          {isSearching ? 'Searching...' : 'Find More'}
-        </button>
       </div>
 
       <div className="space-y-3">
@@ -454,8 +423,6 @@ export const USGOutreachPage = () => {
   const { approvedProjects } = useDemoContext()
   const [showSequenceBuilder, setShowSequenceBuilder] = useState(false)
   const [selectedProject, setSelectedProject] = useState<any>(null)
-
-  console.log('USGOutreachPage approved projects:', approvedProjects)
 
   return (
     <div className="h-full bg-gray-50 overflow-hidden flex flex-col">
