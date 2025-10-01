@@ -129,15 +129,8 @@ export function createManagedInterval(callback: () => void, delay: number): Node
   const interval = setInterval(callback, delay)
   globalCleanup.registerInterval(interval)
 
-  // Return enhanced interval with cleanup
-  const originalClear = () => {
-    clearInterval(interval)
-    globalCleanup.unregisterInterval(interval)
-  }
-
-  // Override clearInterval for this specific interval
-  ;(interval as any).clear = originalClear
-
+  // Cannot add properties to number, so just return the interval
+  // The global cleanup will handle cleanup automatically
   return interval
 }
 
