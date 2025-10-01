@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { api } from '../lib/apiClient'
+import { createManagedInterval } from '../lib/globalCleanup'
 
 export interface ScrapedProfile {
   contact_id: string
@@ -39,54 +40,69 @@ export const useLinkedInScraping = (signalId?: string) => {
   // Check if scraping failed
   const hasFailed = scrapingStatus?.status === 'failed'
 
-  // OPTIMIZED: Poll for scraping status when in progress with smarter timing
+  // FIXED: Proper interval cleanup with ref tracking
   useEffect(() => {
     if (!isScrapingInProgress || !scrapingStatus?.scraping_id) return
 
+    let shortInterval: NodeJS.Timeout | null = null
+    let longInterval: NodeJS.Timeout | null = null
     let pollCount = 0
-    const pollInterval = setInterval(async () => {
+
+    const pollStatus = async () => {
       try {
         const response = await api.linkedInScraping.getStatus(scrapingStatus.scraping_id)
         if (response.data && typeof response.data === 'object') {
           const data = response.data as ScrapingStatus
           setScrapingStatus(data)
-          
+
           // Stop polling if completed or failed
           if (data.status === 'completed' || data.status === 'failed') {
-            clearInterval(pollInterval)
+            if (shortInterval) {
+              clearInterval(shortInterval)
+              shortInterval = null
+            }
+            if (longInterval) {
+              clearInterval(longInterval)
+              longInterval = null
+            }
+            return
           }
         }
-        
+
         pollCount++
-        // OPTIMIZED: After 6 polls (30 seconds), increase interval to reduce load
-        if (pollCount > 6) {
-          clearInterval(pollInterval)
-          const longerInterval = setInterval(async () => {
-            try {
-              const response = await api.linkedInScraping.getStatus(scrapingStatus.scraping_id)
-              if (response.data && typeof response.data === 'object') {
-                const data = response.data as ScrapingStatus
-                setScrapingStatus(data)
-                
-                if (data.status === 'completed' || data.status === 'failed') {
-                  clearInterval(longerInterval)
-                }
-              }
-            } catch (err) {
-              console.error('Failed to poll scraping status:', err)
-              clearInterval(longerInterval)
-            }
-          }, 15000) // Poll every 15 seconds after 30 seconds
+        // After 6 polls (30 seconds), switch to longer interval
+        if (pollCount > 6 && shortInterval && !longInterval) {
+          clearInterval(shortInterval)
+          shortInterval = null
+          longInterval = createManagedInterval(pollStatus, 15000)
         }
-        
+
       } catch (err) {
         console.error('Failed to poll scraping status:', err)
         setError('Failed to check scraping status')
-        clearInterval(pollInterval)
+        if (shortInterval) {
+          clearInterval(shortInterval)
+          shortInterval = null
+        }
+        if (longInterval) {
+          clearInterval(longInterval)
+          longInterval = null
+        }
       }
-    }, 5000) // Poll every 5 seconds initially
+    }
 
-    return () => clearInterval(pollInterval)
+    shortInterval = createManagedInterval(pollStatus, 5000) // Poll every 5 seconds initially
+
+    return () => {
+      if (shortInterval) {
+        clearInterval(shortInterval)
+        shortInterval = null
+      }
+      if (longInterval) {
+        clearInterval(longInterval)
+        longInterval = null
+      }
+    }
   }, [isScrapingInProgress, scrapingStatus?.scraping_id])
 
   // Start LinkedIn scraping

@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { config, endpoints, buildApiUrl } from './config'
+import { createManagedAbortController } from './globalCleanup'
 
 interface ApiRequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
@@ -140,7 +141,7 @@ class ApiClient {
       }
 
       // Create abort controller for timeout
-      const controller = new AbortController()
+      const controller = createManagedAbortController()
       const timeoutId = setTimeout(() => controller.abort(), timeout)
 
       // Make the request

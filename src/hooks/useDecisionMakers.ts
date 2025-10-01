@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { api } from '../lib/apiClient'
+import { createManagedInterval } from '../lib/globalCleanup'
 
 export interface DecisionMaker {
   id: string
@@ -193,7 +194,7 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
     let interval: NodeJS.Timeout | null = null
     
     if (state.searchStatus && (state.searchStatus.status === 'pending' || state.searchStatus.status === 'searching')) {
-      interval = setInterval(pollSearchStatus, 3000) // Poll every 3 seconds
+      interval = createManagedInterval(pollSearchStatus, 3000) // Poll every 3 seconds
     }
 
     return () => {

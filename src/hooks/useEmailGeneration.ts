@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { api } from '../lib/apiClient'
+import { createManagedInterval } from '../lib/globalCleanup'
 
 export interface GeneratedEmail {
   contact_id: string
@@ -144,29 +145,41 @@ export const useEmailGeneration = (signalId: string | null | undefined) => {
     }
   }, [state.generationStatus?.generation_id])
 
-  // OPTIMIZED: Auto-poll when generation is in progress with smarter timing
+  // FIXED: Proper interval cleanup with ref tracking
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null
-    
+    let shortInterval: NodeJS.Timeout | null = null
+    let longInterval: NodeJS.Timeout | null = null
+    let pollCount = 0
+
     if (state.generationStatus && (state.generationStatus.status === 'pending' || state.generationStatus.status === 'in_progress')) {
-      // OPTIMIZED: Start with shorter interval, increase over time to reduce load
-      let pollCount = 0
       const poll = () => {
         pollGenerationStatus()
         pollCount++
-        
+
         // After 10 polls (30 seconds), switch to longer interval
         if (pollCount > 10) {
-          if (interval) clearInterval(interval)
-          interval = setInterval(pollGenerationStatus, 10000) // Poll every 10 seconds after 30 seconds
+          if (shortInterval) {
+            clearInterval(shortInterval)
+            shortInterval = null
+          }
+          if (!longInterval) {
+            longInterval = createManagedInterval(pollGenerationStatus, 10000)
+          }
         }
       }
-      
-      interval = setInterval(poll, 3000) // Poll every 3 seconds initially
+
+      shortInterval = createManagedInterval(poll, 3000) // Poll every 3 seconds initially
     }
 
     return () => {
-      if (interval) clearInterval(interval)
+      if (shortInterval) {
+        clearInterval(shortInterval)
+        shortInterval = null
+      }
+      if (longInterval) {
+        clearInterval(longInterval)
+        longInterval = null
+      }
     }
   }, [state.generationStatus?.status, pollGenerationStatus])
 
