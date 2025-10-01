@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { X, Mail, Loader2, CheckCircle, AlertCircle, Wand2 } from 'lucide-react'
 import { useEmailGeneration } from '../../hooks/useEmailGeneration'
 import { useSequences } from '../../hooks/useSequences'
+import { api } from '../../lib/apiClient'
 
 interface Contact {
   id: string
@@ -76,11 +77,13 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
   // Use sequences hook to get available sequences
   const { sequences, isLoading: sequencesLoading } = useSequences()
 
-  // Filter contacts with email addresses
-  const contactsWithEmails = contacts.filter(contact => contact.email_address && contact.email_address.trim())
+  // Filter contacts with email addresses - MEMOIZED to prevent infinite re-renders
+  const contactsWithEmails = useMemo(() => {
+    return contacts.filter(contact => contact.email_address && contact.email_address.trim())
+  }, [contacts])
 
-  // Validate data sources when sequence changes
-  const validateDataSources = async () => {
+  // Validate data sources when sequence changes - MEMOIZED to prevent infinite re-renders
+  const validateDataSources = useCallback(async () => {
     if (!selectedSequence || contactsWithEmails.length === 0 || !signalId) {
       setValidationResult(null)
       setValidationError(null)
@@ -91,7 +94,7 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
     setValidationError(null)
 
     try {
-      const { api } = await import('../../lib/apiClient')
+      // Use static import instead of dynamic import to prevent memory leaks
       const response = await api.emailValidation.validateGeneration({
         sequence_id: selectedSequence,
         contact_ids: contactsWithEmails.map(c => c.id),
@@ -111,14 +114,14 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
     } finally {
       setIsValidating(false)
     }
-  }
+  }, [selectedSequence, contactsWithEmails, signalId])
 
   // Run validation when sequence or contacts change
   useEffect(() => {
     if (selectedSequence && contactsWithEmails.length > 0) {
       validateDataSources()
     }
-  }, [selectedSequence, contactsWithEmails.length, signalId])
+  }, [selectedSequence, contactsWithEmails.length, signalId, validateDataSources])
 
   const handleStartGeneration = async () => {
     if (!selectedSequence || contactsWithEmails.length === 0) return
