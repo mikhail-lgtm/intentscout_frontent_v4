@@ -58,14 +58,20 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
 
   // Check for existing search when signalId changes
   const checkExistingSearch = useCallback(async () => {
-    if (!signalId || signalId === '') return
+    if (!signalId || signalId === '') {
+      console.log('DecisionMakers: No signalId provided:', signalId)
+      return
+    }
 
     try {
+      console.log('DecisionMakers: Checking existing search for signalId:', signalId)
       setState(prev => ({ ...prev, isLoading: true, error: null }))
-      
+
       const response = await api.decisionMakers.getBySignal(signalId)
-      
+      console.log('DecisionMakers: API response:', response)
+
       if (response.error) {
+        console.error('DecisionMakers: API error:', response.error)
         setState(prev => ({ ...prev, isLoading: false, error: response.error || 'Failed to check existing search' }))
         return
       }
@@ -96,17 +102,23 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
 
   // Start a new decision maker search
   const startSearch = useCallback(async (customGuidance?: string) => {
-    if (!signalId || signalId === '') return null
+    if (!signalId || signalId === '') {
+      console.log('DecisionMakers: Cannot start search - no signalId provided:', signalId)
+      return null
+    }
 
     try {
+      console.log('DecisionMakers: Starting search for signalId:', signalId, 'with guidance:', customGuidance)
       setState(prev => ({ ...prev, isLoading: true, error: null }))
-      
+
       const response = await api.decisionMakers.startSearch({
         signal_id: signalId,
         custom_guidance: customGuidance?.trim() || undefined
       })
+      console.log('DecisionMakers: Start search response:', response)
 
       if (response.error) {
+        console.error('DecisionMakers: Start search error:', response.error)
         setState(prev => ({ ...prev, isLoading: false, error: response.error || 'Failed to start search' }))
         return null
       }
