@@ -68,7 +68,7 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
       setState(prev => ({ ...prev, isLoading: true, error: null }))
 
       const response = await api.decisionMakers.getBySignal(signalId)
-      console.log('DecisionMakers: API response:', response)
+      console.log('DecisionMakers: API response:', JSON.stringify(response, null, 2))
 
       if (response.error) {
         console.error('DecisionMakers: API error:', response.error)
@@ -115,7 +115,7 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
         signal_id: signalId,
         custom_guidance: customGuidance?.trim() || undefined
       })
-      console.log('DecisionMakers: Start search response:', response)
+      console.log('DecisionMakers: Start search response:', JSON.stringify(response, null, 2))
 
       if (response.error) {
         console.error('DecisionMakers: Start search error:', response.error)
@@ -150,20 +150,27 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
 
   // Poll for search status updates
   const pollSearchStatus = useCallback(async () => {
-    if (!state.searchStatus?.search_id) return
+    if (!state.searchStatus?.search_id) {
+      console.log('DecisionMakers: No search_id for polling')
+      return
+    }
 
     try {
+      console.log('DecisionMakers: Polling status for search_id:', state.searchStatus.search_id)
       const response = await api.decisionMakers.getStatus(state.searchStatus.search_id)
-      
+      console.log('DecisionMakers: Poll response:', JSON.stringify(response, null, 2))
+
       if (response.error) {
-        console.error('Error polling search status:', response.error)
+        console.error('DecisionMakers: Polling error:', response.error)
         return
       }
 
       if (response.data) {
-        setState(prev => ({ 
-          ...prev, 
-          searchStatus: response.data as DecisionMakerSearchStatus,
+        const newStatus = response.data as DecisionMakerSearchStatus
+        console.log('DecisionMakers: New status:', newStatus.status, 'Decision makers count:', newStatus.decision_makers?.length || 0)
+        setState(prev => ({
+          ...prev,
+          searchStatus: newStatus,
           error: null
         }))
       }
@@ -204,9 +211,15 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
   // Auto-poll when search is in progress
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null
-    
-    if (state.searchStatus && (state.searchStatus.status === 'pending' || state.searchStatus.status === 'searching')) {
+
+    const shouldPoll = state.searchStatus && (state.searchStatus.status === 'pending' || state.searchStatus.status === 'searching')
+    console.log('DecisionMakers: Polling check - searchStatus:', state.searchStatus?.status, 'shouldPoll:', shouldPoll)
+
+    if (shouldPoll) {
+      console.log('DecisionMakers: Starting polling interval')
       interval = createManagedInterval(pollSearchStatus, 3000) // Poll every 3 seconds
+    } else {
+      console.log('DecisionMakers: Not starting polling - status is not pending/searching')
     }
 
     return () => {
