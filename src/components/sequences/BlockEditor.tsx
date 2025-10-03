@@ -149,6 +149,24 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({ isOpen, onClose, onSav
                 Describe the tone, style, and content you want the AI to generate
               </p>
             </div>
+            <div className="border-t border-gray-200 pt-4">
+              <label className="inline-flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.config.keep_subject_consistent || false}
+                  onChange={(e) => updateConfig({ keep_subject_consistent: e.target.checked })}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <div>
+                  <span className="text-sm font-medium text-gray-700">
+                    Keep subject line consistent for email threading
+                  </span>
+                  <p className="text-xs text-gray-500">
+                    Follow-up emails will use the same subject with "Re:" prefix for better email client threading
+                  </p>
+                </div>
+              </label>
+            </div>
           </>
         )
 

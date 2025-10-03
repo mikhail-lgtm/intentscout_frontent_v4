@@ -41,16 +41,19 @@ export interface SequenceBlockConfig {
   // For message blocks (email, linkedin_message)
   subject_prompt?: string
   body_prompt?: string
-  
+
+  // Email threading option - keep subject consistent across follow-ups
+  keep_subject_consistent?: boolean
+
   // For connection requests
   connection_message_prompt?: string
-  
+
   // For tasks
   task_description?: string
-  
+
   // NEW: Data source configuration
   data_sources: DataSourceConfig[]
-  
+
   // For any block type - additional custom settings
   custom_settings?: Record<string, any>
 }

@@ -309,8 +309,8 @@ export const api = {
     getComplete: (params: { date: string; product_id: string; min_score: number }) =>
       apiClient.get(`/signals/complete?date=${params.date}&product_id=${params.product_id}&min_score=${params.min_score}`),
     // Legacy endpoints - consider deprecating these in favor of getComplete
-    getIntentScores: (params: { date: string; product_id: string; min_score: number }) => 
-      apiClient.get(`/signals/intent-scores?date=${params.date}&product_id=${params.product_id}&min_score=${params.min_score}`),
+    getIntentScores: (params: { date: string; product_id: string; min_score: number; hide_approved?: boolean }) =>
+      apiClient.get(`/signals/intent-scores?date=${params.date}&product_id=${params.product_id}&min_score=${params.min_score}&hide_approved=${params.hide_approved !== false}`),
     getCompanies: (companyIds: string[]) => 
       apiClient.get(`/signals/companies?company_ids=${companyIds.join(',')}`),
     getJobs: (jobIds: string[]) => 
@@ -534,8 +534,16 @@ export const api = {
       apiClient.get(`/emails/signal/${signalId}`),
     getByContact: (contactId: string) => 
       apiClient.get(`/emails/contact/${contactId}`),
-    listGenerations: (limit = 20) => 
+    listGenerations: (limit = 20) =>
       apiClient.get(`${endpoints.emails.listGenerations}?limit=${limit}`),
+    regenerate: (data: {
+      signal_id: string;
+      contact_id: string;
+      sequence_step: number;
+      subject_prompt: string;
+      body_prompt: string;
+      data_sources?: any[];
+    }) => apiClient.post('/emails/regenerate', data),
   },
 
   // Signal Notes

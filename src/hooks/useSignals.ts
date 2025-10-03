@@ -6,15 +6,15 @@ const requestCache = new Map<string, Promise<any>>()
 const resultCache = new Map<string, any>()
 
 // Function to clear cache for specific date/product/score combinations
-const clearIntentScoresCache = (date: string, productId: string, minScore: number) => {
-  const cacheKey = `intent-scores-${date}-${productId}-${minScore}`
+const clearIntentScoresCache = (date: string, productId: string, minScore: number, hideApproved: boolean) => {
+  const cacheKey = `intent-scores-${date}-${productId}-${minScore}-${hideApproved}`
   resultCache.delete(cacheKey)
   requestCache.delete(cacheKey)
   console.log('Cleared cache for', cacheKey)
 }
 
-const getCachedIntentScores = async (params: { date: string; product_id: string; min_score: number }) => {
-  const cacheKey = `intent-scores-${params.date}-${params.product_id}-${params.min_score}`
+const getCachedIntentScores = async (params: { date: string; product_id: string; min_score: number; hide_approved?: boolean }) => {
+  const cacheKey = `intent-scores-${params.date}-${params.product_id}-${params.min_score}-${params.hide_approved !== false}`
   
   // Return cached result if available
   if (resultCache.has(cacheKey)) {
@@ -88,6 +88,7 @@ interface FilterOptions {
   product: string
   minScore: number
   vertical: string
+  hideApproved?: boolean
 }
 
 interface IntentScoreResponse {
@@ -146,15 +147,15 @@ export const useSignals = (date: string, filters: FilterOptions) => {
 
   // Fetch signals data
   const fetchSignals = useCallback(async () => {
-    const requestKey = `${date}-${filters.product}-${filters.minScore}-${filters.vertical}`
-    
+    const requestKey = `${date}-${filters.product}-${filters.minScore}-${filters.vertical}-${filters.hideApproved}`
+
     // Prevent duplicate requests
     if (currentRequestRef.current === requestKey) {
       return
     }
-    
+
     currentRequestRef.current = requestKey
-    
+
     try {
       setIsLoading(true)
       setError(null)
@@ -164,7 +165,8 @@ export const useSignals = (date: string, filters: FilterOptions) => {
       const intentScoresResponse = await getCachedIntentScores({
         date,
         product_id: filters.product,
-        min_score: filters.minScore
+        min_score: filters.minScore,
+        hide_approved: filters.hideApproved
       })
       
       if (intentScoresResponse.error) {
@@ -312,7 +314,7 @@ export const useSignals = (date: string, filters: FilterOptions) => {
         throw new Error(response.error)
       } else {
         // Clear cache to ensure fresh data on next load
-        clearIntentScoresCache(date, filters.product, filters.minScore)
+        clearIntentScoresCache(date, filters.product, filters.minScore, filters.hideApproved !== false)
       }
     } catch (error) {
       console.error('Failed to mark signal:', error)
@@ -350,7 +352,7 @@ export const useSignals = (date: string, filters: FilterOptions) => {
         throw new Error(response.error)
       } else {
         // Clear cache to ensure fresh data on next load
-        clearIntentScoresCache(date, filters.product, filters.minScore)
+        clearIntentScoresCache(date, filters.product, filters.minScore, filters.hideApproved !== false)
       }
     } catch (error) {
       console.error('Failed to remove signal decision:', error)
