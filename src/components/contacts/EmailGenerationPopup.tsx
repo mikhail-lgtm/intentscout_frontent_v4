@@ -4,7 +4,7 @@ import { useEmailGeneration } from '../../hooks/useEmailGeneration'
 import { useSequences } from '../../hooks/useSequences'
 import { api } from '../../lib/apiClient'
 import { RegenerateEmailModal } from '../outreach/RegenerateEmailModal'
-import { DataSourceConfig } from '../../types/sequences'
+import { DataSourceConfig, SequenceBlockType, BLOCK_TEMPLATES } from '../../types/sequences'
 
 interface Contact {
   id: string
@@ -191,7 +191,7 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
       return
     }
 
-    // Fallback: Try to load from sequence if email doesn't have prompts (old emails)
+    // Fallback 1: Try to load from sequence if email doesn't have prompts (old emails)
     console.log('⚠️ Email doesnt have saved prompts, trying to load from sequence')
 
     if (selectedSequence) {
@@ -211,17 +211,25 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
             }
             console.log('✅ Loaded prompts from sequence:', prompts)
             setRegeneratePrompts(prompts)
-          } else {
-            console.warn(`No email block found at index ${blockIndex}`)
+            setShowRegenerateModal(true)
+            return
           }
         }
       } catch (err) {
         console.error('Failed to load sequence configuration:', err)
       }
-    } else {
-      console.warn('No sequence selected and email has no saved prompts')
     }
 
+    // Fallback 2: Use default prompts from BLOCK_TEMPLATES
+    console.log('⚠️ No sequence available, using default prompts from BLOCK_TEMPLATES')
+    const defaultEmailTemplate = BLOCK_TEMPLATES[SequenceBlockType.EMAIL]
+    const defaultPrompts = {
+      subject_prompt: defaultEmailTemplate.config?.subject_prompt || '',
+      body_prompt: defaultEmailTemplate.config?.body_prompt || '',
+      data_sources: defaultEmailTemplate.config?.data_sources || []
+    }
+    console.log('✅ Using default prompts:', defaultPrompts)
+    setRegeneratePrompts(defaultPrompts)
     setShowRegenerateModal(true)
   }
 
