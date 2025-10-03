@@ -275,35 +275,50 @@ export const IndividualEmailPopup: React.FC<IndividualEmailPopupProps> = ({
     const email = emails[index]
     setRegeneratingEmailIndex(index)
 
+    console.log('=== REGENERATE CLICKED ===')
+    console.log('Email:', email)
+    console.log('Selected Sequence:', selectedSequence)
+
     // Try to load sequence block configuration for initial prompts
     if (selectedSequence) {
       try {
+        console.log('Loading sequence:', selectedSequence)
         const sequenceResponse = await api.sequences.getById(selectedSequence)
+        console.log('Sequence response:', sequenceResponse)
+
         if (sequenceResponse.data && typeof sequenceResponse.data === 'object') {
           const sequence = sequenceResponse.data as any
+          console.log('Sequence data:', sequence)
+          console.log('Sequence blocks:', sequence.blocks)
 
           // Find the email block matching this step
           const emailBlocks = sequence.blocks?.filter((b: any) => b.block_type === 'email') || []
+          console.log('Email blocks found:', emailBlocks.length)
+          console.log('Looking for block at step:', email.sequence_step, 'index:', email.sequence_step - 1)
+
           const blockIndex = email.sequence_step - 1
 
           if (emailBlocks[blockIndex]) {
             const block = emailBlocks[blockIndex]
+            console.log('Found block:', block)
+            console.log('Block config:', block.config)
+
             const prompts = {
               subject_prompt: block.config?.subject_prompt || '',
               body_prompt: block.config?.body_prompt || '',
               data_sources: block.config?.data_sources || []
             }
-            console.log('Loaded original prompts from sequence:', prompts)
+            console.log('✅ Loaded original prompts from sequence:', prompts)
             setRegeneratePrompts(prompts)
           } else {
-            console.warn(`No email block found at index ${blockIndex}`)
+            console.warn(`❌ No email block found at index ${blockIndex}, available blocks:`, emailBlocks)
           }
         }
       } catch (err) {
-        console.error('Failed to load sequence configuration:', err)
+        console.error('❌ Failed to load sequence configuration:', err)
       }
     } else {
-      console.warn('No sequence selected, cannot load original prompts')
+      console.warn('❌ No sequence selected, cannot load original prompts')
     }
 
     setShowRegenerateModal(true)
