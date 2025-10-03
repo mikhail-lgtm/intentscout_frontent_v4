@@ -120,16 +120,6 @@ export const SignalsPage = () => {
                 productId={filters.product}
                 minScore={filters.minScore}
               />
-
-              <label className="inline-flex items-center gap-2 px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors">
-                <input
-                  type="checkbox"
-                  checked={filters.hideApproved !== false}
-                  onChange={(e) => handleFilterChange({ hideApproved: e.target.checked })}
-                  className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500 focus:ring-2 cursor-pointer"
-                />
-                <span>Hide approved companies</span>
-              </label>
             </div>
           </div>
 
@@ -139,8 +129,7 @@ export const SignalsPage = () => {
             <span>Product: {filters.product}</span>
             {filters.minScore > 3 && <span>Min Score: {filters.minScore}</span>}
             {filters.vertical && <span>Vertical: {filters.vertical}</span>}
-            <span>Hide approved: {filters.hideApproved !== false ? 'Yes' : 'No'}</span>
-            {!hasActiveFilters && filters.hideApproved !== false && <span className="text-gray-400">Default</span>}
+            {!hasActiveFilters && <span className="text-gray-400">Default</span>}
           </div>
         </div>
       </div>
