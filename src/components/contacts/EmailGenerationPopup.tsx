@@ -174,17 +174,31 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
     onClose()
   }
 
-  const handleRegenerateClick = async (contactId: string, contactName: string, sequenceStep: number) => {
+  const handleRegenerateClick = async (contactId: string, contactName: string, sequenceStep: number, email: any) => {
     setRegeneratingEmail({ contactId, contactName, sequenceStep })
 
-    // Try to load sequence block configuration for initial prompts
+    // Use prompts saved with the email (preferred method)
+    if (email.subject_prompt && email.body_prompt) {
+      console.log('✅ Using prompts saved with email')
+      const prompts = {
+        subject_prompt: email.subject_prompt,
+        body_prompt: email.body_prompt,
+        data_sources: email.data_sources || []
+      }
+      console.log('Loaded prompts from email:', prompts)
+      setRegeneratePrompts(prompts)
+      setShowRegenerateModal(true)
+      return
+    }
+
+    // Fallback: Try to load from sequence if email doesn't have prompts (old emails)
+    console.log('⚠️ Email doesnt have saved prompts, trying to load from sequence')
+
     if (selectedSequence) {
       try {
         const sequenceResponse = await api.sequences.getById(selectedSequence)
         if (sequenceResponse.data && typeof sequenceResponse.data === 'object') {
           const sequence = sequenceResponse.data as any
-
-          // Find the email block matching this step
           const emailBlocks = sequence.blocks?.filter((b: any) => b.block_type === 'email') || []
           const blockIndex = sequenceStep - 1
 
@@ -195,7 +209,7 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
               body_prompt: block.config?.body_prompt || '',
               data_sources: block.config?.data_sources || []
             }
-            console.log('Loaded original prompts from sequence:', prompts)
+            console.log('✅ Loaded prompts from sequence:', prompts)
             setRegeneratePrompts(prompts)
           } else {
             console.warn(`No email block found at index ${blockIndex}`)
@@ -205,7 +219,7 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
         console.error('Failed to load sequence configuration:', err)
       }
     } else {
-      console.warn('No sequence selected, cannot load original prompts')
+      console.warn('No sequence selected and email has no saved prompts')
     }
 
     setShowRegenerateModal(true)
@@ -339,7 +353,7 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
                             </span>
                             <div className="flex items-center gap-1">
                               <button
-                                onClick={() => handleRegenerateClick(email.contact_id, `${contact?.first_name} ${contact?.last_name}`, email.sequence_step)}
+                                onClick={() => handleRegenerateClick(email.contact_id, `${contact?.first_name} ${contact?.last_name}`, email.sequence_step, email)}
                                 className="flex items-center justify-center w-7 h-7 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded transition-colors"
                                 title="Regenerate email with different prompts"
                               >
