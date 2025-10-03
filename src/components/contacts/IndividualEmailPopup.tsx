@@ -288,16 +288,22 @@ export const IndividualEmailPopup: React.FC<IndividualEmailPopupProps> = ({
 
           if (emailBlocks[blockIndex]) {
             const block = emailBlocks[blockIndex]
-            setRegeneratePrompts({
+            const prompts = {
               subject_prompt: block.config?.subject_prompt || '',
               body_prompt: block.config?.body_prompt || '',
               data_sources: block.config?.data_sources || []
-            })
+            }
+            console.log('Loaded original prompts from sequence:', prompts)
+            setRegeneratePrompts(prompts)
+          } else {
+            console.warn(`No email block found at index ${blockIndex}`)
           }
         }
       } catch (err) {
         console.error('Failed to load sequence configuration:', err)
       }
+    } else {
+      console.warn('No sequence selected, cannot load original prompts')
     }
 
     setShowRegenerateModal(true)
