@@ -278,7 +278,7 @@ export const IndividualEmailPopup: React.FC<IndividualEmailPopupProps> = ({
     // Try to load sequence block configuration for initial prompts
     if (selectedSequence) {
       try {
-        const sequenceResponse = await api.sequences.get(selectedSequence)
+        const sequenceResponse = await api.sequences.getById(selectedSequence)
         if (sequenceResponse.data && typeof sequenceResponse.data === 'object') {
           const sequence = sequenceResponse.data as any
 
