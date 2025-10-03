@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
-import { X, Mail, Loader2, CheckCircle, AlertCircle, Wand2 } from 'lucide-react'
+import { X, Mail, Loader2, CheckCircle, AlertCircle, Wand2, RotateCcw, Copy } from 'lucide-react'
 import { useEmailGeneration } from '../../hooks/useEmailGeneration'
 import { useSequences } from '../../hooks/useSequences'
 import { api } from '../../lib/apiClient'
+import { RegenerateEmailModal } from '../outreach/RegenerateEmailModal'
+import { DataSourceConfig } from '../../types/sequences'
 
 interface Contact {
   id: string
@@ -62,6 +64,22 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
   const [validationResult, setValidationResult] = useState<any>(null)
   const [isValidating, setIsValidating] = useState(false)
   const [validationError, setValidationError] = useState<string | null>(null)
+  const [showRegenerateModal, setShowRegenerateModal] = useState(false)
+  const [regeneratingEmail, setRegeneratingEmail] = useState<{
+    contactId: string
+    contactName: string
+    sequenceStep: number
+  } | null>(null)
+  const [regeneratePrompts, setRegeneratePrompts] = useState<{
+    subject_prompt: string
+    body_prompt: string
+    data_sources: DataSourceConfig[]
+  }>({
+    subject_prompt: '',
+    body_prompt: '',
+    data_sources: []
+  })
+  const [copySuccess, setCopySuccess] = useState<string | null>(null)
   
   // Use the email generation hook
   const {
@@ -156,6 +174,83 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
     onClose()
   }
 
+  const handleRegenerateClick = async (contactId: string, contactName: string, sequenceStep: number) => {
+    setRegeneratingEmail({ contactId, contactName, sequenceStep })
+
+    // Try to load sequence block configuration for initial prompts
+    if (selectedSequence) {
+      try {
+        const sequenceResponse = await api.sequences.getById(selectedSequence)
+        if (sequenceResponse.data && typeof sequenceResponse.data === 'object') {
+          const sequence = sequenceResponse.data as any
+
+          // Find the email block matching this step
+          const emailBlocks = sequence.blocks?.filter((b: any) => b.block_type === 'email') || []
+          const blockIndex = sequenceStep - 1
+
+          if (emailBlocks[blockIndex]) {
+            const block = emailBlocks[blockIndex]
+            const prompts = {
+              subject_prompt: block.config?.subject_prompt || '',
+              body_prompt: block.config?.body_prompt || '',
+              data_sources: block.config?.data_sources || []
+            }
+            console.log('Loaded original prompts from sequence:', prompts)
+            setRegeneratePrompts(prompts)
+          } else {
+            console.warn(`No email block found at index ${blockIndex}`)
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load sequence configuration:', err)
+      }
+    } else {
+      console.warn('No sequence selected, cannot load original prompts')
+    }
+
+    setShowRegenerateModal(true)
+  }
+
+  const handleRegenerateEmail = async (data: {
+    subject_prompt: string
+    body_prompt: string
+    data_sources: DataSourceConfig[]
+  }) => {
+    if (!regeneratingEmail) return
+
+    try {
+      const response = await api.emails.regenerate({
+        signal_id: signalId,
+        contact_id: regeneratingEmail.contactId,
+        sequence_step: regeneratingEmail.sequenceStep,
+        subject_prompt: data.subject_prompt,
+        body_prompt: data.body_prompt,
+        data_sources: data.data_sources
+      })
+
+      if (response.error) {
+        throw new Error(response.error)
+      }
+
+      // Refresh the generation status to show updated email
+      // The useEmailGeneration hook should handle this automatically
+      alert('Email regenerated successfully! Please refresh to see the changes.')
+    } catch (err: any) {
+      console.error('Failed to regenerate email:', err)
+      throw err
+    }
+  }
+
+  const copyToClipboard = async (text: string, emailId: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopySuccess(emailId)
+      setTimeout(() => setCopySuccess(null), 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
+  }
+
   const renderContent = () => {
     // Show success animation
     if (showSuccess) {
@@ -234,35 +329,58 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
                   </div>
                   
                   <div className="space-y-3">
-                    {emails.map((email, index) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-medium text-gray-700">
-                            Step {email.sequence_step} • {email.block_name}
-                          </span>
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${
-                            email.status === 'generated' 
-                              ? 'bg-green-100 text-green-700' 
-                              : 'bg-red-100 text-red-700'
-                          }`}>
-                            {email.status}
-                          </span>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div>
-                            <div className="text-xs font-medium text-gray-600">Subject:</div>
-                            <div className="text-sm text-gray-900">{email.subject}</div>
+                    {emails.map((email, index) => {
+                      const emailId = `${email.contact_id}-${email.sequence_step}`
+                      return (
+                        <div key={index} className="bg-gray-50 rounded-lg p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-medium text-gray-700">
+                              Step {email.sequence_step} • {email.block_name}
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleRegenerateClick(email.contact_id, `${contact?.first_name} ${contact?.last_name}`, email.sequence_step)}
+                                className="flex items-center justify-center w-7 h-7 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded transition-colors"
+                                title="Regenerate email with different prompts"
+                              >
+                                <RotateCcw className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => copyToClipboard(`Subject: ${email.subject}\n\n${email.body}`, emailId)}
+                                className="flex items-center justify-center w-7 h-7 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                title="Copy email"
+                              >
+                                {copySuccess === emailId ? (
+                                  <CheckCircle className="w-3.5 h-3.5 text-green-600" />
+                                ) : (
+                                  <Copy className="w-3.5 h-3.5" />
+                                )}
+                              </button>
+                              <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                email.status === 'generated'
+                                  ? 'bg-green-100 text-green-700'
+                                  : 'bg-red-100 text-red-700'
+                              }`}>
+                                {email.status}
+                              </span>
+                            </div>
                           </div>
-                          <div>
-                            <div className="text-xs font-medium text-gray-600">Body:</div>
-                            <div className="text-sm text-gray-900 whitespace-pre-wrap max-h-32 overflow-y-auto">
-                              {email.body}
+
+                          <div className="space-y-2">
+                            <div>
+                              <div className="text-xs font-medium text-gray-600">Subject:</div>
+                              <div className="text-sm text-gray-900">{email.subject}</div>
+                            </div>
+                            <div>
+                              <div className="text-xs font-medium text-gray-600">Body:</div>
+                              <div className="text-sm text-gray-900 whitespace-pre-wrap max-h-32 overflow-y-auto">
+                                {email.body}
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 </div>
               )
@@ -498,6 +616,25 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Regenerate Email Modal */}
+      {showRegenerateModal && regeneratingEmail && (
+        <RegenerateEmailModal
+          isOpen={showRegenerateModal}
+          onClose={() => {
+            setShowRegenerateModal(false)
+            setRegeneratingEmail(null)
+            setRegeneratePrompts({ subject_prompt: '', body_prompt: '', data_sources: [] })
+          }}
+          onRegenerate={handleRegenerateEmail}
+          initialSubjectPrompt={regeneratePrompts.subject_prompt}
+          initialBodyPrompt={regeneratePrompts.body_prompt}
+          initialDataSources={regeneratePrompts.data_sources}
+          contactName={regeneratingEmail.contactName}
+          companyName={companyName}
+          sequenceStep={regeneratingEmail.sequenceStep}
+        />
+      )}
     </>
   )
 }
