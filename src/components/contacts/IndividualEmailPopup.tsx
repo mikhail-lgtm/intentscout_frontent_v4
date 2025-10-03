@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { X, Mail, RefreshCw, Edit3, Send, Copy, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import { X, Mail, RefreshCw, Edit3, Send, Copy, Loader2, CheckCircle, AlertCircle, RotateCcw } from 'lucide-react'
 import { api } from '../../lib/apiClient'
 import { useSequences } from '../../hooks/useSequences'
+import { RegenerateEmailModal } from '../outreach/RegenerateEmailModal'
+import { DataSourceConfig } from '../../types/sequences'
 
 interface IndividualEmailPopupProps {
   isOpen: boolean
@@ -44,6 +46,8 @@ export const IndividualEmailPopup: React.FC<IndividualEmailPopupProps> = ({
   const [validationResult, setValidationResult] = useState<any>(null)
   const [isValidating, setIsValidating] = useState(false)
   const [validationError, setValidationError] = useState<string | null>(null)
+  const [showRegenerateModal, setShowRegenerateModal] = useState(false)
+  const [regeneratingEmailIndex, setRegeneratingEmailIndex] = useState<number | null>(null)
 
   // Use sequences hook to get available sequences
   const { sequences, isLoading: sequencesLoading } = useSequences()
@@ -255,6 +259,42 @@ export const IndividualEmailPopup: React.FC<IndividualEmailPopupProps> = ({
       setTimeout(() => setCopySuccess(null), 2000)
     } catch (err) {
       console.error('Failed to copy:', err)
+    }
+  }
+
+  const handleRegenerateClick = (index: number) => {
+    setRegeneratingEmailIndex(index)
+    setShowRegenerateModal(true)
+  }
+
+  const handleRegenerateEmail = async (data: {
+    subject_prompt: string
+    body_prompt: string
+    data_sources: DataSourceConfig[]
+  }) => {
+    if (regeneratingEmailIndex === null || !contact) return
+
+    const email = emails[regeneratingEmailIndex]
+
+    try {
+      const response = await api.emails.regenerate({
+        signal_id: signalId,
+        contact_id: contact.id,
+        sequence_step: email.sequence_step,
+        subject_prompt: data.subject_prompt,
+        body_prompt: data.body_prompt,
+        data_sources: data.data_sources
+      })
+
+      if (response.error) {
+        throw new Error(response.error)
+      }
+
+      // Reload emails after successful regeneration
+      await loadExistingEmails()
+    } catch (err: any) {
+      console.error('Failed to regenerate email:', err)
+      throw err
     }
   }
 
@@ -511,6 +551,13 @@ export const IndividualEmailPopup: React.FC<IndividualEmailPopupProps> = ({
                     </div>
                     <div className="flex items-center gap-1">
                       <button
+                        onClick={() => handleRegenerateClick(index)}
+                        className="flex items-center justify-center w-8 h-8 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded transition-colors"
+                        title="Regenerate email with different prompts"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                      </button>
+                      <button
                         onClick={() => copyToClipboard(`Subject: ${email.subject}\n\n${email.body}`, index)}
                         className="flex items-center justify-center w-8 h-8 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
                         title="Copy email"
@@ -523,7 +570,7 @@ export const IndividualEmailPopup: React.FC<IndividualEmailPopupProps> = ({
                       </button>
                       <button
                         onClick={() => handleEdit(index)}
-                        className="flex items-center justify-center w-8 h-8 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded transition-colors"
+                        className="flex items-center justify-center w-8 h-8 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded transition-colors"
                         title="Edit email"
                       >
                         <Edit3 className="w-4 h-4" />
@@ -584,6 +631,24 @@ export const IndividualEmailPopup: React.FC<IndividualEmailPopupProps> = ({
           )}
         </div>
       </div>
+
+      {/* Regenerate Email Modal */}
+      {showRegenerateModal && regeneratingEmailIndex !== null && (
+        <RegenerateEmailModal
+          isOpen={showRegenerateModal}
+          onClose={() => {
+            setShowRegenerateModal(false)
+            setRegeneratingEmailIndex(null)
+          }}
+          onRegenerate={handleRegenerateEmail}
+          initialSubjectPrompt=""
+          initialBodyPrompt=""
+          initialDataSources={[]}
+          contactName={`${contact?.first_name} ${contact?.last_name}`}
+          companyName={companyName}
+          sequenceStep={emails[regeneratingEmailIndex]?.sequence_step || 1}
+        />
+      )}
     </div>
   )
 }
