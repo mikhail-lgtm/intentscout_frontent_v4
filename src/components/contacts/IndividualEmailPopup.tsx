@@ -48,6 +48,15 @@ export const IndividualEmailPopup: React.FC<IndividualEmailPopupProps> = ({
   const [validationError, setValidationError] = useState<string | null>(null)
   const [showRegenerateModal, setShowRegenerateModal] = useState(false)
   const [regeneratingEmailIndex, setRegeneratingEmailIndex] = useState<number | null>(null)
+  const [regeneratePrompts, setRegeneratePrompts] = useState<{
+    subject_prompt: string
+    body_prompt: string
+    data_sources: DataSourceConfig[]
+  }>({
+    subject_prompt: '',
+    body_prompt: '',
+    data_sources: []
+  })
 
   // Use sequences hook to get available sequences
   const { sequences, isLoading: sequencesLoading } = useSequences()
@@ -262,8 +271,35 @@ export const IndividualEmailPopup: React.FC<IndividualEmailPopupProps> = ({
     }
   }
 
-  const handleRegenerateClick = (index: number) => {
+  const handleRegenerateClick = async (index: number) => {
+    const email = emails[index]
     setRegeneratingEmailIndex(index)
+
+    // Try to load sequence block configuration for initial prompts
+    if (selectedSequence) {
+      try {
+        const sequenceResponse = await api.sequences.get(selectedSequence)
+        if (sequenceResponse.data && typeof sequenceResponse.data === 'object') {
+          const sequence = sequenceResponse.data as any
+
+          // Find the email block matching this step
+          const emailBlocks = sequence.blocks?.filter((b: any) => b.block_type === 'email') || []
+          const blockIndex = email.sequence_step - 1
+
+          if (emailBlocks[blockIndex]) {
+            const block = emailBlocks[blockIndex]
+            setRegeneratePrompts({
+              subject_prompt: block.config?.subject_prompt || '',
+              body_prompt: block.config?.body_prompt || '',
+              data_sources: block.config?.data_sources || []
+            })
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load sequence configuration:', err)
+      }
+    }
+
     setShowRegenerateModal(true)
   }
 
@@ -639,11 +675,12 @@ export const IndividualEmailPopup: React.FC<IndividualEmailPopupProps> = ({
           onClose={() => {
             setShowRegenerateModal(false)
             setRegeneratingEmailIndex(null)
+            setRegeneratePrompts({ subject_prompt: '', body_prompt: '', data_sources: [] })
           }}
           onRegenerate={handleRegenerateEmail}
-          initialSubjectPrompt=""
-          initialBodyPrompt=""
-          initialDataSources={[]}
+          initialSubjectPrompt={regeneratePrompts.subject_prompt}
+          initialBodyPrompt={regeneratePrompts.body_prompt}
+          initialDataSources={regeneratePrompts.data_sources}
           contactName={`${contact?.first_name} ${contact?.last_name}`}
           companyName={companyName}
           sequenceStep={emails[regeneratingEmailIndex]?.sequence_step || 1}
