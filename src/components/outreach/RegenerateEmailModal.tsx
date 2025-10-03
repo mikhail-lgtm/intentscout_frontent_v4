@@ -145,12 +145,16 @@ export const RegenerateEmailModal: React.FC<RegenerateEmailModalProps> = ({
                 <textarea
                   value={subjectPrompt}
                   onChange={(e) => setSubjectPrompt(e.target.value)}
-                  rows={2}
+                  rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                  placeholder="AI prompt for generating email subject lines..."
+                  placeholder="Example: Write a compelling subject line for an outbound email to {{first_name}} at {{company_name}}. Keep it professional and engaging."
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Use variables like {'{{first_name}}'}, {'{{company_name}}'}, {'{{job_title}}'} in your prompt
+                  {subjectPrompt ? (
+                    <>Original prompt from sequence. You can modify it to change how the subject is generated.</>
+                  ) : (
+                    <>Enter AI instructions for generating the subject line. Use variables like {'{{first_name}}'}, {'{{company_name}}'}, {'{{job_title}}'}</>
+                  )}
                 </p>
               </div>
 
@@ -162,12 +166,16 @@ export const RegenerateEmailModal: React.FC<RegenerateEmailModalProps> = ({
                 <textarea
                   value={bodyPrompt}
                   onChange={(e) => setBodyPrompt(e.target.value)}
-                  rows={4}
+                  rows={6}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                  placeholder="AI prompt for generating email content..."
+                  placeholder="Example: Write a professional outbound email to {{first_name}} at {{company_name}}. Keep it concise (under 150 words), focus on their pain points, and include a clear call to action."
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Describe the tone, style, and content you want the AI to generate
+                  {bodyPrompt ? (
+                    <>Original prompt from sequence. You can modify it to change the email tone, style, and content.</>
+                  ) : (
+                    <>Describe the tone, style, and content you want the AI to generate. Be specific about length, focus areas, and call to action.</>
+                  )}
                 </p>
               </div>
 

@@ -502,71 +502,8 @@ export const IndividualEmailPopup: React.FC<IndividualEmailPopupProps> = ({
                 <h3 className="text-lg font-medium text-gray-900">
                   Generated Emails ({emails.length})
                 </h3>
-                <div className="flex items-center gap-3">
-                  {/* Sequence selector for regeneration */}
-                  <div className="flex flex-col">
-                    <label className="text-xs text-gray-600 mb-1">Sequence:</label>
-                    <select
-                      value={selectedSequence}
-                      onChange={(e) => setSelectedSequence(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                      disabled={sequencesLoading}
-                    >
-                      <option value="">Choose a sequence...</option>
-                      {sequences.map(sequence => (
-                        <option key={sequence.id} value={sequence.id}>
-                          {sequence.name} ({sequence.blocks?.filter(b => b.block_type === 'email').length || 0} emails)
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Validation indicator for regeneration */}
-                  {selectedSequence && (
-                    <div className="flex items-center">
-                      {isValidating ? (
-                        <div className="flex items-center gap-1 text-xs text-blue-600">
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                          <span>Validating...</span>
-                        </div>
-                      ) : validationResult ? (
-                        validationResult.is_valid ? (
-                          <div className="flex items-center gap-1 text-xs text-green-600">
-                            <CheckCircle className="w-3 h-3" />
-                            <span>Ready</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1 text-xs text-yellow-600">
-                            <AlertCircle className="w-3 h-3" />
-                            <span>Missing data</span>
-                          </div>
-                        )
-                      ) : null}
-                    </div>
-                  )}
-
-                  <button
-                    onClick={generateEmail}
-                    disabled={
-                      isGenerating || 
-                      !selectedSequence || 
-                      (validationResult && !validationResult.is_valid) ||
-                      isValidating
-                    }
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-                  >
-                    {isGenerating ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Regenerating...
-                      </>
-                    ) : (
-                      <>
-                        <RefreshCw className="w-4 h-4" />
-                        Regenerate
-                      </>
-                    )}
-                  </button>
+                <div className="text-xs text-gray-500">
+                  Click <RotateCcw className="w-3 h-3 inline text-orange-600" /> to regenerate with custom prompts
                 </div>
               </div>
 
