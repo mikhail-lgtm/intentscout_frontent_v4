@@ -60,6 +60,9 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
   const [showSuccess, setShowSuccess] = useState(false)
   const [importingIds, setImportingIds] = useState<Set<string>>(new Set())
   const [importingAll, setImportingAll] = useState(false)
+  const [linkedinUrl, setLinkedinUrl] = useState('')
+  const [isScrapingLinkedIn, setIsScrapingLinkedIn] = useState(false)
+  const [linkedInError, setLinkedInError] = useState<string | null>(null)
   
   // Use the decision makers hook
   const {
@@ -226,10 +229,74 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
     }
   }
 
+  const handleAddFromLinkedIn = async () => {
+    if (!linkedinUrl.trim()) {
+      setLinkedInError('Please enter a LinkedIn URL')
+      return
+    }
+
+    setIsScrapingLinkedIn(true)
+    setLinkedInError(null)
+
+    try {
+      const { api } = await import('../../lib/apiClient')
+
+      // Create a temporary contact first to get contact_id
+      const tempContact = await api.contacts.create({
+        signal_id: signalId,
+        first_name: 'Pending',
+        last_name: 'LinkedIn Scrape',
+        job_title: '',
+        email: '',
+        linkedin_url: linkedinUrl.trim(),
+        source: 'manual_linkedin'
+      })
+
+      if (tempContact.error) {
+        throw new Error(tempContact.error)
+      }
+
+      const contactId = (tempContact.data as any).id
+
+      // Trigger LinkedIn scraping for this contact
+      const scrapingResponse = await api.linkedInScraping.scrape({
+        contacts: [{
+          id: contactId,
+          first_name: 'Pending',
+          last_name: 'LinkedIn Scrape',
+          linkedin_contact: linkedinUrl.trim()
+        }],
+        signal_id: signalId
+      })
+
+      if (scrapingResponse.error) {
+        throw new Error(scrapingResponse.error)
+      }
+
+      // Clear input and refresh
+      setLinkedinUrl('')
+      await refetchContacts()
+
+      if (onContactAdded) {
+        onContactAdded()
+      }
+
+      alert('LinkedIn profile scraping started! Check contacts list in a few minutes.')
+
+    } catch (err: any) {
+      console.error('Failed to add from LinkedIn:', err)
+      setLinkedInError(err.message || 'Failed to scrape LinkedIn profile')
+    } finally {
+      setIsScrapingLinkedIn(false)
+    }
+  }
+
   const handleClose = () => {
     setGuidance('')
     setShowSuccess(false)
     setImportingIds(new Set())
+    setLinkedinUrl('')
+    setLinkedInError(null)
     onClose()
   }
 
@@ -398,6 +465,59 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
         </div>
 
         <div className="space-y-6">
+          {/* LinkedIn URL Input */}
+          <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Add from LinkedIn URL
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={linkedinUrl}
+                onChange={(e) => {
+                  setLinkedinUrl(e.target.value)
+                  setLinkedInError(null)
+                }}
+                placeholder="https://www.linkedin.com/in/username"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
+              />
+              <button
+                onClick={handleAddFromLinkedIn}
+                disabled={isScrapingLinkedIn}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium"
+              >
+                {isScrapingLinkedIn ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Adding...
+                  </>
+                ) : (
+                  <>
+                    <LinkedInIcon className="w-4 h-4" />
+                    Add
+                  </>
+                )}
+              </button>
+            </div>
+            {linkedInError && (
+              <p className="text-xs text-red-600 mt-2">{linkedInError}</p>
+            )}
+            <p className="text-xs text-gray-500 mt-2">
+              Paste a LinkedIn profile URL to automatically extract and add contact details
+            </p>
+          </div>
+
+          {/* Divider */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">Or use AI search</span>
+            </div>
+          </div>
+
+          {/* AI Search Guidance */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
               Additional Guidance (Optional)
