@@ -422,8 +422,13 @@ export const api = {
         linkedin_url: string;
         why_reach_out: string;
       }>;
-    }) => 
+    }) =>
       apiClient.post('/contacts/bulk-import-decision-makers', data),
+    bulkCreate: (data: {
+      signal_id: string;
+      contacts: Array<any>;
+    }) =>
+      apiClient.post('/contacts/bulk-create', data),
   },
 
   // Sequences

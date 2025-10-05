@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { X, Search, CheckCircle, Users, Loader2, AlertCircle, ExternalLink, UserPlus, UserMinus, Check } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react'
+import { X, Search, CheckCircle, Users, Loader2, AlertCircle, ExternalLink, UserPlus, UserMinus, Check, Upload, FileSpreadsheet } from 'lucide-react'
 import { useDecisionMakers } from '../../hooks/useDecisionMakers'
 import { useContacts } from '../../hooks/useContacts'
 import { DecisionMakersListSkeleton } from './DecisionMakerSkeleton'
@@ -63,6 +63,11 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
   const [linkedinUrl, setLinkedinUrl] = useState('')
   const [isScrapingLinkedIn, setIsScrapingLinkedIn] = useState(false)
   const [linkedInError, setLinkedInError] = useState<string | null>(null)
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
+  const [isUploadingCSV, setIsUploadingCSV] = useState(false)
+  const [csvPreviewData, setCsvPreviewData] = useState<any[] | null>(null)
+  const [csvError, setCsvError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   
   // Use the decision makers hook
   const {
@@ -291,12 +296,106 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
     }
   }
 
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      handleFileUpload(file)
+    }
+  }
+
+  const handleFileDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    const file = event.dataTransfer.files?.[0]
+    if (file) {
+      handleFileUpload(file)
+    }
+  }
+
+  const handleFileUpload = async (file: File) => {
+    // Validate file type
+    const validTypes = ['.csv', '.xlsx', '.xls']
+    const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase()
+
+    if (!validTypes.includes(fileExt)) {
+      setCsvError('Please upload a CSV or Excel file (.csv, .xlsx, .xls)')
+      return
+    }
+
+    setUploadedFile(file)
+    setCsvError(null)
+    setIsUploadingCSV(true)
+
+    try {
+      const { api } = await import('../../lib/apiClient')
+
+      // Upload file to backend for parsing
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('signal_id', signalId)
+
+      const response = await api.post('/contacts/parse-csv', formData)
+
+      if (response.error) {
+        throw new Error(response.error)
+      }
+
+      // Show preview
+      setCsvPreviewData((response.data as any).contacts || [])
+
+    } catch (err: any) {
+      console.error('Failed to parse CSV:', err)
+      setCsvError(err.message || 'Failed to parse file')
+    } finally {
+      setIsUploadingCSV(false)
+    }
+  }
+
+  const handleImportFromCSV = async () => {
+    if (!csvPreviewData || csvPreviewData.length === 0) return
+
+    setIsUploadingCSV(true)
+
+    try {
+      const { api } = await import('../../lib/apiClient')
+
+      // Bulk import contacts
+      const response = await api.contacts.bulkCreate({
+        signal_id: signalId,
+        contacts: csvPreviewData
+      })
+
+      if (response.error) {
+        throw new Error(response.error)
+      }
+
+      // Clear and refresh
+      setUploadedFile(null)
+      setCsvPreviewData(null)
+      await refetchContacts()
+
+      if (onContactAdded) {
+        onContactAdded()
+      }
+
+      alert(`Successfully imported ${csvPreviewData.length} contacts!`)
+
+    } catch (err: any) {
+      console.error('Failed to import contacts:', err)
+      setCsvError(err.message || 'Failed to import contacts')
+    } finally {
+      setIsUploadingCSV(false)
+    }
+  }
+
   const handleClose = () => {
     setGuidance('')
     setShowSuccess(false)
     setImportingIds(new Set())
     setLinkedinUrl('')
     setLinkedInError(null)
+    setUploadedFile(null)
+    setCsvPreviewData(null)
+    setCsvError(null)
     onClose()
   }
 
@@ -505,6 +604,123 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
             <p className="text-xs text-gray-500 mt-2">
               Paste a LinkedIn profile URL to automatically extract and add contact details
             </p>
+          </div>
+
+          {/* CSV/Spreadsheet Upload */}
+          <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Upload Spreadsheet
+            </label>
+
+            {!csvPreviewData ? (
+              <>
+                <div
+                  onDrop={handleFileDrop}
+                  onDragOver={(e) => e.preventDefault()}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-orange-400 hover:bg-orange-50 transition-colors"
+                >
+                  {isUploadingCSV ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
+                      <p className="text-sm text-gray-600">Parsing file...</p>
+                    </div>
+                  ) : uploadedFile ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <FileSpreadsheet className="w-8 h-8 text-green-600" />
+                      <p className="text-sm text-gray-900 font-medium">{uploadedFile.name}</p>
+                      <p className="text-xs text-gray-500">Click to change file</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2">
+                      <Upload className="w-8 h-8 text-gray-400" />
+                      <p className="text-sm text-gray-600">
+                        Drop CSV or Excel file here, or click to browse
+                      </p>
+                      <p className="text-xs text-gray-500">Supports .csv, .xlsx, .xls files</p>
+                    </div>
+                  )}
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv,.xlsx,.xls"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                {csvError && (
+                  <p className="text-xs text-red-600 mt-2">{csvError}</p>
+                )}
+                <p className="text-xs text-gray-500 mt-2">
+                  Required columns: first_name, last_name, job_title (optional: email, linkedin_url)
+                </p>
+              </>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FileSpreadsheet className="w-5 h-5 text-green-600" />
+                    <span className="text-sm font-medium text-gray-900">
+                      {csvPreviewData.length} contacts ready to import
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setCsvPreviewData(null)
+                      setUploadedFile(null)
+                    }}
+                    className="text-xs text-gray-600 hover:text-gray-900"
+                  >
+                    Change file
+                  </button>
+                </div>
+
+                {/* Preview table */}
+                <div className="max-h-48 overflow-y-auto border border-gray-200 rounded">
+                  <table className="w-full text-xs">
+                    <thead className="bg-gray-100 sticky top-0">
+                      <tr>
+                        <th className="px-2 py-1 text-left">Name</th>
+                        <th className="px-2 py-1 text-left">Title</th>
+                        <th className="px-2 py-1 text-left">Email</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {csvPreviewData.slice(0, 10).map((contact, idx) => (
+                        <tr key={idx} className="border-t border-gray-100">
+                          <td className="px-2 py-1">{contact.first_name} {contact.last_name}</td>
+                          <td className="px-2 py-1">{contact.job_title || '-'}</td>
+                          <td className="px-2 py-1">{contact.email || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {csvPreviewData.length > 10 && (
+                    <div className="px-2 py-1 text-xs text-gray-500 bg-gray-50 text-center">
+                      +{csvPreviewData.length - 10} more contacts
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  onClick={handleImportFromCSV}
+                  disabled={isUploadingCSV}
+                  className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm font-medium"
+                >
+                  {isUploadingCSV ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Importing...
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="w-4 h-4" />
+                      Import {csvPreviewData.length} Contacts
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Divider */}
