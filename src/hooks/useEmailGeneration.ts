@@ -10,6 +10,9 @@ export interface GeneratedEmail {
   subject: string
   body: string
   status: 'generated' | 'error'
+  subject_prompt?: string
+  body_prompt?: string
+  data_sources?: any[]
 }
 
 export interface EmailGenerationStatus {
