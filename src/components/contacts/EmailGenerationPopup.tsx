@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
-import { X, Mail, Loader2, CheckCircle, AlertCircle, Wand2, RotateCcw, Copy } from 'lucide-react'
+import { X, Mail, Loader2, CheckCircle, AlertCircle, Wand2, RotateCcw, Copy, Users } from 'lucide-react'
 import { useEmailGeneration } from '../../hooks/useEmailGeneration'
 import { useSequences } from '../../hooks/useSequences'
 import { api } from '../../lib/apiClient'
 import { RegenerateEmailModal } from '../outreach/RegenerateEmailModal'
+import { BulkRegenerateModal } from '../outreach/BulkRegenerateModal'
 import { DataSourceConfig, SequenceBlockType, BLOCK_TEMPLATES } from '../../types/sequences'
 
 interface Contact {
@@ -80,7 +81,17 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
     data_sources: []
   })
   const [copySuccess, setCopySuccess] = useState<string | null>(null)
-  
+  const [showBulkRegenerateModal, setShowBulkRegenerateModal] = useState(false)
+  const [bulkRegeneratePrompts, setBulkRegeneratePrompts] = useState<{
+    subject_prompt: string
+    body_prompt: string
+    data_sources: DataSourceConfig[]
+  }>({
+    subject_prompt: '',
+    body_prompt: '',
+    data_sources: []
+  })
+
   // Use the email generation hook
   const {
     generationStatus,
@@ -99,6 +110,18 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
   const contactsWithEmails = useMemo(() => {
     return contacts.filter(contact => contact.email_address && contact.email_address.trim())
   }, [contacts])
+
+  // Group emails by contact - MEMOIZED for bulk regeneration
+  const emailsByContact = useMemo(() => {
+    if (!generationStatus?.generated_emails) return {}
+    return generationStatus.generated_emails.reduce((acc, email) => {
+      if (!acc[email.contact_id]) {
+        acc[email.contact_id] = []
+      }
+      acc[email.contact_id].push(email)
+      return acc
+    }, {} as Record<string, typeof generationStatus.generated_emails>)
+  }, [generationStatus?.generated_emails])
 
   // Validate data sources when sequence changes - MEMOIZED to prevent infinite re-renders
   const validateDataSources = useCallback(async () => {
@@ -263,6 +286,49 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
     }
   }
 
+  const handleBulkRegenerateClick = () => {
+    // Try to get prompts from the first email
+    if (generationStatus?.generated_emails && generationStatus.generated_emails.length > 0) {
+      const firstEmail = generationStatus.generated_emails[0]
+      if (firstEmail.subject_prompt && firstEmail.body_prompt) {
+        setBulkRegeneratePrompts({
+          subject_prompt: firstEmail.subject_prompt,
+          body_prompt: firstEmail.body_prompt,
+          data_sources: firstEmail.data_sources || []
+        })
+      }
+    }
+    setShowBulkRegenerateModal(true)
+  }
+
+  const handleBulkRegenerateEmail = async (data: {
+    subject_prompt: string
+    body_prompt: string
+    data_sources: DataSourceConfig[]
+  }) => {
+    try {
+      const response = await api.emails.regenerateBulk({
+        signal_id: signalId,
+        subject_prompt: data.subject_prompt,
+        body_prompt: data.body_prompt,
+        data_sources: data.data_sources
+      })
+
+      if (response.error) {
+        throw new Error(response.error)
+      }
+
+      const result = response.data as any
+      alert(`Successfully regenerated emails for ${result.successful_regenerations} out of ${result.total_contacts} contacts!`)
+
+      // Refresh to show updated emails
+      window.location.reload()
+    } catch (err: any) {
+      console.error('Failed to bulk regenerate emails:', err)
+      throw err
+    }
+  }
+
   const copyToClipboard = async (text: string, emailId: string) => {
     try {
       await navigator.clipboard.writeText(text)
@@ -319,23 +385,24 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
 
     // Show results
     if (hasResults && generationStatus) {
-      const emailsByContact = generationStatus.generated_emails.reduce((acc, email) => {
-        if (!acc[email.contact_id]) {
-          acc[email.contact_id] = []
-        }
-        acc[email.contact_id].push(email)
-        return acc
-      }, {} as Record<string, typeof generationStatus.generated_emails>)
-
       return (
         <div>
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Generated {generationStatus.generated_emails.length} Emails
-            </h3>
-            <p className="text-gray-600 text-sm mt-1">
-              For {Object.keys(emailsByContact).length} contact{Object.keys(emailsByContact).length !== 1 ? 's' : ''} at {companyName}
-            </p>
+          <div className="mb-4 flex items-start justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Generated {generationStatus.generated_emails.length} Emails
+              </h3>
+              <p className="text-gray-600 text-sm mt-1">
+                For {Object.keys(emailsByContact).length} contact{Object.keys(emailsByContact).length !== 1 ? 's' : ''} at {companyName}
+              </p>
+            </div>
+            <button
+              onClick={handleBulkRegenerateClick}
+              className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium text-sm"
+            >
+              <Users className="w-4 h-4" />
+              Regenerate All
+            </button>
           </div>
 
           <div className="space-y-4 max-h-[500px] overflow-y-auto">
@@ -655,6 +722,23 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
           contactName={regeneratingEmail.contactName}
           companyName={companyName}
           sequenceStep={regeneratingEmail.sequenceStep}
+        />
+      )}
+
+      {/* Bulk Regenerate Email Modal */}
+      {showBulkRegenerateModal && (
+        <BulkRegenerateModal
+          isOpen={showBulkRegenerateModal}
+          onClose={() => {
+            setShowBulkRegenerateModal(false)
+            setBulkRegeneratePrompts({ subject_prompt: '', body_prompt: '', data_sources: [] })
+          }}
+          onRegenerate={handleBulkRegenerateEmail}
+          initialSubjectPrompt={bulkRegeneratePrompts.subject_prompt}
+          initialBodyPrompt={bulkRegeneratePrompts.body_prompt}
+          initialDataSources={bulkRegeneratePrompts.data_sources}
+          companyName={companyName}
+          contactCount={Object.keys(emailsByContact).length}
         />
       )}
     </>

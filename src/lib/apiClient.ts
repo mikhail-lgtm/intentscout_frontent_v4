@@ -549,6 +549,12 @@ export const api = {
       body_prompt: string;
       data_sources?: any[];
     }) => apiClient.post('/emails/regenerate', data),
+    regenerateBulk: (data: {
+      signal_id: string;
+      subject_prompt: string;
+      body_prompt: string;
+      data_sources?: any[];
+    }) => apiClient.postWithTimeout('/emails/regenerate-bulk', data, 180000), // 3 minutes timeout for bulk
   },
 
   // Signal Notes
