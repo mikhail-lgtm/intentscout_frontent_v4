@@ -439,96 +439,271 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
       const canImportAll = totalDMs > importedCount
 
       return (
-        <div>
-          <div className="mb-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Found {totalDMs} Decision Makers
-                </h3>
-                <p className="text-gray-600 text-sm mt-1">
-                  {importedCount} imported • Ready for outreach at {companyName}
-                </p>
-              </div>
-              {canImportAll && (
+        <div className="space-y-6">
+          {/* Manual Options - Always show */}
+          <div className="space-y-4">
+            {/* LinkedIn URL Input */}
+            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Add from LinkedIn URL
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={linkedinUrl}
+                  onChange={(e) => {
+                    setLinkedinUrl(e.target.value)
+                    setLinkedInError(null)
+                  }}
+                  placeholder="https://www.linkedin.com/in/username"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
+                />
                 <button
-                  onClick={handleImportAll}
-                  disabled={importingAll}
-                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md transition-colors bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleAddFromLinkedIn}
+                  disabled={isScrapingLinkedIn}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium"
                 >
-                  {importingAll ? (
+                  {isScrapingLinkedIn ? (
                     <>
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                      Importing...
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Adding...
                     </>
                   ) : (
                     <>
-                      <UserPlus className="w-3 h-3" />
-                      Import All
+                      <LinkedInIcon className="w-4 h-4" />
+                      Add
                     </>
                   )}
                 </button>
+              </div>
+              {linkedInError && (
+                <p className="text-xs text-red-600 mt-2">{linkedInError}</p>
+              )}
+              <p className="text-xs text-gray-500 mt-2">
+                Paste a LinkedIn profile URL to automatically extract and add contact details
+              </p>
+            </div>
+
+            {/* CSV/Spreadsheet Upload */}
+            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Upload Spreadsheet
+              </label>
+
+              {!csvPreviewData ? (
+                <>
+                  <div
+                    onDrop={handleFileDrop}
+                    onDragOver={(e) => e.preventDefault()}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-orange-400 hover:bg-orange-50 transition-colors"
+                  >
+                    {isUploadingCSV ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
+                        <p className="text-sm text-gray-600">Parsing file...</p>
+                      </div>
+                    ) : uploadedFile ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <FileSpreadsheet className="w-8 h-8 text-green-600" />
+                        <p className="text-sm text-gray-900 font-medium">{uploadedFile.name}</p>
+                        <p className="text-xs text-gray-500">Click to change file</p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-2">
+                        <Upload className="w-8 h-8 text-gray-400" />
+                        <p className="text-sm text-gray-600">
+                          Drop CSV or Excel file here, or click to browse
+                        </p>
+                        <p className="text-xs text-gray-500">Supports .csv, .xlsx, .xls files</p>
+                      </div>
+                    )}
+                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".csv,.xlsx,.xls"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+                  {csvError && (
+                    <p className="text-xs text-red-600 mt-2">{csvError}</p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-2">
+                    Required columns: first_name, last_name, job_title (optional: email, linkedin_url)
+                  </p>
+                </>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <FileSpreadsheet className="w-5 h-5 text-green-600" />
+                      <span className="text-sm font-medium text-gray-900">
+                        {csvPreviewData.length} contacts ready to import
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setCsvPreviewData(null)
+                        setUploadedFile(null)
+                      }}
+                      className="text-xs text-gray-600 hover:text-gray-900"
+                    >
+                      Change file
+                    </button>
+                  </div>
+
+                  {/* Preview table */}
+                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                    <table className="min-w-full divide-y divide-gray-200 text-xs">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-3 py-2 text-left font-medium text-gray-700">Name</th>
+                          <th className="px-3 py-2 text-left font-medium text-gray-700">Title</th>
+                          <th className="px-3 py-2 text-left font-medium text-gray-700">Email</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {csvPreviewData.slice(0, 10).map((contact, idx) => (
+                          <tr key={idx}>
+                            <td className="px-3 py-2 text-gray-900">{contact.first_name} {contact.last_name}</td>
+                            <td className="px-3 py-2 text-gray-600">{contact.job_title || '-'}</td>
+                            <td className="px-3 py-2 text-gray-600">{contact.email_address || '-'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    {csvPreviewData.length > 10 && (
+                      <div className="bg-gray-50 px-3 py-2 text-xs text-gray-500 text-center">
+                        And {csvPreviewData.length - 10} more contacts...
+                      </div>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={handleImportFromCSV}
+                    disabled={isUploadingCSV}
+                    className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm font-medium"
+                  >
+                    {isUploadingCSV ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Importing...
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="w-4 h-4" />
+                        Import {csvPreviewData.length} Contacts
+                      </>
+                    )}
+                  </button>
+                </div>
               )}
             </div>
           </div>
 
-          <div className="space-y-2 max-h-[500px] overflow-y-auto">
-            {searchStatus?.decision_makers.map((dm) => {
-              const isImported = importedDecisionMakers.has(dm.id)
-              const isProcessing = importingIds.has(dm.id)
+          {/* Divider */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">AI Found Decision Makers</span>
+            </div>
+          </div>
 
-              return (
-                <div key={dm.id} className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {dm.first_name} {dm.last_name}
-                        </h4>
-                        {isImported && (
-                          <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded flex items-center gap-1">
-                            <Check className="w-3 h-3" />
-                            Imported
-                          </span>
-                        )}
+          {/* AI Search Results */}
+          <div>
+            <div className="mb-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {totalDMs} Decision Makers from AI Search
+                  </h3>
+                  <p className="text-gray-600 text-sm mt-1">
+                    {importedCount} imported • Ready for outreach at {companyName}
+                  </p>
+                </div>
+                {canImportAll && (
+                  <button
+                    onClick={handleImportAll}
+                    disabled={importingAll}
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md transition-colors bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {importingAll ? (
+                      <>
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        Importing...
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="w-3 h-3" />
+                        Import All
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-2 max-h-[500px] overflow-y-auto">
+              {searchStatus?.decision_makers.map((dm) => {
+                const isImported = importedDecisionMakers.has(dm.id)
+                const isProcessing = importingIds.has(dm.id)
+
+                return (
+                  <div key={dm.id} className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-medium text-gray-900 text-sm">
+                            {dm.first_name} {dm.last_name}
+                          </h4>
+                          {isImported && (
+                            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded flex items-center gap-1">
+                              <Check className="w-3 h-3" />
+                              Imported
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-gray-600 text-xs mt-0.5">{dm.job_title}</p>
+                        <p className="text-gray-500 text-xs mt-1 line-clamp-2">{dm.why_reach_out}</p>
                       </div>
-                      <p className="text-gray-600 text-xs mt-0.5">{dm.job_title}</p>
-                      <p className="text-gray-500 text-xs mt-1 line-clamp-2">{dm.why_reach_out}</p>
-                    </div>
-                    <div className="flex items-center gap-1 ml-3">
-                      <button
-                        onClick={() => isImported ? handleUnimportDecisionMaker(dm) : handleImportDecisionMaker(dm)}
-                        disabled={isProcessing}
-                        className={`flex items-center justify-center w-7 h-7 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                          isImported 
-                            ? 'text-red-600 hover:text-red-700 hover:bg-red-50' 
-                            : 'text-orange-600 hover:text-orange-700 hover:bg-orange-50'
-                        }`}
-                        title={isImported ? "Remove from Contacts" : "Add to Contacts"}
-                      >
-                        {isProcessing ? (
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                        ) : isImported ? (
-                          <UserMinus className="w-3 h-3" />
-                        ) : (
-                          <UserPlus className="w-3 h-3" />
-                        )}
-                      </button>
-                      <a
-                        href={dm.linkedin_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 px-2 py-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors group"
-                        title="View LinkedIn Profile"
-                      >
-                        <LinkedInIcon className="w-3.5 h-3.5" />
-                        <ExternalLink className="w-2.5 h-2.5 opacity-70 group-hover:opacity-100 transition-opacity" />
-                      </a>
+                      <div className="flex items-center gap-1 ml-3">
+                        <button
+                          onClick={() => isImported ? handleUnimportDecisionMaker(dm) : handleImportDecisionMaker(dm)}
+                          disabled={isProcessing}
+                          className={`flex items-center justify-center w-7 h-7 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                            isImported
+                              ? 'text-red-600 hover:text-red-700 hover:bg-red-50'
+                              : 'text-orange-600 hover:text-orange-700 hover:bg-orange-50'
+                          }`}
+                          title={isImported ? "Remove from Contacts" : "Add to Contacts"}
+                        >
+                          {isProcessing ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : isImported ? (
+                            <UserMinus className="w-3 h-3" />
+                          ) : (
+                            <UserPlus className="w-3 h-3" />
+                          )}
+                        </button>
+                        <a
+                          href={dm.linkedin_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 px-2 py-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors group"
+                          title="View LinkedIn Profile"
+                        >
+                          <LinkedInIcon className="w-3.5 h-3.5" />
+                          <ExternalLink className="w-2.5 h-2.5 opacity-70 group-hover:opacity-100 transition-opacity" />
+                        </a>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
         </div>
       )
