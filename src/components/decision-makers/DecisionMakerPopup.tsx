@@ -252,8 +252,7 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
         first_name: 'Pending',
         last_name: 'LinkedIn Scrape',
         job_title: '',
-        email: '',
-        linkedin_url: linkedinUrl.trim(),
+        linkedin_contact: linkedinUrl.trim(),
         source: 'manual_linkedin'
       })
 
