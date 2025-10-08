@@ -112,6 +112,7 @@ export const BLOCK_TEMPLATES: Record<SequenceBlockType, Partial<SequenceBlock>> 
     config: {
       subject_prompt: 'Write a compelling subject line for an outbound email to {{first_name}} at {{company_name}}',
       body_prompt: 'Write a professional outbound email to {{first_name}} at {{company_name}}. Keep it concise and focus on value.',
+      keep_subject_consistent: true,
       data_sources: []
     }
   },
