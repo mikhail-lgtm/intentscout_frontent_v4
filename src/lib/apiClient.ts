@@ -162,14 +162,31 @@ class ApiClient {
       }
 
       if (!response.ok) {
-        const error = responseData?.detail || responseData?.error || responseData?.message || `HTTP ${response.status}`
-        
+        let error: string
+
+        // Handle FastAPI validation errors (422)
+        if (response.status === 422 && responseData?.detail) {
+          console.error('Validation Error (422):', responseData)
+
+          // FastAPI returns detail as array of validation errors
+          if (Array.isArray(responseData.detail)) {
+            const errors = responseData.detail.map((err: any) => {
+              const field = err.loc?.join('.') || 'unknown'
+              const msg = err.msg || 'validation error'
+              return `${field}: ${msg}`
+            }).join(', ')
+            error = `Validation error: ${errors}`
+          } else if (typeof responseData.detail === 'string') {
+            error = responseData.detail
+          } else {
+            error = JSON.stringify(responseData.detail)
+          }
+        } else {
+          error = responseData?.detail || responseData?.error || responseData?.message || `HTTP ${response.status}`
+        }
+
         if (config.features.enableDebugLogs) {
           console.error(`❌ API Error ${response.status}:`, error)
-          // Log full response data for debugging validation errors
-          if (response.status === 422 && responseData) {
-            console.error('Full 422 error details:', responseData)
-          }
         }
 
         // If we get a 401 and haven't already retried, force token refresh and retry
