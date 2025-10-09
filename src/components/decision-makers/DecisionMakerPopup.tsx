@@ -256,8 +256,14 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
         source: 'manual_linkedin'
       })
 
+      console.log('Create contact response:', tempContact)
+
       if (tempContact.error) {
-        throw new Error(tempContact.error)
+        const errorMsg = typeof tempContact.error === 'string'
+          ? tempContact.error
+          : JSON.stringify(tempContact.error)
+        console.error('Contact creation failed:', errorMsg)
+        throw new Error(errorMsg)
       }
 
       const contactId = (tempContact.data as any).id
@@ -274,7 +280,10 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
       })
 
       if (scrapingResponse.error) {
-        throw new Error(scrapingResponse.error)
+        const errorMsg = typeof scrapingResponse.error === 'string'
+          ? scrapingResponse.error
+          : JSON.stringify(scrapingResponse.error)
+        throw new Error(errorMsg)
       }
 
       // Clear input and refresh
@@ -289,7 +298,17 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
 
     } catch (err: any) {
       console.error('Failed to add from LinkedIn:', err)
-      setLinkedInError(err.message || 'Failed to scrape LinkedIn profile')
+      let errorMessage = 'Failed to scrape LinkedIn profile'
+
+      if (typeof err === 'string') {
+        errorMessage = err
+      } else if (err?.message) {
+        errorMessage = err.message
+      } else if (err?.error) {
+        errorMessage = typeof err.error === 'string' ? err.error : JSON.stringify(err.error)
+      }
+
+      setLinkedInError(errorMessage)
     } finally {
       setIsScrapingLinkedIn(false)
     }
