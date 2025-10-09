@@ -68,6 +68,7 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
   const [csvPreviewData, setCsvPreviewData] = useState<any[] | null>(null)
   const [csvError, setCsvError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const linkedinPollIntervalRef = useRef<NodeJS.Timeout | null>(null)
   
   // Use the decision makers hook
   const {
@@ -97,6 +98,15 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
     })
     setImportedDecisionMakers(imported)
   }, [contacts])
+
+  // Cleanup polling interval on unmount
+  useEffect(() => {
+    return () => {
+      if (linkedinPollIntervalRef.current) {
+        clearInterval(linkedinPollIntervalRef.current)
+      }
+    }
+  }, [])
 
   const handleStartSearch = async () => {
     const searchId = await startSearch(guidance)
@@ -286,15 +296,33 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
         throw new Error(errorMsg)
       }
 
-      // Clear input and refresh
+      // Clear input
       setLinkedinUrl('')
-      await refetchContacts()
 
-      if (onContactAdded) {
-        onContactAdded()
+      alert('LinkedIn profile scraping started! The contact will appear automatically when scraping completes (usually 1-2 minutes).')
+
+      // Clear any existing polling interval
+      if (linkedinPollIntervalRef.current) {
+        clearInterval(linkedinPollIntervalRef.current)
       }
 
-      alert('LinkedIn profile scraping started! Check contacts list in a few minutes.')
+      // Poll for updates - refresh contacts every 5 seconds for 2 minutes
+      let pollCount = 0
+      const maxPolls = 24 // 2 minutes
+      linkedinPollIntervalRef.current = setInterval(async () => {
+        pollCount++
+        await refetchContacts()
+
+        if (pollCount >= maxPolls) {
+          if (linkedinPollIntervalRef.current) {
+            clearInterval(linkedinPollIntervalRef.current)
+            linkedinPollIntervalRef.current = null
+          }
+          if (onContactAdded) {
+            onContactAdded()
+          }
+        }
+      }, 5000)
 
     } catch (err: any) {
       console.error('Failed to add from LinkedIn:', err)

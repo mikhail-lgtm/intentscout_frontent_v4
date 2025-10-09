@@ -50,9 +50,14 @@ export const useContacts = (signalId: string | null | undefined) => {
         throw new Error(response.error)
       }
 
+      // Filter out temporary "Pending" contacts created for LinkedIn scraping
+      const filteredContacts = Array.isArray(response.data)
+        ? response.data.filter((c: Contact) => c.first_name !== 'Pending')
+        : []
+
       setState(prev => ({
         ...prev,
-        contacts: Array.isArray(response.data) ? response.data : [],
+        contacts: filteredContacts,
         isLoading: false,
         error: null
       }))
