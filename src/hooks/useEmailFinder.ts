@@ -179,9 +179,18 @@ export const useEmailFinder = (signalId: string | null | undefined) => {
   // Auto-poll when search is in progress
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null
-    
+
     if (state.searchStatus && (state.searchStatus.status === 'pending' || state.searchStatus.status === 'searching')) {
       interval = createManagedInterval(pollSearchStatus, 3000) // Poll every 3 seconds
+    } else if (state.searchStatus && state.searchStatus.status === 'completed') {
+      // Do one final poll to ensure we have the latest data
+      const finalPollTimeout = setTimeout(() => {
+        pollSearchStatus()
+      }, 1000)
+
+      return () => {
+        clearTimeout(finalPollTimeout)
+      }
     }
 
     return () => {
