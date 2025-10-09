@@ -253,7 +253,7 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
         last_name: 'LinkedIn Scrape',
         job_title: '',
         linkedin_contact: linkedinUrl.trim(),
-        source: 'manual_linkedin'
+        source: 'manual'
       })
 
       console.log('Create contact response:', tempContact)
