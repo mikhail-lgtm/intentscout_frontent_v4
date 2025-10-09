@@ -172,6 +172,15 @@ export const useEmailGeneration = (signalId: string | null | undefined) => {
       }
 
       shortInterval = createManagedInterval(poll, 3000) // Poll every 3 seconds initially
+    } else if (state.generationStatus && state.generationStatus.status === 'completed') {
+      // Do one final poll to ensure we have the latest data
+      const finalPollTimeout = setTimeout(() => {
+        pollGenerationStatus()
+      }, 1000)
+
+      return () => {
+        clearTimeout(finalPollTimeout)
+      }
     }
 
     return () => {
