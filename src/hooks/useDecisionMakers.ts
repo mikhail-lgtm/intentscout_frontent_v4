@@ -218,6 +218,15 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
     if (shouldPoll) {
       console.log('DecisionMakers: Starting polling interval')
       interval = createManagedInterval(pollSearchStatus, 3000) // Poll every 3 seconds
+    } else if (state.searchStatus && state.searchStatus.status === 'completed') {
+      // Do one final poll to ensure we have the latest data
+      const finalPollTimeout = setTimeout(() => {
+        pollSearchStatus()
+      }, 1000)
+
+      return () => {
+        clearTimeout(finalPollTimeout)
+      }
     } else {
       console.log('DecisionMakers: Not starting polling - status is not pending/searching')
     }
