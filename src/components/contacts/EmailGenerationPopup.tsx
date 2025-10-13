@@ -286,19 +286,83 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
     }
   }
 
-  const handleBulkRegenerateClick = () => {
-    // Try to get prompts from the first email
-    if (generationStatus?.generated_emails && generationStatus.generated_emails.length > 0) {
-      const firstEmail = generationStatus.generated_emails[0]
-      if (firstEmail.subject_prompt && firstEmail.body_prompt) {
-        setBulkRegeneratePrompts({
-          subject_prompt: firstEmail.subject_prompt,
-          body_prompt: firstEmail.body_prompt,
-          data_sources: firstEmail.data_sources || []
-        })
+  const handleBulkRegenerateClick = async () => {
+    try {
+      // Load Email Notes to get the latest prompts
+      const notesResponse = await api.signalNotes.get(signalId)
+
+      let initialPrompts = {
+        subject_prompt: '',
+        body_prompt: '',
+        data_sources: [] as DataSourceConfig[]
       }
+
+      // If Email Notes exist, use them to build prompts
+      if (notesResponse.data && typeof notesResponse.data === 'object') {
+        const notes = notesResponse.data as any
+
+        // Build prompts from Email Notes
+        let subjectPrompt = ''
+        let bodyPrompt = ''
+
+        // Add value prop to prompts if available
+        if (notes.value_prop) {
+          subjectPrompt += `Our value proposition: ${notes.value_prop}\n\n`
+          bodyPrompt += `Our value proposition: ${notes.value_prop}\n\n`
+        }
+
+        // Add other notes if available
+        if (notes.other_notes) {
+          bodyPrompt += `Additional context: ${notes.other_notes}\n\n`
+        }
+
+        // Add email footer instructions if available
+        if (notes.email_footer_name) {
+          bodyPrompt += `Email footer instructions: ${notes.email_footer_name}\n\n`
+        }
+
+        // Add base prompt structure if we have notes
+        if (subjectPrompt || bodyPrompt) {
+          subjectPrompt += 'Write a compelling subject line for an outbound email to {{first_name}} at {{company_name}}. Keep it professional and engaging.'
+          bodyPrompt += 'Write a professional outbound email to {{first_name}} at {{company_name}}. Keep it concise (under 150 words), focus on their pain points, and include a clear call to action.'
+
+          initialPrompts = {
+            subject_prompt: subjectPrompt,
+            body_prompt: bodyPrompt,
+            data_sources: []
+          }
+        }
+      }
+
+      // Fallback: if no Email Notes, try to get prompts from the first email
+      if (!initialPrompts.subject_prompt && generationStatus?.generated_emails && generationStatus.generated_emails.length > 0) {
+        const firstEmail = generationStatus.generated_emails[0]
+        if (firstEmail.subject_prompt && firstEmail.body_prompt) {
+          initialPrompts = {
+            subject_prompt: firstEmail.subject_prompt,
+            body_prompt: firstEmail.body_prompt,
+            data_sources: firstEmail.data_sources || []
+          }
+        }
+      }
+
+      setBulkRegeneratePrompts(initialPrompts)
+      setShowBulkRegenerateModal(true)
+    } catch (error) {
+      console.error('Failed to load Email Notes:', error)
+      // Fallback to existing behavior if loading fails
+      if (generationStatus?.generated_emails && generationStatus.generated_emails.length > 0) {
+        const firstEmail = generationStatus.generated_emails[0]
+        if (firstEmail.subject_prompt && firstEmail.body_prompt) {
+          setBulkRegeneratePrompts({
+            subject_prompt: firstEmail.subject_prompt,
+            body_prompt: firstEmail.body_prompt,
+            data_sources: firstEmail.data_sources || []
+          })
+        }
+      }
+      setShowBulkRegenerateModal(true)
     }
-    setShowBulkRegenerateModal(true)
   }
 
   const handleBulkRegenerateEmail = async (data: {

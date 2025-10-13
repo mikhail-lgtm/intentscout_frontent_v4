@@ -125,20 +125,20 @@ export const useEmailGeneration = (signalId: string | null | undefined) => {
   }, [signalId])
 
   // Poll for generation status updates
-  const pollGenerationStatus = useCallback(async () => {
-    if (!state.generationStatus?.generation_id) return
+  const pollGenerationStatus = useCallback(async (generationId: string) => {
+    if (!generationId) return
 
     try {
-      const response = await api.emails.getGeneration(state.generationStatus.generation_id)
-      
+      const response = await api.emails.getGeneration(generationId)
+
       if (response.error) {
         console.error('Error polling generation status:', response.error)
         return
       }
 
       if (response.data) {
-        setState(prev => ({ 
-          ...prev, 
+        setState(prev => ({
+          ...prev,
           generationStatus: response.data as EmailGenerationStatus,
           error: null
         }))
@@ -146,17 +146,22 @@ export const useEmailGeneration = (signalId: string | null | undefined) => {
     } catch (err) {
       console.error('Error polling generation status:', err)
     }
-  }, [state.generationStatus?.generation_id])
+  }, [])
 
   // FIXED: Proper interval cleanup with ref tracking
   useEffect(() => {
+    const generationId = state.generationStatus?.generation_id
+    const status = state.generationStatus?.status
+
+    if (!generationId) return
+
     let shortInterval: NodeJS.Timeout | null = null
     let longInterval: NodeJS.Timeout | null = null
     let pollCount = 0
 
-    if (state.generationStatus && (state.generationStatus.status === 'pending' || state.generationStatus.status === 'in_progress')) {
+    if (status === 'pending' || status === 'in_progress') {
       const poll = () => {
-        pollGenerationStatus()
+        pollGenerationStatus(generationId)
         pollCount++
 
         // After 10 polls (30 seconds), switch to longer interval
@@ -166,16 +171,16 @@ export const useEmailGeneration = (signalId: string | null | undefined) => {
             shortInterval = null
           }
           if (!longInterval) {
-            longInterval = createManagedInterval(pollGenerationStatus, 10000)
+            longInterval = createManagedInterval(() => pollGenerationStatus(generationId), 10000)
           }
         }
       }
 
       shortInterval = createManagedInterval(poll, 3000) // Poll every 3 seconds initially
-    } else if (state.generationStatus && state.generationStatus.status === 'completed') {
+    } else if (status === 'completed') {
       // Do one final poll to ensure we have the latest data
       const finalPollTimeout = setTimeout(() => {
-        pollGenerationStatus()
+        pollGenerationStatus(generationId)
       }, 1000)
 
       return () => {
@@ -193,7 +198,7 @@ export const useEmailGeneration = (signalId: string | null | undefined) => {
         longInterval = null
       }
     }
-  }, [state.generationStatus?.status, pollGenerationStatus])
+  }, [state.generationStatus?.generation_id, state.generationStatus?.status, pollGenerationStatus])
 
   // Check for existing generation on mount
   useEffect(() => {
