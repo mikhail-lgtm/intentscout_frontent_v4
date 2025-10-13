@@ -149,15 +149,15 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
   }, [signalId])
 
   // Poll for search status updates
-  const pollSearchStatus = useCallback(async () => {
-    if (!state.searchStatus?.search_id) {
+  const pollSearchStatus = useCallback(async (searchId: string) => {
+    if (!searchId) {
       console.log('DecisionMakers: No search_id for polling')
       return
     }
 
     try {
-      console.log('DecisionMakers: Polling status for search_id:', state.searchStatus.search_id)
-      const response = await api.decisionMakers.getStatus(state.searchStatus.search_id)
+      console.log('DecisionMakers: Polling status for search_id:', searchId)
+      const response = await api.decisionMakers.getStatus(searchId)
       console.log('DecisionMakers: Poll response:', JSON.stringify(response, null, 2))
 
       if (response.error) {
@@ -177,7 +177,7 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
     } catch (err) {
       console.error('Error polling search status:', err)
     }
-  }, [state.searchStatus?.search_id])
+  }, [])
 
   // Restart a failed search
   const restartSearch = useCallback(async () => {
@@ -210,18 +210,23 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
 
   // Auto-poll when search is in progress
   useEffect(() => {
+    const searchId = state.searchStatus?.search_id
+    const status = state.searchStatus?.status
+
+    if (!searchId) return
+
     let interval: NodeJS.Timeout | null = null
 
-    const shouldPoll = state.searchStatus && (state.searchStatus.status === 'pending' || state.searchStatus.status === 'searching')
-    console.log('DecisionMakers: Polling check - searchStatus:', state.searchStatus?.status, 'shouldPoll:', shouldPoll)
+    const shouldPoll = status === 'pending' || status === 'searching'
+    console.log('DecisionMakers: Polling check - searchStatus:', status, 'shouldPoll:', shouldPoll)
 
     if (shouldPoll) {
       console.log('DecisionMakers: Starting polling interval')
-      interval = createManagedInterval(pollSearchStatus, 3000) // Poll every 3 seconds
-    } else if (state.searchStatus && state.searchStatus.status === 'completed') {
+      interval = createManagedInterval(() => pollSearchStatus(searchId), 3000) // Poll every 3 seconds
+    } else if (status === 'completed') {
       // Do one final poll to ensure we have the latest data
       const finalPollTimeout = setTimeout(() => {
-        pollSearchStatus()
+        pollSearchStatus(searchId)
       }, 1000)
 
       return () => {
@@ -234,7 +239,7 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
     return () => {
       if (interval) clearInterval(interval)
     }
-  }, [state.searchStatus?.status, pollSearchStatus])
+  }, [state.searchStatus?.search_id, state.searchStatus?.status, pollSearchStatus])
 
   // Check for existing search on mount
   useEffect(() => {
