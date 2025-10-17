@@ -37,13 +37,16 @@ const ApplePayCheckmark: React.FC = () => {
   )
 }
 
-const LoadingSpinner: React.FC = () => {
+const LoadingSpinner: React.FC<{ message?: string; subtitle?: string }> = ({
+  message = "Finding decision makers...",
+  subtitle = "This usually takes around 2 minutes"
+}) => {
   return (
     <div className="flex items-center justify-center space-x-2">
       <Loader2 className="w-6 h-6 text-orange-500 animate-spin" />
       <div className="text-gray-600">
-        <div className="font-medium">Finding decision makers...</div>
-        <div className="text-sm text-gray-500">This usually takes around 2 minutes</div>
+        <div className="font-medium">{message}</div>
+        <div className="text-sm text-gray-500">{subtitle}</div>
       </div>
     </div>
   )
@@ -62,6 +65,7 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
   const [importingAll, setImportingAll] = useState(false)
   const [linkedinUrl, setLinkedinUrl] = useState('')
   const [isScrapingLinkedIn, setIsScrapingLinkedIn] = useState(false)
+  const [showLinkedInLoading, setShowLinkedInLoading] = useState(false)
   const [linkedInError, setLinkedInError] = useState<string | null>(null)
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [isUploadingCSV, setIsUploadingCSV] = useState(false)
@@ -307,10 +311,10 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
         throw new Error(errorMsg)
       }
 
-      // Clear input
+      // Clear input and show loading screen
       setLinkedinUrl('')
-
-      alert('LinkedIn profile scraping started! The contact will appear automatically when scraping completes (usually 1-2 minutes).')
+      setIsScrapingLinkedIn(false)
+      setShowLinkedInLoading(true)
 
       // Clear any existing polling interval
       if (linkedinPollIntervalRef.current) {
@@ -319,7 +323,7 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
 
       // Poll for updates - refresh contacts every 5 seconds for 2 minutes
       let pollCount = 0
-      const maxPolls = 24 // 2 minutes
+      const maxPolls = 24 // 2 minutes (5 seconds * 24 = 120 seconds)
       linkedinPollIntervalRef.current = setInterval(async () => {
         pollCount++
         await refetchContacts()
@@ -329,6 +333,7 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
             clearInterval(linkedinPollIntervalRef.current)
             linkedinPollIntervalRef.current = null
           }
+          setShowLinkedInLoading(false)
           if (onContactAdded) {
             onContactAdded()
           }
@@ -348,8 +353,8 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
       }
 
       setLinkedInError(errorMessage)
-    } finally {
       setIsScrapingLinkedIn(false)
+      setShowLinkedInLoading(false)
     }
   }
 
@@ -450,9 +455,15 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
     setImportingIds(new Set())
     setLinkedinUrl('')
     setLinkedInError(null)
+    setShowLinkedInLoading(false)
     setUploadedFile(null)
     setCsvPreviewData(null)
     setCsvError(null)
+    // Clear LinkedIn polling interval
+    if (linkedinPollIntervalRef.current) {
+      clearInterval(linkedinPollIntervalRef.current)
+      linkedinPollIntervalRef.current = null
+    }
     onClose()
   }
 
@@ -470,7 +481,29 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
       )
     }
 
-    // Show loading state  
+    // Show LinkedIn scraping loading state
+    if (showLinkedInLoading) {
+      return (
+        <div>
+          <div className="text-center py-8">
+            <LoadingSpinner
+              message="Scraping LinkedIn profile..."
+              subtitle="This usually takes 1-2 minutes"
+            />
+            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+              <p className="text-sm text-blue-800 leading-relaxed">
+                We're extracting contact information from the LinkedIn profile. The contact will appear automatically when complete.
+              </p>
+            </div>
+          </div>
+          <div className="mt-8">
+            <DecisionMakersListSkeleton count={1} />
+          </div>
+        </div>
+      )
+    }
+
+    // Show AI search loading state
     if (isSearchInProgress) {
       return (
         <div>
