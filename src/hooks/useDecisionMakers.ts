@@ -212,34 +212,32 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
   useEffect(() => {
     const searchId = state.searchStatus?.search_id
     const status = state.searchStatus?.status
+    const dmCount = state.searchStatus?.decision_makers?.length || 0
 
     if (!searchId) return
 
     let interval: NodeJS.Timeout | null = null
 
-    const shouldPoll = status === 'pending' || status === 'searching'
-    console.log('DecisionMakers: Polling check - searchStatus:', status, 'shouldPoll:', shouldPoll)
+    // Continue polling until we have results OR status is failed
+    // This handles case where status="completed" but decision_makers not yet populated
+    const shouldPoll = (status === 'pending' || status === 'searching') ||
+                       (status === 'completed' && dmCount === 0)
+
+    console.log('DecisionMakers: Polling check - status:', status, 'dmCount:', dmCount, 'shouldPoll:', shouldPoll)
 
     if (shouldPoll) {
       console.log('DecisionMakers: Starting polling interval')
       interval = createManagedInterval(() => pollSearchStatus(searchId), 3000) // Poll every 3 seconds
-    } else if (status === 'completed') {
-      // Do one final poll to ensure we have the latest data
-      const finalPollTimeout = setTimeout(() => {
-        pollSearchStatus(searchId)
-      }, 1000)
-
-      return () => {
-        clearTimeout(finalPollTimeout)
-      }
+    } else if (status === 'completed' && dmCount > 0) {
+      console.log('DecisionMakers: Search completed with results, stopping polling')
     } else {
-      console.log('DecisionMakers: Not starting polling - status is not pending/searching')
+      console.log('DecisionMakers: Not starting polling')
     }
 
     return () => {
       if (interval) clearInterval(interval)
     }
-  }, [state.searchStatus?.search_id, state.searchStatus?.status, pollSearchStatus])
+  }, [state.searchStatus?.search_id, state.searchStatus?.status, state.searchStatus?.decision_makers?.length, pollSearchStatus])
 
   // Check for existing search on mount
   useEffect(() => {
