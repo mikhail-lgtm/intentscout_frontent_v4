@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { api } from '../lib/apiClient'
 import { createManagedInterval } from '../lib/globalCleanup'
 
@@ -55,6 +55,8 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
     isLoading: false,
     error: null
   })
+
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // Check for existing search when signalId changes
   const checkExistingSearch = useCallback(async () => {
@@ -247,15 +249,19 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
 
     console.log('DecisionMakers: useEffect triggered - searchId:', searchId, 'status:', status, 'dmCount:', dmCount)
 
+    // Clear any existing interval first
+    if (pollingIntervalRef.current) {
+      console.log('DecisionMakers: Clearing existing interval')
+      clearInterval(pollingIntervalRef.current)
+      pollingIntervalRef.current = null
+    }
+
     if (!searchId) {
-      console.log('DecisionMakers: No searchId, returning')
+      console.log('DecisionMakers: No searchId, not starting polling')
       return
     }
 
-    let interval: NodeJS.Timeout | null = null
-
     // Continue polling until we have results OR status is failed
-    // This handles case where status="completed" but decision_makers not yet populated
     const shouldPoll = (status === 'pending' || status === 'searching') ||
                        (status === 'completed' && dmCount === 0)
 
@@ -263,21 +269,23 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
 
     if (shouldPoll) {
       console.log('DecisionMakers: Starting polling interval')
-      interval = createManagedInterval(() => pollSearchStatus(searchId), 3000) // Poll every 3 seconds
+      pollingIntervalRef.current = createManagedInterval(() => pollSearchStatus(searchId), 3000)
     } else if (status === 'completed' && dmCount > 0) {
-      console.log('DecisionMakers: Search completed with results, stopping polling')
-    } else {
-      console.log('DecisionMakers: Not starting polling')
+      console.log('DecisionMakers: Search completed with results, not polling')
+    } else if (status === 'failed') {
+      console.log('DecisionMakers: Search failed, not polling')
     }
 
     return () => {
-      console.log('DecisionMakers: useEffect cleanup - clearing interval')
-      if (interval) {
-        clearInterval(interval)
-        console.log('DecisionMakers: Interval cleared')
+      console.log('DecisionMakers: useEffect cleanup')
+      if (pollingIntervalRef.current) {
+        console.log('DecisionMakers: Clearing interval in cleanup')
+        clearInterval(pollingIntervalRef.current)
+        pollingIntervalRef.current = null
       }
     }
-  }, [state.searchStatus?.search_id, state.searchStatus?.status, state.searchStatus?.decision_makers?.length, pollSearchStatus])
+  }, [state.searchStatus?.search_id, state.searchStatus?.status, state.searchStatus?.decision_makers?.length])
+  // Note: pollSearchStatus intentionally NOT in deps - it's stable via useCallback with empty deps
 
   // Check for existing search on mount
   useEffect(() => {
