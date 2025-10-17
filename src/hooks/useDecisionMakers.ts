@@ -77,9 +77,20 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
       }
 
       if (response.data && (response.data as any).status !== 'not_found') {
-        setState(prev => ({ 
-          ...prev, 
-          searchStatus: response.data as DecisionMakerSearchStatus,
+        const data = response.data as any
+        // Convert _id to search_id if needed (API returns _id, interface expects search_id)
+        const searchStatus: DecisionMakerSearchStatus = {
+          search_id: data.search_id || data._id,
+          status: data.status,
+          decision_makers: data.decision_makers || [],
+          error_message: data.error_message,
+          started_at: data.started_at,
+          completed_at: data.completed_at
+        }
+        console.log('DecisionMakers: Converted API response - search_id:', searchStatus.search_id)
+        setState(prev => ({
+          ...prev,
+          searchStatus,
           isLoading: false,
           error: null
         }))
@@ -166,9 +177,18 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
       }
 
       if (response.data) {
-        const newStatus = response.data as DecisionMakerSearchStatus
+        const data = response.data as any
+        // Convert _id to search_id if needed (API returns _id, interface expects search_id)
+        const newStatus: DecisionMakerSearchStatus = {
+          search_id: data.search_id || data._id,
+          status: data.status,
+          decision_makers: data.decision_makers || [],
+          error_message: data.error_message,
+          started_at: data.started_at,
+          completed_at: data.completed_at
+        }
         const newDmCount = newStatus.decision_makers?.length || 0
-        console.log('DecisionMakers: New status:', newStatus.status, 'Decision makers count:', newDmCount)
+        console.log('DecisionMakers: New status:', newStatus.status, 'Decision makers count:', newDmCount, 'search_id:', newStatus.search_id)
 
         // Force React to detect changes by creating new object
         setState(prev => {
