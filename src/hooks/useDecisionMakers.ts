@@ -225,7 +225,12 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
     const status = state.searchStatus?.status
     const dmCount = state.searchStatus?.decision_makers?.length || 0
 
-    if (!searchId) return
+    console.log('DecisionMakers: useEffect triggered - searchId:', searchId, 'status:', status, 'dmCount:', dmCount)
+
+    if (!searchId) {
+      console.log('DecisionMakers: No searchId, returning')
+      return
+    }
 
     let interval: NodeJS.Timeout | null = null
 
@@ -246,7 +251,11 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
     }
 
     return () => {
-      if (interval) clearInterval(interval)
+      console.log('DecisionMakers: useEffect cleanup - clearing interval')
+      if (interval) {
+        clearInterval(interval)
+        console.log('DecisionMakers: Interval cleared')
+      }
     }
   }, [state.searchStatus?.search_id, state.searchStatus?.status, state.searchStatus?.decision_makers?.length, pollSearchStatus])
 
