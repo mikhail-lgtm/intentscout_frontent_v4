@@ -67,6 +67,18 @@ export const ProductSelector = ({ value, onChange }: Props) => {
 
   // Helper function to format product names nicely
   const formatProductName = (product: string) => {
+    // Special cases for known products
+    const specialCases: Record<string, string> = {
+      'xr_vr': 'XR/VR',
+      'b2b': 'B2B'
+    }
+
+    // Check if product has a special case
+    if (specialCases[product.toLowerCase()]) {
+      return specialCases[product.toLowerCase()]
+    }
+
+    // Default formatting: split by - or _, capitalize each word
     return product
       .split(/[-_]/)
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
