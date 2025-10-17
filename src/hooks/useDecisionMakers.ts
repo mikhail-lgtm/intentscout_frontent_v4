@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { api } from '../lib/apiClient'
-import { createManagedInterval } from '../lib/globalCleanup'
 
 export interface DecisionMaker {
   id: string
@@ -268,8 +267,8 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
     console.log('DecisionMakers: Polling check - status:', status, 'dmCount:', dmCount, 'shouldPoll:', shouldPoll)
 
     if (shouldPoll) {
-      console.log('DecisionMakers: Starting polling interval')
-      pollingIntervalRef.current = createManagedInterval(() => pollSearchStatus(searchId), 3000)
+      console.log('DecisionMakers: Starting polling interval with regular setInterval (not managed)')
+      pollingIntervalRef.current = setInterval(() => pollSearchStatus(searchId), 3000)
     } else if (status === 'completed' && dmCount > 0) {
       console.log('DecisionMakers: Search completed with results, not polling')
     } else if (status === 'failed') {
