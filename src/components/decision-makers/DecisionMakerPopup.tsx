@@ -120,6 +120,27 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
     if (showLinkedInLoading && contacts.length > linkedInInitialContactCount) {
       // New contact appeared (success or failure)
       console.log('LinkedIn scraping complete - contact appeared')
+
+      // Check if the new contact is a failed scraping
+      const newContact = contacts[contacts.length - 1]
+      if (newContact && newContact.first_name === 'Failed' && newContact.last_name === 'Scraping') {
+        // Show error message
+        const errorMsg = newContact.job_title || 'LinkedIn scraping failed'
+        setLinkedInError(errorMsg)
+
+        // Delete the failed contact from database so it doesn't appear in UI
+        const deleteFailedContact = async () => {
+          try {
+            const { api } = await import('../../lib/apiClient')
+            await api.contacts.delete(newContact.id)
+            await refetchContacts() // Refresh to remove from UI
+          } catch (err) {
+            console.error('Failed to delete failed contact:', err)
+          }
+        }
+        deleteFailedContact()
+      }
+
       setShowLinkedInLoading(false)
       if (linkedinPollIntervalRef.current) {
         clearInterval(linkedinPollIntervalRef.current)
@@ -129,7 +150,7 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
         onContactAdded()
       }
     }
-  }, [contacts.length, showLinkedInLoading, linkedInInitialContactCount, onContactAdded])
+  }, [contacts.length, showLinkedInLoading, linkedInInitialContactCount, onContactAdded, contacts, refetchContacts])
 
   // Cleanup polling interval on unmount
   useEffect(() => {
