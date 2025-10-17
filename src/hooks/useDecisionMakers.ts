@@ -251,8 +251,8 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
     startSearch,
     restartSearch,
     refreshStatus: checkExistingSearch,
-    isSearchInProgress: state.searchStatus ? ['pending', 'searching'].includes(state.searchStatus.status) : false,
-    hasResults: state.searchStatus ? state.searchStatus.status === 'completed' && state.searchStatus.decision_makers.length > 0 : false,
+    isSearchInProgress: state.searchStatus ? ['pending', 'searching'].includes(state.searchStatus.status) && state.searchStatus.decision_makers.length === 0 : false,
+    hasResults: state.searchStatus ? state.searchStatus.decision_makers.length > 0 : false,
     hasFailed: state.searchStatus ? state.searchStatus.status === 'failed' : false
   }
 }
