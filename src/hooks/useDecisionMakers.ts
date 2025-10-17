@@ -167,12 +167,23 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
 
       if (response.data) {
         const newStatus = response.data as DecisionMakerSearchStatus
-        console.log('DecisionMakers: New status:', newStatus.status, 'Decision makers count:', newStatus.decision_makers?.length || 0)
-        setState(prev => ({
-          ...prev,
-          searchStatus: newStatus,
-          error: null
-        }))
+        const newDmCount = newStatus.decision_makers?.length || 0
+        console.log('DecisionMakers: New status:', newStatus.status, 'Decision makers count:', newDmCount)
+
+        // Force React to detect changes by creating new object
+        setState(prev => {
+          const prevDmCount = prev.searchStatus?.decision_makers?.length || 0
+          console.log('DecisionMakers: setState - prev dmCount:', prevDmCount, 'new dmCount:', newDmCount)
+
+          return {
+            ...prev,
+            searchStatus: {
+              ...newStatus,
+              decision_makers: [...(newStatus.decision_makers || [])]
+            },
+            error: null
+          }
+        })
       }
     } catch (err) {
       console.error('Error polling search status:', err)

@@ -101,15 +101,14 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
 
   // Debug: Log when search status changes to help diagnose rendering issues
   useEffect(() => {
-    if (searchStatus) {
-      console.log('DecisionMakerPopup: searchStatus changed', {
-        status: searchStatus.status,
-        dmCount: searchStatus.decision_makers?.length || 0,
-        isSearchInProgress,
-        hasResults
-      })
-    }
-  }, [searchStatus?.status, searchStatus?.decision_makers?.length, isSearchInProgress, hasResults])
+    console.log('DecisionMakerPopup: RENDER', {
+      searchStatusExists: !!searchStatus,
+      status: searchStatus?.status,
+      dmCount: searchStatus?.decision_makers?.length || 0,
+      isSearchInProgress,
+      hasResults
+    })
+  }, [searchStatus, isSearchInProgress, hasResults])
 
   // Cleanup polling interval on unmount
   useEffect(() => {
