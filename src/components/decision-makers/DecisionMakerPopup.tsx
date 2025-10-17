@@ -67,6 +67,7 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
   const [isScrapingLinkedIn, setIsScrapingLinkedIn] = useState(false)
   const [showLinkedInLoading, setShowLinkedInLoading] = useState(false)
   const [linkedInError, setLinkedInError] = useState<string | null>(null)
+  const [linkedInInitialContactCount, setLinkedInInitialContactCount] = useState(0)
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [isUploadingCSV, setIsUploadingCSV] = useState(false)
   const [csvPreviewData, setCsvPreviewData] = useState<any[] | null>(null)
@@ -113,6 +114,22 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
       hasResults
     })
   }, [searchStatus, isSearchInProgress, hasResults])
+
+  // Watch for contact changes during LinkedIn scraping
+  useEffect(() => {
+    if (showLinkedInLoading && contacts.length > linkedInInitialContactCount) {
+      // New contact appeared (success or failure)
+      console.log('LinkedIn scraping complete - contact appeared')
+      setShowLinkedInLoading(false)
+      if (linkedinPollIntervalRef.current) {
+        clearInterval(linkedinPollIntervalRef.current)
+        linkedinPollIntervalRef.current = null
+      }
+      if (onContactAdded) {
+        onContactAdded()
+      }
+    }
+  }, [contacts.length, showLinkedInLoading, linkedInInitialContactCount, onContactAdded])
 
   // Cleanup polling interval on unmount
   useEffect(() => {
@@ -314,6 +331,7 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
       // Clear input and show loading screen
       setLinkedinUrl('')
       setIsScrapingLinkedIn(false)
+      setLinkedInInitialContactCount(contacts.length) // Save initial count
       setShowLinkedInLoading(true)
 
       // Clear any existing polling interval
@@ -324,11 +342,14 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
       // Poll for updates - refresh contacts every 5 seconds for 2 minutes
       let pollCount = 0
       const maxPolls = 24 // 2 minutes (5 seconds * 24 = 120 seconds)
+
       linkedinPollIntervalRef.current = setInterval(async () => {
         pollCount++
         await refetchContacts()
 
+        // Timeout fallback - stop after 2 minutes even if no contact appeared
         if (pollCount >= maxPolls) {
+          console.log('LinkedIn scraping timeout - stopping polling')
           if (linkedinPollIntervalRef.current) {
             clearInterval(linkedinPollIntervalRef.current)
             linkedinPollIntervalRef.current = null
@@ -456,6 +477,7 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
     setLinkedinUrl('')
     setLinkedInError(null)
     setShowLinkedInLoading(false)
+    setLinkedInInitialContactCount(0)
     setUploadedFile(null)
     setCsvPreviewData(null)
     setCsvError(null)
