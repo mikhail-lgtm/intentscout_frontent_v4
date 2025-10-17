@@ -124,11 +124,12 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
       // Check if the new contact is a failed scraping
       const newContact = contacts[contacts.length - 1]
       if (newContact && newContact.first_name === 'Failed' && newContact.last_name === 'Scraping') {
-        // Show error message
-        const errorMsg = newContact.job_title || 'LinkedIn scraping failed'
+        // Show error message FIRST
+        const errorMsg = newContact.job_title || 'LinkedIn scraping failed. Please check your BrightData configuration.'
+        console.log('LinkedIn scraping failed:', errorMsg)
         setLinkedInError(errorMsg)
 
-        // Delete the failed contact from database so it doesn't appear in UI
+        // Then delete the failed contact from database so it doesn't appear in UI
         const deleteFailedContact = async () => {
           try {
             const { api } = await import('../../lib/apiClient')
@@ -138,7 +139,10 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
             console.error('Failed to delete failed contact:', err)
           }
         }
-        deleteFailedContact()
+        // Use setTimeout to ensure error is displayed first
+        setTimeout(() => {
+          deleteFailedContact()
+        }, 100)
       }
 
       setShowLinkedInLoading(false)
