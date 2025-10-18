@@ -143,15 +143,21 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
         setTimeout(() => {
           deleteFailedContact()
         }, 100)
-      }
 
-      setShowLinkedInLoading(false)
-      if (linkedinPollIntervalRef.current) {
-        clearInterval(linkedinPollIntervalRef.current)
-        linkedinPollIntervalRef.current = null
-      }
-      if (onContactAdded) {
-        onContactAdded()
+        // Close loading screen but keep modal open to show error
+        setShowLinkedInLoading(false)
+      } else {
+        // Successful scraping - close modal completely
+        console.log('LinkedIn scraping successful - closing modal')
+        if (linkedinPollIntervalRef.current) {
+          clearInterval(linkedinPollIntervalRef.current)
+          linkedinPollIntervalRef.current = null
+        }
+        if (onContactAdded) {
+          onContactAdded()
+        }
+        // Close the entire modal so user can see the new contact in the main list
+        handleClose()
       }
     }
   }, [contacts.length, showLinkedInLoading, linkedInInitialContactCount, onContactAdded, contacts, refetchContacts])
