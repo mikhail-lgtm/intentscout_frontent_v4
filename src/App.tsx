@@ -9,6 +9,7 @@ import { AuthHandler } from './components/auth/AuthHandler'
 import { ProtectedRoute } from './components/common/ProtectedRoute'
 import { Dashboard } from './components/common/Dashboard'
 import ErrorBoundary from './components/common/ErrorBoundary'
+import { AdminApp } from './admin/AdminApp'
 import './lib/globalCleanup' // Initialize global cleanup system
 import './utils/debugCleanup' // Debug utilities (dev only)
 
@@ -57,6 +58,14 @@ function App() {
             <ErrorBoundary>
               <ProtectedRoute>
                 <ReauthPage />
+              </ProtectedRoute>
+            </ErrorBoundary>
+          } />
+
+          <Route path="/admin/*" element={
+            <ErrorBoundary>
+              <ProtectedRoute>
+                <AdminApp />
               </ProtectedRoute>
             </ErrorBoundary>
           } />
