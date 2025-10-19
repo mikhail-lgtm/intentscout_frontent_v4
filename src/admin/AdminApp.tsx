@@ -4,6 +4,7 @@ import { AdminLayout } from './components/AdminLayout'
 import { DashboardPage } from './pages/DashboardPage'
 import { UsersPage } from './pages/UsersPage'
 import { SystemPage } from './pages/SystemPage'
+import { UserDetailPage } from './pages/UserDetailPage'
 
 export const AdminApp = () => {
   return (
@@ -13,6 +14,7 @@ export const AdminApp = () => {
           <Route index element={<DashboardPage />} />
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="users" element={<UsersPage />} />
+          <Route path="users/:userId" element={<UserDetailPage />} />
           <Route path="system" element={<SystemPage />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Route>
@@ -20,4 +22,3 @@ export const AdminApp = () => {
     </AdminGuard>
   )
 }
-

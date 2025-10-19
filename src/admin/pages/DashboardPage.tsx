@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { adminApi } from '../../lib/api/admin'
-import type { SystemHealthResponse } from '../../types/admin'
-
-interface DashboardStats {
-  totalUsers: number | null
-  totalOrganizations: number | null
-}
+import type {
+  AdminActivityLog,
+  AdminAnalyticsOverview,
+  SystemHealthResponse,
+} from '../../types/admin'
 
 const statusColor = (status: string) => {
   const normalized = status.toLowerCase()
@@ -15,8 +14,9 @@ const statusColor = (status: string) => {
 }
 
 export const DashboardPage = () => {
-  const [stats, setStats] = useState<DashboardStats>({ totalUsers: null, totalOrganizations: null })
+  const [overview, setOverview] = useState<AdminAnalyticsOverview | null>(null)
   const [health, setHealth] = useState<SystemHealthResponse | null>(null)
+  const [recentActivity, setRecentActivity] = useState<AdminActivityLog[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -28,14 +28,19 @@ export const DashboardPage = () => {
       setError(null)
 
       try {
-        const [usersRes, orgRes, healthRes] = await Promise.all([
+        const [overviewRes, usersRes, orgRes, healthRes, activityRes] = await Promise.all([
+          adminApi.analytics.overview(),
           adminApi.users.list(1, 25),
           adminApi.organizations.list(1, 25),
           adminApi.system.health(),
+          adminApi.users.activityRecent(8),
         ])
 
         if (!active) return
 
+        if (!overviewRes.data) {
+          throw new Error(overviewRes.error || 'Failed to load analytics overview')
+        }
         if (!usersRes.data) {
           throw new Error(usersRes.error || 'Failed to load users summary')
         }
@@ -46,11 +51,13 @@ export const DashboardPage = () => {
           throw new Error(healthRes.error || 'Failed to load system health')
         }
 
-        setStats({
-          totalUsers: usersRes.data.total ?? usersRes.data.users.length,
-          totalOrganizations: orgRes.data.total,
+        setOverview({
+          ...overviewRes.data,
+          total_users: overviewRes.data.total_users ?? usersRes.data.total ?? usersRes.data.users.length,
+          total_organizations: orgRes.data.total,
         })
         setHealth(healthRes.data)
+        setRecentActivity(activityRes.data ?? [])
       } catch (loadError) {
         if (!active) return
         setError(loadError instanceof Error ? loadError.message : 'Failed to load dashboard data')
@@ -119,7 +126,7 @@ export const DashboardPage = () => {
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <p className="text-sm text-slate-500">Total users</p>
             <p className="mt-2 text-3xl font-semibold text-slate-900">
-              {stats.totalUsers ?? '—'}
+              {overview?.total_users ?? '—'}
             </p>
             <p className="mt-3 text-xs text-slate-400">
               Users registered across all organizations
@@ -128,7 +135,7 @@ export const DashboardPage = () => {
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <p className="text-sm text-slate-500">Organizations</p>
             <p className="mt-2 text-3xl font-semibold text-slate-900">
-              {stats.totalOrganizations ?? '—'}
+              {overview?.total_organizations ?? '—'}
             </p>
             <p className="mt-3 text-xs text-slate-400">
               Active customer organizations in MongoDB
@@ -149,6 +156,32 @@ export const DashboardPage = () => {
       </section>
 
       <section>
+        <h3 className="text-lg font-semibold text-slate-900">Active users</h3>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs uppercase tracking-wide text-slate-500">Daily (DAU)</p>
+            <p className="mt-2 text-3xl font-semibold text-slate-900">{overview?.dau ?? 0}</p>
+            <p className="mt-1 text-xs text-slate-400">Уникальные пользователи за последние 24 часа</p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs uppercase tracking-wide text-slate-500">Weekly (WAU)</p>
+            <p className="mt-2 text-3xl font-semibold text-slate-900">{overview?.wau ?? 0}</p>
+            <p className="mt-1 text-xs text-slate-400">Активные пользователи за 7 дней</p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs uppercase tracking-wide text-slate-500">Monthly (MAU)</p>
+            <p className="mt-2 text-3xl font-semibold text-slate-900">{overview?.mau ?? 0}</p>
+            <p className="mt-1 text-xs text-slate-400">Активные пользователи за 30 дней</p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs uppercase tracking-wide text-slate-500">API calls</p>
+            <p className="mt-2 text-3xl font-semibold text-slate-900">{overview?.total_api_calls ?? 0}</p>
+            <p className="mt-1 text-xs text-slate-400">Все зафиксированные запросы</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
         <h3 className="text-lg font-semibold text-slate-900">System health</h3>
         <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {healthItems.map(item => (
@@ -164,7 +197,38 @@ export const DashboardPage = () => {
           ))}
         </div>
       </section>
+
+      <section>
+        <h3 className="text-lg font-semibold text-slate-900">Recent activity</h3>
+        <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <table className="min-w-full divide-y divide-slate-200">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Timestamp</th>
+                <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">User</th>
+                <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Endpoint</th>
+                <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {recentActivity.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-4 py-4 text-sm text-slate-500">Активность пока не зафиксирована.</td>
+                </tr>
+              ) : (
+                recentActivity.map(event => (
+                  <tr key={event.id ?? `${event.timestamp}-${event.endpoint}`}>
+                    <td className="px-4 py-3 text-sm text-slate-600">{new Date(event.timestamp).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-sm text-slate-500">{event.user_id ?? '—'}</td>
+                    <td className="px-4 py-3 text-sm text-slate-700 break-all">{event.method} {event.endpoint}</td>
+                    <td className="px-4 py-3 text-sm text-slate-500">{event.status_code ?? '—'}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   )
 }
-

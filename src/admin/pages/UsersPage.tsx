@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { adminApi } from '../../lib/api/admin'
 import type { AdminUserSummary } from '../../types/admin'
 
@@ -86,12 +87,20 @@ export const UsersPage = () => {
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Last sign-in</th>
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Organizations</th>
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Role</th>
+              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {users.map(user => (
               <tr key={user.id} className="hover:bg-slate-50/60">
-                <td className="px-4 py-3 text-sm text-slate-700">{user.email ?? '—'}</td>
+                <td className="px-4 py-3 text-sm text-slate-700">
+                  <Link
+                    to={`/admin/users/${user.id}`}
+                    className="text-orange-600 hover:text-orange-700"
+                  >
+                    {user.email ?? '—'}
+                  </Link>
+                </td>
                 <td className="px-4 py-3 text-sm text-slate-500">{formatDate(user.created_at)}</td>
                 <td className="px-4 py-3 text-sm text-slate-500">{formatDate(user.last_sign_in_at)}</td>
                 <td className="px-4 py-3 text-sm text-slate-500">{user.organizations.length}</td>
@@ -101,6 +110,14 @@ export const UsersPage = () => {
                   }`}>
                     {user.is_admin ? 'Admin' : 'User'}
                   </span>
+                </td>
+                <td className="px-4 py-3 text-right text-sm">
+                  <Link
+                    to={`/admin/users/${user.id}`}
+                    className="inline-flex items-center rounded-lg border border-slate-300 px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100"
+                  >
+                    View
+                  </Link>
                 </td>
               </tr>
             ))}

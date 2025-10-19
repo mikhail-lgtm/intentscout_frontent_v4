@@ -61,6 +61,64 @@ export interface AdminOrganizationDetail extends AdminOrganizationSummary {
   stats: AdminOrganizationStats
 }
 
+export interface AdminActivityLog {
+  id?: string
+  timestamp: string
+  user_id?: string | null
+  organization_id?: string | null
+  method: string
+  endpoint: string
+  query?: string | null
+  status_code?: number | null
+  response_time_ms?: number | null
+  ip_address?: string | null
+  user_agent?: string | null
+}
+
+export interface AdminUsagePoint {
+  date: string
+  api_calls: number
+}
+
+export interface AdminUserStatistics {
+  signals_reviewed: number
+  contacts_created: number
+  emails_generated: number
+  sequences_created: number
+  total_api_calls: number
+  last_active?: string | null
+}
+
+export interface AdminUserStatsResponse {
+  user_id: string
+  stats: AdminUserStatistics
+  usage_by_day: AdminUsagePoint[]
+}
+
+export interface AdminOrganizationStatistics {
+  signals_reviewed: number
+  contacts_created: number
+  emails_generated: number
+  sequences_created: number
+  total_api_calls: number
+  active_users: number
+}
+
+export interface AdminOrganizationUsage {
+  organization_id: string
+  stats: AdminOrganizationStatistics
+  usage_by_day: AdminUsagePoint[]
+}
+
+export interface AdminAnalyticsOverview {
+  dau: number
+  wau: number
+  mau: number
+  total_api_calls: number
+  total_organizations: number
+  total_users?: number | null
+}
+
 export interface SystemHealthStatus {
   status: string
   latency_ms?: number

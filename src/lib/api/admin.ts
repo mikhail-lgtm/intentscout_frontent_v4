@@ -8,6 +8,10 @@ import type {
   AdminOrganizationSummary,
   AdminOrganizationListResponse,
   AdminOrganizationDetail,
+  AdminActivityLog,
+  AdminUserStatsResponse,
+  AdminOrganizationUsage,
+  AdminAnalyticsOverview,
   SystemHealthResponse,
 } from '../../types/admin'
 
@@ -36,7 +40,13 @@ export const adminApi = {
     detail: (userId: string) =>
       apiClient.get<AdminUserDetail>(`/admin/users/${userId}`),
     organizations: (userId: string) =>
-      apiClient.get(`/admin/users/${userId}/organizations`),
+      apiClient.get<AdminOrganizationSummary[]>(`/admin/users/${userId}/organizations`),
+    activityRecent: (limit = 100) =>
+      apiClient.get<AdminActivityLog[]>(`/admin/users/activity/recent${buildQueryString({ limit })}`),
+    activity: (userId: string, limit = 50) =>
+      apiClient.get<AdminActivityLog[]>(`/admin/users/${userId}/activity${buildQueryString({ limit })}`),
+    stats: (userId: string) =>
+      apiClient.get<AdminUserStatsResponse>(`/admin/users/${userId}/stats`),
   },
   organizations: {
     list: (page = 1, pageSize = 20) =>
@@ -46,6 +56,13 @@ export const adminApi = {
       })}`),
     detail: (organizationId: string) =>
       apiClient.get<AdminOrganizationDetail>(`/admin/organizations/${organizationId}`),
+    activity: (organizationId: string, limit = 50) =>
+      apiClient.get<AdminActivityLog[]>(`/admin/organizations/${organizationId}/activity${buildQueryString({ limit })}`),
+    usage: (organizationId: string) =>
+      apiClient.get<AdminOrganizationUsage>(`/admin/organizations/${organizationId}/usage`),
+  },
+  analytics: {
+    overview: () => apiClient.get<AdminAnalyticsOverview>('/admin/analytics/overview'),
   },
   system: {
     health: () => apiClient.get<SystemHealthResponse>('/admin/system/health'),
@@ -61,5 +78,9 @@ export type {
   AdminOrganizationSummary,
   AdminOrganizationListResponse,
   AdminOrganizationDetail,
+  AdminActivityLog,
+  AdminUserStatsResponse,
+  AdminOrganizationUsage,
+  AdminAnalyticsOverview,
   SystemHealthResponse,
 } from '../../types/admin'
