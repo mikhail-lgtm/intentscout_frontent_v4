@@ -87,7 +87,10 @@ export const UsersPage = () => {
 
     const resolveName = (user: AdminUserSummary) => {
       const names = user.organizations.map(orgId => organizationMap[orgId] ?? orgId)
-      return names.length > 0 ? names.sort()[0] : ''
+      if (names.length === 0) {
+        return ''
+      }
+      return [...names].sort()[0]
     }
 
     return [...base].sort((a, b) => resolveName(a).localeCompare(resolveName(b)))
@@ -135,7 +138,7 @@ export const UsersPage = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {users.map(user => (
+            {filteredUsers.map(user => (
               <tr key={user.id} className="hover:bg-slate-50/60">
                 <td className="px-4 py-3 text-sm text-slate-700">
                   <Link

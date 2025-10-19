@@ -104,6 +104,13 @@ export const DashboardPage = () => {
     return user?.email ?? userId
   }, [userLookup])
 
+  const leaderboardMaxCalls = useMemo(() => {
+    if (!leaderboard.length) {
+      return 1
+    }
+    return leaderboard.reduce((acc, entry) => Math.max(acc, entry.total_api_calls), 1)
+  }, [leaderboard])
+
   const healthItems = useMemo(() => {
     if (!health) return []
     return [
@@ -287,29 +294,26 @@ export const DashboardPage = () => {
           {leaderboard.length === 0 ? (
             <p className="text-sm text-slate-500">Нет данных для отображения.</p>
           ) : (
-            (() => {
-              const maxCalls = leaderboard.reduce((acc, entry) => Math.max(acc, entry.total_api_calls), 1)
-              return leaderboard.map(entry => {
-                const width = `${(entry.total_api_calls / maxCalls) * 100}%`
-                return (
-                  <div key={`${entry.user_id}-${entry.organization_id}`} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold text-slate-800">{resolveUserLabel(entry.user_id)}</p>
-                      <p className="text-xs text-slate-500">{entry.total_api_calls} calls</p>
-                    </div>
-                    <div className="h-3 rounded-full bg-slate-200">
-                      <div className="h-full rounded-full bg-orange-500" style={{ width }} />
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-xs text-slate-500">
-                      <span>Signals: {entry.signals_reviewed}</span>
-                      <span>Contacts: {entry.contacts_created}</span>
-                      <span>Emails: {entry.emails_generated}</span>
-                      <span>Sequences: {entry.sequences_created}</span>
-                    </div>
+            leaderboard.map(entry => {
+              const width = `${(entry.total_api_calls / leaderboardMaxCalls) * 100}%`
+              return (
+                <div key={`${entry.user_id}-${entry.organization_id}`} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-slate-800">{resolveUserLabel(entry.user_id)}</p>
+                    <p className="text-xs text-slate-500">{entry.total_api_calls} calls</p>
                   </div>
-                )
-              })
-            })()
+                  <div className="h-3 rounded-full bg-slate-200">
+                    <div className="h-full rounded-full bg-orange-500" style={{ width }} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs text-slate-500">
+                    <span>Signals: {entry.signals_reviewed}</span>
+                    <span>Contacts: {entry.contacts_created}</span>
+                    <span>Emails: {entry.emails_generated}</span>
+                    <span>Sequences: {entry.sequences_created}</span>
+                  </div>
+                </div>
+              )
+            })
           )}
         </div>
       </section>
