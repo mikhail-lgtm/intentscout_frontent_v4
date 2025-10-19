@@ -42,6 +42,7 @@ export interface AdminOrganizationSummary {
   user_count: number
   created_at?: string | null
   updated_at?: string | null
+  logoUrl?: string | null
 }
 
 export interface AdminOrganizationListResponse {

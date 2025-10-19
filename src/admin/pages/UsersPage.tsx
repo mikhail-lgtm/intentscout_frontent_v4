@@ -1,7 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ChevronDown, ChevronRight } from 'lucide-react'
+
 import { adminApi } from '../../lib/api/admin'
-import type { AdminOrganizationSummary, AdminUserSummary } from '../../types/admin'
+import type {
+  AdminOrganizationSummary,
+  AdminUsageLeaderboardEntry,
+  AdminUserSummary,
+} from '../../types/admin'
+
+const UNASSIGNED_KEY = '__unassigned__'
+const formatNumber = (value: number) => new Intl.NumberFormat('en-US').format(value)
 
 const formatDate = (value?: string | null) => {
   if (!value) return '—'
@@ -12,20 +21,46 @@ const formatDate = (value?: string | null) => {
   }
 }
 
+type OrgUsageState = {
+  loading: boolean
+  data: AdminUsageLeaderboardEntry[]
+  error?: string
+}
+
+const OrganizationAvatar = ({ logoUrl, name }: { logoUrl?: string | null; name?: string | null }) => {
+  if (logoUrl) {
+    return (
+      <img
+        src={logoUrl}
+        alt={name ?? 'Organization logo'}
+        className="h-12 w-12 rounded-lg object-cover border border-slate-200"
+      />
+    )
+  }
+
+  const initial = name?.charAt(0)?.toUpperCase() ?? '?'
+  return (
+    <div className="h-12 w-12 rounded-lg border border-orange-200 bg-orange-100 text-orange-600 flex items-center justify-center text-lg font-semibold">
+      {initial}
+    </div>
+  )
+}
+
 export const UsersPage = () => {
   const [users, setUsers] = useState<AdminUserSummary[]>([])
   const [organizations, setOrganizations] = useState<AdminOrganizationSummary[]>([])
-  const [organizationMap, setOrganizationMap] = useState<Record<string, string>>({})
-  const [selectedOrganization, setSelectedOrganization] = useState<string>('all')
+  const [orgUsage, setOrgUsage] = useState<Record<string, OrgUsageState>>({})
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
+
     const [usersRes, orgRes] = await Promise.all([
-      adminApi.users.list(1, 100),
-      adminApi.organizations.list(1, 100),
+      adminApi.users.list(1, 200),
+      adminApi.organizations.list(1, 200),
     ])
 
     if (!usersRes.data) {
@@ -37,11 +72,6 @@ export const UsersPage = () => {
 
     if (orgRes.data) {
       setOrganizations(orgRes.data.organizations)
-      const map: Record<string, string> = {}
-      orgRes.data.organizations.forEach(org => {
-        map[org.id] = org.name ?? org.id
-      })
-      setOrganizationMap(map)
     }
 
     setLoading(false)
@@ -51,21 +81,72 @@ export const UsersPage = () => {
     void load()
   }, [load])
 
-  const filteredUsers = useMemo(() => {
-    const base = selectedOrganization === 'all'
-      ? users
-      : users.filter(user => user.organizations.includes(selectedOrganization))
+  const { usersByOrg, unassignedUsers } = useMemo(() => {
+    const map: Record<string, AdminUserSummary[]> = {}
+    const unassigned: AdminUserSummary[] = []
 
-    const resolveName = (user: AdminUserSummary) => {
-      const names = user.organizations.map(orgId => organizationMap[orgId] ?? orgId)
-      if (names.length === 0) {
-        return ''
+    users.forEach(user => {
+      const orgs = user.organizations?.length ? user.organizations : []
+      if (orgs.length === 0) {
+        unassigned.push(user)
+        return
       }
-      return [...names].sort()[0]
-    }
+      orgs.forEach(orgId => {
+        if (!map[orgId]) map[orgId] = []
+        map[orgId].push(user)
+      })
+    })
 
-    return [...base].sort((a, b) => resolveName(a).localeCompare(resolveName(b)))
-  }, [users, selectedOrganization, organizationMap])
+    return { usersByOrg: map, unassignedUsers: unassigned }
+  }, [users])
+
+  const sortedOrganizations = useMemo(() => {
+    return [...organizations].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
+  }, [organizations])
+
+  const fetchUsage = useCallback(async (orgId: string, userCount: number) => {
+    if (orgId === UNASSIGNED_KEY) return
+
+    setOrgUsage(prev => ({
+      ...prev,
+      [orgId]: { loading: true, data: [], error: undefined },
+    }))
+
+    try {
+      const response = await adminApi.analytics.usersUsage(orgId, Math.max(userCount, 20))
+      setOrgUsage(prev => ({
+        ...prev,
+        [orgId]: {
+          loading: false,
+          data: response.data ?? [],
+          error: response.error ?? undefined,
+        },
+      }))
+    } catch (err) {
+      setOrgUsage(prev => ({
+        ...prev,
+        [orgId]: {
+          loading: false,
+          data: [],
+          error: err instanceof Error ? err.message : 'Failed to load usage',
+        },
+      }))
+    }
+  }, [])
+
+  const toggleOrganization = useCallback((orgId: string) => {
+    const isExpanded = !!expanded[orgId]
+    setExpanded(prev => ({ ...prev, [orgId]: !isExpanded }))
+
+    if (!isExpanded && orgId !== UNASSIGNED_KEY) {
+      const usageState = orgUsage[orgId]
+      const hasData = usageState && usageState.data.length > 0 && !usageState.error
+      if (!hasData) {
+        const userCount = usersByOrg[orgId]?.length ?? 0
+        void fetchUsage(orgId, userCount)
+      }
+    }
+  }, [expanded, orgUsage, usersByOrg, fetchUsage])
 
   if (loading) {
     return (
@@ -96,84 +177,216 @@ export const UsersPage = () => {
     )
   }
 
+  const renderUsageBars = (entries: AdminUsageLeaderboardEntry[], resolveLabel: (userId?: string | null) => string) => {
+    if (!entries.length) return null
+    const maxCalls = entries.reduce((acc, entry) => Math.max(acc, entry.total_api_calls), 1)
+
+    return (
+      <div className="space-y-3">
+        {entries.map(entry => {
+          const width = `${(entry.total_api_calls / maxCalls) * 100}%`
+          return (
+            <div key={`${entry.user_id}-${entry.organization_id}`} className="space-y-1">
+              <div className="flex items-center justify-between text-xs text-slate-500">
+                <span className="font-medium text-slate-700">{resolveLabel(entry.user_id)}</span>
+                <span>{formatNumber(entry.total_api_calls)} calls</span>
+              </div>
+              <div className="h-2 rounded-full bg-slate-200">
+                <div className="h-full rounded-full bg-orange-500" style={{ width }} />
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
+  const renderOrganization = (org: AdminOrganizationSummary, orgId: string) => {
+    const isExpanded = !!expanded[orgId]
+    const orgUsers = orgId === UNASSIGNED_KEY ? unassignedUsers : (usersByOrg[orgId] ?? [])
+    const usageState = orgUsage[orgId]
+    const usageEntries = usageState?.data ?? []
+
+    const metricsByUser: Record<string, AdminUsageLeaderboardEntry> = {}
+    usageEntries.forEach(entry => {
+      if (!entry.user_id) return
+      if (entry.organization_id && entry.organization_id !== orgId) return
+      metricsByUser[entry.user_id] = entry
+    })
+
+    const maxCalls = usageEntries.reduce((acc, entry) => Math.max(acc, entry.total_api_calls), 0)
+
+    const resolveLabel = (userId?: string | null) => {
+      if (!userId) return '—'
+      const user = users.find(u => u.id === userId)
+      return user?.email ?? userId
+    }
+
+    return (
+      <div key={orgId} className="rounded-xl border border-slate-200 bg-white shadow-sm">
+        <button
+          type="button"
+          onClick={() => toggleOrganization(orgId)}
+          className="w-full flex items-center justify-between px-6 py-4 text-left"
+        >
+          <div className="flex items-center gap-4">
+            <OrganizationAvatar logoUrl={org.logoUrl} name={org.name} />
+            <div>
+              <p className="text-base font-semibold text-slate-900">{org.name ?? 'Без названия'}</p>
+              <p className="text-sm text-slate-500">
+                {orgUsers.length} {orgUsers.length === 1 ? 'user' : 'users'} · {formatNumber(org.user_count)} total seats
+              </p>
+            </div>
+          </div>
+          {isExpanded ? <ChevronDown className="h-5 w-5 text-slate-500" /> : <ChevronRight className="h-5 w-5 text-slate-500" />}
+        </button>
+
+        {isExpanded && (
+          <div className="border-t border-slate-200 bg-slate-50 px-6 py-5 space-y-6">
+            {orgId !== UNASSIGNED_KEY && usageState?.error && (
+              <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                <div className="flex items-center justify-between">
+                  <span>{usageState.error}</span>
+                  <button
+                    type="button"
+                    className="rounded-md border border-red-300 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-100"
+                    onClick={() => {
+                      const userCount = orgUsers.length
+                      void fetchUsage(orgId, userCount)
+                    }}
+                  >
+                    Retry
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {orgId !== UNASSIGNED_KEY && usageState?.loading && (
+              <div className="flex items-center gap-3 text-sm text-slate-500">
+                <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                Loading usage metrics…
+              </div>
+            )}
+
+            {orgId !== UNASSIGNED_KEY && !usageState?.loading && usageEntries.length > 0 && (
+              <div>
+                <p className="text-sm font-semibold text-slate-700 mb-2">Usage distribution</p>
+                {renderUsageBars(usageEntries, resolveLabel)}
+              </div>
+            )}
+
+            {orgUsers.length === 0 ? (
+              <p className="text-sm text-slate-500">В этой компании пока нет пользователей.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-slate-200">
+                  <thead className="bg-white">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Email</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Role</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Last sign-in</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">API calls</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Signals</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Contacts</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Emails</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Sequences</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Activity</th>
+                      <th className="px-4 py-3" />
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 bg-white">
+                    {orgUsers.map(user => {
+                      const metrics = metricsByUser[user.id]
+                      const totalCalls = metrics?.total_api_calls ?? 0
+                      const signals = metrics?.signals_reviewed ?? 0
+                      const contacts = metrics?.contacts_created ?? 0
+                      const emails = metrics?.emails_generated ?? 0
+                      const sequences = metrics?.sequences_created ?? 0
+                      const width = maxCalls > 0 ? `${Math.max((totalCalls / maxCalls) * 100, 4)}%` : '0%'
+
+                      return (
+                        <tr key={`${orgId}-${user.id}`} className="hover:bg-slate-50/60">
+                          <td className="px-4 py-3 text-sm text-slate-700">
+                            <Link
+                              to={`/admin/users/${user.id}`}
+                              className="text-orange-600 hover:text-orange-700"
+                            >
+                              {user.email ?? '—'}
+                            </Link>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-slate-500">{user.is_admin ? 'Admin' : 'User'}</td>
+                          <td className="px-4 py-3 text-sm text-slate-500">{formatDate(user.last_sign_in_at)}</td>
+                          <td className="px-4 py-3 text-sm text-slate-600 text-right">{formatNumber(totalCalls)}</td>
+                          <td className="px-4 py-3 text-sm text-slate-500 text-right">{formatNumber(signals)}</td>
+                          <td className="px-4 py-3 text-sm text-slate-500 text-right">{formatNumber(contacts)}</td>
+                          <td className="px-4 py-3 text-sm text-slate-500 text-right">{formatNumber(emails)}</td>
+                          <td className="px-4 py-3 text-sm text-slate-500 text-right">{formatNumber(sequences)}</td>
+                          <td className="px-4 py-3">
+                            <div className="h-2 rounded-full bg-slate-200">
+                              <div className="h-full rounded-full bg-orange-500" style={{ width }} />
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-right text-sm">
+                            <Link
+                              to={`/admin/users/${user.id}`}
+                              className="inline-flex items-center rounded-lg border border-slate-300 px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100"
+                            >
+                              View
+                            </Link>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-slate-900">Users</h3>
-          <p className="text-sm text-slate-500">Select organization to focus on company-specific activity.</p>
+          <h3 className="text-lg font-semibold text-slate-900">Users by organization</h3>
+          <p className="text-sm text-slate-500">{formatNumber(users.length)} users · {formatNumber(sortedOrganizations.length)} organizations</p>
         </div>
-        <div className="flex items-center gap-3">
-          <select
-            value={selectedOrganization}
-            onChange={event => setSelectedOrganization(event.target.value)}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 focus:border-orange-500 focus:outline-none"
-          >
-            <option value="all">All organizations</option>
-            {organizations.map(org => (
-              <option key={org.id} value={org.id}>
-                {org.name ?? org.id}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            onClick={() => { void load() }}
-            className="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors"
-          >
-            Refresh
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => { void load() }}
+          className="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors"
+        >
+          Refresh
+        </button>
       </div>
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-slate-200">
-          <thead className="bg-slate-50">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Email</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Created</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Last sign-in</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Organizations</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Role</th>
-              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {filteredUsers.map(user => (
-              <tr key={user.id} className="hover:bg-slate-50/60">
-                <td className="px-4 py-3 text-sm text-slate-700">
-                  <Link
-                    to={`/admin/users/${user.id}`}
-                    className="text-orange-600 hover:text-orange-700"
-                  >
-                    {user.email ?? '—'}
-                  </Link>
-                </td>
-                <td className="px-4 py-3 text-sm text-slate-500">{formatDate(user.created_at)}</td>
-                <td className="px-4 py-3 text-sm text-slate-500">{formatDate(user.last_sign_in_at)}</td>
-                <td className="px-4 py-3 text-sm text-slate-500">
-                  {user.organizations.length === 0
-                    ? '—'
-                    : user.organizations.map(orgId => organizationMap[orgId] ?? orgId).join(', ')}
-                </td>
-                <td className="px-4 py-3 text-sm">
-                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
-                    user.is_admin ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'
-                  }`}>
-                    {user.is_admin ? 'Admin' : 'User'}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-right text-sm">
-                  <Link
-                    to={`/admin/users/${user.id}`}
-                    className="inline-flex items-center rounded-lg border border-slate-300 px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100"
-                  >
-                    View
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+
+      <div className="space-y-4">
+        {sortedOrganizations.map(org => renderOrganization(org, org.id))}
+
+        {unassignedUsers.length > 0 && (
+          renderOrganization(
+            {
+              id: UNASSIGNED_KEY,
+              name: 'Без организации',
+              state: null,
+              primary_user_id: null,
+              user_count: unassignedUsers.length,
+              created_at: null,
+              updated_at: null,
+              logoUrl: null,
+            },
+            UNASSIGNED_KEY,
+          )
+        )}
+
+        {sortedOrganizations.length === 0 && unassignedUsers.length === 0 && (
+          <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500">
+            Пользователи пока не найдены.
+          </div>
+        )}
       </div>
     </div>
   )
