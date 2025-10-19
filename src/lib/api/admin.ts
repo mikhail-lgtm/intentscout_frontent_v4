@@ -74,6 +74,12 @@ export const adminApi = {
   system: {
     health: () => apiClient.get<SystemHealthResponse>('/admin/system/health'),
   },
+  logs: {
+    recent: (limit = 100) =>
+      apiClient.get(`/admin/logs/api/recent?limit=${limit}`),
+    intentspy: (limit = 100) =>
+      apiClient.get(`/admin/intentspy/logs/recent?limit=${limit}`),
+  },
 }
 
 export type {

@@ -67,6 +67,7 @@ export interface AdminActivityLog {
   timestamp: string
   user_id?: string | null
   organization_id?: string | null
+  user_role?: string | null
   method: string
   endpoint: string
   query?: string | null
@@ -74,6 +75,9 @@ export interface AdminActivityLog {
   response_time_ms?: number | null
   ip_address?: string | null
   user_agent?: string | null
+  action?: string | null
+  category?: string | null
+  description?: string | null
 }
 
 export interface AdminUsagePoint {

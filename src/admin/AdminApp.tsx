@@ -5,6 +5,7 @@ import { DashboardPage } from './pages/DashboardPage'
 import { UsersPage } from './pages/UsersPage'
 import { SystemPage } from './pages/SystemPage'
 import { UserDetailPage } from './pages/UserDetailPage'
+import { LogsPage } from './pages/LogsPage'
 
 export const AdminApp = () => {
   return (
@@ -16,6 +17,7 @@ export const AdminApp = () => {
           <Route path="users" element={<UsersPage />} />
           <Route path="users/:userId" element={<UserDetailPage />} />
           <Route path="system" element={<SystemPage />} />
+          <Route path="logs" element={<LogsPage />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Route>
       </Routes>
