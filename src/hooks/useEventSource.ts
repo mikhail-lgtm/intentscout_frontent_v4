@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 
 interface EventSourceOptions<T> {
-  endpoint: string
-  parse?: (data: string) => T
+  endpoint?: string | null
+  mapItem?: (value: unknown) => T | null
+  mapSnapshot?: (value: unknown) => T[]
   onOpen?: () => void
   onError?: (error: Event) => void
   autoReconnect?: boolean
@@ -19,7 +20,8 @@ const DEFAULT_RECONNECT_INTERVAL = 5000
 
 export function useEventSource<T = any>({
   endpoint,
-  parse,
+  mapItem,
+  mapSnapshot,
   onOpen,
   onError,
   autoReconnect = true,
@@ -34,12 +36,17 @@ export function useEventSource<T = any>({
   const reconnectRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
+    if (!endpoint) {
+      return () => undefined
+    }
+
     const connect = () => {
       if (eventSourceRef.current) {
         eventSourceRef.current.close()
       }
 
-      const es = new EventSource(endpoint, { withCredentials: true })
+      const url = endpoint.startsWith('http') ? endpoint : `${window.location.origin}${endpoint}`
+      const es = new EventSource(url, { withCredentials: true })
       eventSourceRef.current = es
 
       es.onopen = () => {
@@ -59,30 +66,61 @@ export function useEventSource<T = any>({
         }
       }
 
-      es.onmessage = (event) => {
-        let payload: T | null = null
-
-        if (parse) {
-          try {
-            payload = parse(event.data)
-          } catch (error) {
-            console.error('Failed to parse SSE data', error)
-          }
-        } else {
-          try {
-            payload = JSON.parse(event.data) as T
-          } catch {
-            payload = event.data as unknown as T
-          }
+      const handleMessage = (event: MessageEvent) => {
+        let payload: any
+        try {
+          payload = JSON.parse(event.data)
+        } catch (error) {
+          console.error('Failed to parse SSE event', error)
+          return
         }
 
-        if (payload) {
-          setState(prev => ({
-            ...prev,
-            data: [...prev.data, payload!],
-          }))
+        const type = payload?.type
+        if (type === 'heartbeat') {
+          return
+        }
+
+        if (type === 'snapshot') {
+          const snapshotData = payload?.data
+          let items: T[] = []
+          if (mapSnapshot) {
+            try {
+              items = mapSnapshot(snapshotData)
+            } catch (error) {
+              console.error('Failed to map snapshot payload', error)
+              return
+            }
+          } else if (Array.isArray(snapshotData)) {
+            items = snapshotData as T[]
+          }
+          setState(prev => ({ ...prev, data: items }))
+          return
+        }
+
+        if (type === 'update') {
+          const itemData = payload?.data
+          let item: T | null = null
+          if (mapItem) {
+            try {
+              item = mapItem(itemData)
+            } catch (error) {
+              console.error('Failed to map update payload', error)
+              return
+            }
+          } else {
+            item = itemData as T
+          }
+
+          if (item) {
+            setState(prev => ({
+              ...prev,
+              data: [...prev.data, item!],
+            }))
+          }
         }
       }
+
+      es.addEventListener('message', handleMessage as EventListener)
     }
 
     connect()
@@ -96,7 +134,7 @@ export function useEventSource<T = any>({
         eventSourceRef.current.close()
       }
     }
-  }, [endpoint, parse, autoReconnect, reconnectIntervalMs, onOpen, onError])
+  }, [endpoint, mapItem, mapSnapshot, autoReconnect, reconnectIntervalMs, onOpen, onError])
 
   const clear = () => setState(prev => ({ ...prev, data: [] }))
 

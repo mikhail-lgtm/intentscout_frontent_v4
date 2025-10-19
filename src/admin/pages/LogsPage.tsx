@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { adminApi } from '../../lib/api/admin'
 import type { AdminActivityLog } from '../../types/admin'
 import { LogsViewer } from '../components/LogsViewer'
 import { useEventSource } from '../../hooks/useEventSource'
+import { supabase } from '../../lib/supabase'
 
 const API_STREAM_ENDPOINT = `/admin/logs/api/stream`
 const INTENTSPY_STREAM_ENDPOINT = `/admin/intentspy/logs/stream`
@@ -14,31 +15,75 @@ const TABS = [
 
 type TabId = typeof TABS[number]['id']
 
-const parseData = (data: string): AdminActivityLog => {
-  return JSON.parse(data) as AdminActivityLog
-}
-
 export const LogsPage = () => {
   const [activeTab, setActiveTab] = useState<TabId>('api')
   const [autoScroll, setAutoScroll] = useState(true)
   const [initialApiLogs, setInitialApiLogs] = useState<AdminActivityLog[]>([])
+  const [token, setToken] = useState<string | null>(null)
+  const [initialLoaded, setInitialLoaded] = useState(false)
 
-  const apiStream = useEventSource<AdminActivityLog>({
-    endpoint: API_STREAM_ENDPOINT,
-    parse: parseData,
-    onOpen: async () => {
+  useEffect(() => {
+    let cancelled = false
+
+    const resolveSession = async () => {
+      const { data } = await supabase.auth.getSession()
+      if (!cancelled) {
+        setToken(data.session?.access_token ?? null)
+      }
+    }
+
+    void resolveSession()
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_, session) => {
+      if (!cancelled) {
+        setToken(session?.access_token ?? null)
+      }
+    })
+
+    return () => {
+      cancelled = true
+      authListener.subscription.unsubscribe()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!token || initialLoaded) return
+    const loadInitial = async () => {
       const response = await adminApi.logs.recent(100)
       if (response.data) {
         setInitialApiLogs(response.data as AdminActivityLog[])
       }
-    },
+      setInitialLoaded(true)
+    }
+    void loadInitial()
+  }, [token, initialLoaded])
+
+  useEffect(() => {
+    if (!token) {
+      setInitialApiLogs([])
+      setInitialLoaded(false)
+    }
+  }, [token])
+
+  const apiStream = useEventSource<AdminActivityLog>({
+    endpoint: token ? `${API_STREAM_ENDPOINT}?token=${encodeURIComponent(token)}` : null,
+    mapItem: (value) => (value ? (value as AdminActivityLog) : null),
+    mapSnapshot: (value) => Array.isArray(value) ? (value as AdminActivityLog[]) : [],
   })
 
   const intentspyStream = useEventSource<AdminActivityLog>({
-    endpoint: INTENTSPY_STREAM_ENDPOINT,
-    parse: parseData,
+    endpoint: token ? `${INTENTSPY_STREAM_ENDPOINT}?token=${encodeURIComponent(token)}` : null,
+    mapItem: (value) => (value ? (value as AdminActivityLog) : null),
+    mapSnapshot: (value) => Array.isArray(value) ? (value as AdminActivityLog[]) : [],
     autoReconnect: true,
   })
+
+  useEffect(() => {
+    if (!token) {
+      apiStream.clear()
+      intentspyStream.clear()
+    }
+  }, [token])
 
   const apiLogs = useMemo(() => [...initialApiLogs, ...apiStream.data], [initialApiLogs, apiStream.data])
 
