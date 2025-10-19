@@ -119,6 +119,16 @@ export interface AdminAnalyticsOverview {
   total_users?: number | null
 }
 
+export interface AdminUsageLeaderboardEntry {
+  user_id?: string | null
+  organization_id?: string | null
+  total_api_calls: number
+  signals_reviewed: number
+  contacts_created: number
+  emails_generated: number
+  sequences_created: number
+}
+
 export interface SystemHealthStatus {
   status: string
   latency_ms?: number

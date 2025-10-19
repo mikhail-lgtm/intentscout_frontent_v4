@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { adminApi } from '../../lib/api/admin'
-import type { AdminUserSummary } from '../../types/admin'
+import type { AdminOrganizationSummary, AdminUserSummary } from '../../types/admin'
 
 const formatDate = (value?: string | null) => {
   if (!value) return '—'
@@ -14,19 +14,36 @@ const formatDate = (value?: string | null) => {
 
 export const UsersPage = () => {
   const [users, setUsers] = useState<AdminUserSummary[]>([])
+  const [organizations, setOrganizations] = useState<AdminOrganizationSummary[]>([])
+  const [organizationMap, setOrganizationMap] = useState<Record<string, string>>({})
+  const [selectedOrganization, setSelectedOrganization] = useState<string>('all')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
-    const response = await adminApi.users.list(1, 50)
-    if (!response.data) {
-      setError(response.error ?? 'Failed to load users')
+    const [usersRes, orgRes] = await Promise.all([
+      adminApi.users.list(1, 100),
+      adminApi.organizations.list(1, 100),
+    ])
+
+    if (!usersRes.data) {
+      setError(usersRes.error ?? 'Failed to load users')
       setUsers([])
     } else {
-      setUsers(response.data.users)
+      setUsers(usersRes.data.users)
     }
+
+    if (orgRes.data) {
+      setOrganizations(orgRes.data.organizations)
+      const map: Record<string, string> = {}
+      orgRes.data.organizations.forEach(org => {
+        map[org.id] = org.name ?? org.id
+      })
+      setOrganizationMap(map)
+    }
+
     setLoading(false)
   }, [])
 
@@ -63,20 +80,47 @@ export const UsersPage = () => {
     )
   }
 
+  const filteredUsers = useMemo(() => {
+    const base = selectedOrganization === 'all'
+      ? users
+      : users.filter(user => user.organizations.includes(selectedOrganization))
+
+    const resolveName = (user: AdminUserSummary) => {
+      const names = user.organizations.map(orgId => organizationMap[orgId] ?? orgId)
+      return names.length > 0 ? names.sort()[0] : ''
+    }
+
+    return [...base].sort((a, b) => resolveName(a).localeCompare(resolveName(b)))
+  }, [users, selectedOrganization, organizationMap])
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h3 className="text-lg font-semibold text-slate-900">Users</h3>
-          <p className="text-sm text-slate-500">First 50 users across all organizations.</p>
+          <p className="text-sm text-slate-500">Select organization to focus on company-specific activity.</p>
         </div>
-        <button
-          type="button"
-          onClick={() => { void load() }}
-          className="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors"
-        >
-          Refresh
-        </button>
+        <div className="flex items-center gap-3">
+          <select
+            value={selectedOrganization}
+            onChange={event => setSelectedOrganization(event.target.value)}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 focus:border-orange-500 focus:outline-none"
+          >
+            <option value="all">All organizations</option>
+            {organizations.map(org => (
+              <option key={org.id} value={org.id}>
+                {org.name ?? org.id}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={() => { void load() }}
+            className="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors"
+          >
+            Refresh
+          </button>
+        </div>
       </div>
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <table className="min-w-full divide-y divide-slate-200">
@@ -103,7 +147,11 @@ export const UsersPage = () => {
                 </td>
                 <td className="px-4 py-3 text-sm text-slate-500">{formatDate(user.created_at)}</td>
                 <td className="px-4 py-3 text-sm text-slate-500">{formatDate(user.last_sign_in_at)}</td>
-                <td className="px-4 py-3 text-sm text-slate-500">{user.organizations.length}</td>
+                <td className="px-4 py-3 text-sm text-slate-500">
+                  {user.organizations.length === 0
+                    ? '—'
+                    : user.organizations.map(orgId => organizationMap[orgId] ?? orgId).join(', ')}
+                </td>
                 <td className="px-4 py-3 text-sm">
                   <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
                     user.is_admin ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'

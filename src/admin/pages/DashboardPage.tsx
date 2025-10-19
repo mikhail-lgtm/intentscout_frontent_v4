@@ -1,8 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { adminApi } from '../../lib/api/admin'
 import type {
   AdminActivityLog,
   AdminAnalyticsOverview,
+  AdminOrganizationSummary,
+  AdminUsageLeaderboardEntry,
+  AdminUserSummary,
   SystemHealthResponse,
 } from '../../types/admin'
 
@@ -17,8 +20,20 @@ export const DashboardPage = () => {
   const [overview, setOverview] = useState<AdminAnalyticsOverview | null>(null)
   const [health, setHealth] = useState<SystemHealthResponse | null>(null)
   const [recentActivity, setRecentActivity] = useState<AdminActivityLog[]>([])
+  const [leaderboard, setLeaderboard] = useState<AdminUsageLeaderboardEntry[]>([])
+  const [organizations, setOrganizations] = useState<AdminOrganizationSummary[]>([])
+  const [selectedOrganization, setSelectedOrganization] = useState<string>('all')
+  const [userLookup, setUserLookup] = useState<Record<string, AdminUserSummary>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const refreshLeaderboard = useCallback(async (organizationId: string) => {
+    const response = await adminApi.analytics.usersUsage(
+      organizationId === 'all' ? undefined : organizationId,
+      12
+    )
+    setLeaderboard(response.data ?? [])
+  }, [])
 
   useEffect(() => {
     let active = true
@@ -30,7 +45,7 @@ export const DashboardPage = () => {
       try {
         const [overviewRes, usersRes, orgRes, healthRes, activityRes] = await Promise.all([
           adminApi.analytics.overview(),
-          adminApi.users.list(1, 25),
+          adminApi.users.list(1, 100),
           adminApi.organizations.list(1, 25),
           adminApi.system.health(),
           adminApi.users.activityRecent(8),
@@ -58,6 +73,13 @@ export const DashboardPage = () => {
         })
         setHealth(healthRes.data)
         setRecentActivity(activityRes.data ?? [])
+        setOrganizations(orgRes.data.organizations)
+        const map: Record<string, AdminUserSummary> = {}
+        usersRes.data.users.forEach(user => {
+          map[user.id] = user
+        })
+        setUserLookup(map)
+        await refreshLeaderboard('all')
       } catch (loadError) {
         if (!active) return
         setError(loadError instanceof Error ? loadError.message : 'Failed to load dashboard data')
@@ -70,7 +92,17 @@ export const DashboardPage = () => {
 
     void loadData()
     return () => { active = false }
-  }, [])
+  }, [refreshLeaderboard])
+
+  useEffect(() => {
+    void refreshLeaderboard(selectedOrganization)
+  }, [selectedOrganization, refreshLeaderboard])
+
+  const resolveUserLabel = useCallback((userId?: string | null) => {
+    if (!userId) return '—'
+    const user = userLookup[userId]
+    return user?.email ?? userId
+  }, [userLookup])
 
   const healthItems = useMemo(() => {
     if (!health) return []
@@ -219,7 +251,7 @@ export const DashboardPage = () => {
                 recentActivity.map(event => (
                   <tr key={event.id ?? `${event.timestamp}-${event.endpoint}`}>
                     <td className="px-4 py-3 text-sm text-slate-600">{new Date(event.timestamp).toLocaleString()}</td>
-                    <td className="px-4 py-3 text-sm text-slate-500">{event.user_id ?? '—'}</td>
+                    <td className="px-4 py-3 text-sm text-slate-500">{resolveUserLabel(event.user_id)}</td>
                     <td className="px-4 py-3 text-sm text-slate-700 break-all">{event.method} {event.endpoint}</td>
                     <td className="px-4 py-3 text-sm text-slate-500">{event.status_code ?? '—'}</td>
                   </tr>
@@ -227,6 +259,58 @@ export const DashboardPage = () => {
               )}
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-slate-900">Top users by activity</h3>
+          <div className="inline-flex items-center gap-2">
+            <label className="text-sm text-slate-500" htmlFor="leaderboard-org">Organization:</label>
+            <select
+              id="leaderboard-org"
+              value={selectedOrganization}
+              onChange={event => setSelectedOrganization(event.target.value)}
+              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 focus:border-orange-500 focus:outline-none"
+            >
+              <option value="all">All</option>
+              {organizations.map(org => (
+                <option key={org.id} value={org.id}>
+                  {org.name ?? org.id}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+          {leaderboard.length === 0 ? (
+            <p className="text-sm text-slate-500">Нет данных для отображения.</p>
+          ) : (
+            (() => {
+              const maxCalls = leaderboard.reduce((acc, entry) => Math.max(acc, entry.total_api_calls), 1)
+              return leaderboard.map(entry => {
+                const width = `${(entry.total_api_calls / maxCalls) * 100}%`
+                return (
+                  <div key={`${entry.user_id}-${entry.organization_id}`} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold text-slate-800">{resolveUserLabel(entry.user_id)}</p>
+                      <p className="text-xs text-slate-500">{entry.total_api_calls} calls</p>
+                    </div>
+                    <div className="h-3 rounded-full bg-slate-200">
+                      <div className="h-full rounded-full bg-orange-500" style={{ width }} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs text-slate-500">
+                      <span>Signals: {entry.signals_reviewed}</span>
+                      <span>Contacts: {entry.contacts_created}</span>
+                      <span>Emails: {entry.emails_generated}</span>
+                      <span>Sequences: {entry.sequences_created}</span>
+                    </div>
+                  </div>
+                )
+              })
+            })()
+          )}
         </div>
       </section>
     </div>

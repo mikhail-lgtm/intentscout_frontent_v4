@@ -12,6 +12,7 @@ import type {
   AdminUserStatsResponse,
   AdminOrganizationUsage,
   AdminAnalyticsOverview,
+  AdminUsageLeaderboardEntry,
   SystemHealthResponse,
 } from '../../types/admin'
 
@@ -63,6 +64,11 @@ export const adminApi = {
   },
   analytics: {
     overview: () => apiClient.get<AdminAnalyticsOverview>('/admin/analytics/overview'),
+    usersUsage: (organizationId?: string, limit = 20) =>
+      apiClient.get<AdminUsageLeaderboardEntry[]>(`/admin/analytics/users/usage${buildQueryString({
+        organization_id: organizationId,
+        limit,
+      })}`),
   },
   system: {
     health: () => apiClient.get<SystemHealthResponse>('/admin/system/health'),
@@ -82,5 +88,6 @@ export type {
   AdminUserStatsResponse,
   AdminOrganizationUsage,
   AdminAnalyticsOverview,
+  AdminUsageLeaderboardEntry,
   SystemHealthResponse,
 } from '../../types/admin'
