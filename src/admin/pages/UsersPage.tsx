@@ -59,8 +59,8 @@ export const UsersPage = () => {
     setError(null)
 
     const [usersRes, orgRes] = await Promise.all([
-      adminApi.users.list(1, 200),
-      adminApi.organizations.list(1, 200),
+      adminApi.users.list(1, 100),
+      adminApi.organizations.list(1, 100),
     ])
 
     if (!usersRes.data) {
