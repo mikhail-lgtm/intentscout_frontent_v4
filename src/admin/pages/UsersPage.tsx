@@ -10,7 +10,16 @@ import type {
 } from '../../types/admin'
 
 const UNASSIGNED_KEY = '__unassigned__'
-const formatNumber = (value: number) => new Intl.NumberFormat('en-US').format(value)
+
+const TIMEFRAME_OPTIONS = [
+  { id: 'day', label: 'За день', days: 1 },
+  { id: 'week', label: 'За неделю', days: 7 },
+  { id: 'month', label: 'За месяц', days: 30 },
+] as const
+
+type TimeframeId = typeof TIMEFRAME_OPTIONS[number]['id']
+
+const formatNumber = (value: number) => new Intl.NumberFormat('ru-RU').format(value)
 
 const formatDate = (value?: string | null) => {
   if (!value) return '—'
@@ -22,6 +31,12 @@ const formatDate = (value?: string | null) => {
 }
 
 type OrgUsageState = {
+  loading: boolean
+  data: AdminUsageLeaderboardEntry[]
+  error?: string
+}
+
+type GlobalUsageState = {
   loading: boolean
   data: AdminUsageLeaderboardEntry[]
   error?: string
@@ -50,9 +65,16 @@ export const UsersPage = () => {
   const [users, setUsers] = useState<AdminUserSummary[]>([])
   const [organizations, setOrganizations] = useState<AdminOrganizationSummary[]>([])
   const [orgUsage, setOrgUsage] = useState<Record<string, OrgUsageState>>({})
+  const [globalUsage, setGlobalUsage] = useState<GlobalUsageState>({ loading: true, data: [] })
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
+  const [timeframe, setTimeframe] = useState<TimeframeId>('week')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const timeframeDays = useMemo(
+    () => TIMEFRAME_OPTIONS.find(option => option.id === timeframe)?.days ?? 7,
+    [timeframe]
+  )
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -81,30 +103,25 @@ export const UsersPage = () => {
     void load()
   }, [load])
 
-  const { usersByOrg, unassignedUsers } = useMemo(() => {
-    const map: Record<string, AdminUserSummary[]> = {}
-    const unassigned: AdminUserSummary[] = []
-
-    users.forEach(user => {
-      const orgs = user.organizations?.length ? user.organizations : []
-      if (orgs.length === 0) {
-        unassigned.push(user)
-        return
-      }
-      orgs.forEach(orgId => {
-        if (!map[orgId]) map[orgId] = []
-        map[orgId].push(user)
+  const fetchGlobalUsage = useCallback(async (days: number) => {
+    setGlobalUsage({ loading: true, data: [], error: undefined })
+    try {
+      const response = await adminApi.analytics.usersUsage(undefined, 12, days)
+      setGlobalUsage({
+        loading: false,
+        data: response.data ?? [],
+        error: response.error ?? undefined,
       })
-    })
+    } catch (err) {
+      setGlobalUsage({
+        loading: false,
+        data: [],
+        error: err instanceof Error ? err.message : 'Failed to load usage data',
+      })
+    }
+  }, [])
 
-    return { usersByOrg: map, unassignedUsers: unassigned }
-  }, [users])
-
-  const sortedOrganizations = useMemo(() => {
-    return [...organizations].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
-  }, [organizations])
-
-  const fetchUsage = useCallback(async (orgId: string, userCount: number) => {
+  const fetchOrgUsage = useCallback(async (orgId: string, userCount: number, days: number) => {
     if (orgId === UNASSIGNED_KEY) return
 
     setOrgUsage(prev => ({
@@ -113,7 +130,7 @@ export const UsersPage = () => {
     }))
 
     try {
-      const response = await adminApi.analytics.usersUsage(orgId, Math.max(userCount, 20))
+      const response = await adminApi.analytics.usersUsage(orgId, Math.max(userCount, 20), days)
       setOrgUsage(prev => ({
         ...prev,
         [orgId]: {
@@ -134,19 +151,62 @@ export const UsersPage = () => {
     }
   }, [])
 
-  const toggleOrganization = useCallback((orgId: string) => {
-    const isExpanded = !!expanded[orgId]
-    setExpanded(prev => ({ ...prev, [orgId]: !isExpanded }))
-
-    if (!isExpanded && orgId !== UNASSIGNED_KEY) {
-      const usageState = orgUsage[orgId]
-      const hasData = usageState && usageState.data.length > 0 && !usageState.error
-      if (!hasData) {
-        const userCount = usersByOrg[orgId]?.length ?? 0
-        void fetchUsage(orgId, userCount)
+  const usersByOrg = useMemo(() => {
+    const map: Record<string, AdminUserSummary[]> = {}
+    users.forEach(user => {
+      const orgs = user.organizations?.length ? user.organizations : []
+      if (orgs.length === 0) {
+        if (!map[UNASSIGNED_KEY]) map[UNASSIGNED_KEY] = []
+        map[UNASSIGNED_KEY].push(user)
+        return
       }
-    }
-  }, [expanded, orgUsage, usersByOrg, fetchUsage])
+      orgs.forEach(orgId => {
+        if (!map[orgId]) map[orgId] = []
+        map[orgId].push(user)
+      })
+    })
+    return map
+  }, [users])
+
+  const sortedOrganizations = useMemo(() => {
+    return [...organizations].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
+  }, [organizations])
+
+  const toggleOrganization = useCallback(
+    (orgId: string) => {
+      const isExpanded = !!expanded[orgId]
+      setExpanded(prev => ({ ...prev, [orgId]: !isExpanded }))
+
+      if (!isExpanded && orgId !== UNASSIGNED_KEY) {
+        const usageState = orgUsage[orgId]
+        const hasData = usageState && usageState.data.length > 0 && !usageState.error
+        if (!hasData) {
+          const userCount = usersByOrg[orgId]?.length ?? 0
+          void fetchOrgUsage(orgId, userCount, timeframeDays)
+        }
+      }
+    },
+    [expanded, orgUsage, usersByOrg, fetchOrgUsage, timeframeDays]
+  )
+
+  useEffect(() => {
+    void fetchGlobalUsage(timeframeDays)
+    setOrgUsage({})
+
+    Object.entries(expanded).forEach(([orgId, isOpen]) => {
+      if (!isOpen || orgId === UNASSIGNED_KEY) return
+      const userCount = usersByOrg[orgId]?.length ?? 0
+      if (userCount > 0) {
+        void fetchOrgUsage(orgId, userCount, timeframeDays)
+      }
+    })
+  }, [timeframeDays, expanded, usersByOrg, fetchGlobalUsage, fetchOrgUsage])
+
+  const resolveGlobalLabel = useCallback((userId?: string | null) => {
+    if (!userId) return '—'
+    const user = users.find(u => u.id === userId)
+    return user?.email ?? userId
+  }, [users])
 
   if (loading) {
     return (
@@ -177,7 +237,10 @@ export const UsersPage = () => {
     )
   }
 
-  const renderUsageBars = (entries: AdminUsageLeaderboardEntry[], resolveLabel: (userId?: string | null) => string) => {
+  const renderUsageBars = (
+    entries: AdminUsageLeaderboardEntry[],
+    resolveLabel: (userId?: string | null) => string,
+  ) => {
     if (!entries.length) return null
     const maxCalls = entries.reduce((acc, entry) => Math.max(acc, entry.total_api_calls), 1)
 
@@ -189,7 +252,7 @@ export const UsersPage = () => {
             <div key={`${entry.user_id}-${entry.organization_id}`} className="space-y-1">
               <div className="flex items-center justify-between text-xs text-slate-500">
                 <span className="font-medium text-slate-700">{resolveLabel(entry.user_id)}</span>
-                <span>{formatNumber(entry.total_api_calls)} calls</span>
+                <span>{formatNumber(entry.total_api_calls)} запросов</span>
               </div>
               <div className="h-2 rounded-full bg-slate-200">
                 <div className="h-full rounded-full bg-orange-500" style={{ width }} />
@@ -203,7 +266,7 @@ export const UsersPage = () => {
 
   const renderOrganization = (org: AdminOrganizationSummary, orgId: string) => {
     const isExpanded = !!expanded[orgId]
-    const orgUsers = orgId === UNASSIGNED_KEY ? unassignedUsers : (usersByOrg[orgId] ?? [])
+    const orgUsers = orgId === UNASSIGNED_KEY ? (usersByOrg[UNASSIGNED_KEY] ?? []) : (usersByOrg[orgId] ?? [])
     const usageState = orgUsage[orgId]
     const usageEntries = usageState?.data ?? []
 
@@ -234,7 +297,7 @@ export const UsersPage = () => {
             <div>
               <p className="text-base font-semibold text-slate-900">{org.name ?? 'Без названия'}</p>
               <p className="text-sm text-slate-500">
-                {orgUsers.length} {orgUsers.length === 1 ? 'user' : 'users'} · {formatNumber(org.user_count)} total seats
+                {formatNumber(orgUsers.length)} {orgUsers.length === 1 ? 'user' : 'users'} · {formatNumber(org.user_count)} всего
               </p>
             </div>
           </div>
@@ -252,7 +315,7 @@ export const UsersPage = () => {
                     className="rounded-md border border-red-300 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-100"
                     onClick={() => {
                       const userCount = orgUsers.length
-                      void fetchUsage(orgId, userCount)
+                      void fetchOrgUsage(orgId, userCount, timeframeDays)
                     }}
                   >
                     Retry
@@ -264,19 +327,19 @@ export const UsersPage = () => {
             {orgId !== UNASSIGNED_KEY && usageState?.loading && (
               <div className="flex items-center gap-3 text-sm text-slate-500">
                 <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
-                Loading usage metrics…
+                Загрузка usage…
               </div>
             )}
 
             {orgId !== UNASSIGNED_KEY && !usageState?.loading && usageEntries.length > 0 && (
               <div>
-                <p className="text-sm font-semibold text-slate-700 mb-2">Usage distribution</p>
+                <p className="text-sm font-semibold text-slate-700 mb-2">Распределение пользователей</p>
                 {renderUsageBars(usageEntries, resolveLabel)}
               </div>
             )}
 
             {orgUsers.length === 0 ? (
-              <p className="text-sm text-slate-500">В этой компании пока нет пользователей.</p>
+              <p className="text-sm text-slate-500">Пока нет пользователей в этой компании.</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200">
@@ -347,12 +410,35 @@ export const UsersPage = () => {
     )
   }
 
+  const globalUsageContent = () => {
+    if (globalUsage.loading) {
+      return (
+        <div className="flex items-center gap-3 text-sm text-slate-500">
+          <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+          Загрузка usage…
+        </div>
+      )
+    }
+
+    if (globalUsage.error) {
+      return <p className="text-sm text-red-600">{globalUsage.error}</p>
+    }
+
+    if (!globalUsage.data.length) {
+      return <p className="text-sm text-slate-500">Пока нет активности за выбранный период.</p>
+    }
+
+    return renderUsageBars(globalUsage.data, resolveGlobalLabel)
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-slate-900">Users by organization</h3>
-          <p className="text-sm text-slate-500">{formatNumber(users.length)} users · {formatNumber(sortedOrganizations.length)} organizations</p>
+          <h3 className="text-lg font-semibold text-slate-900">Пользовательская активность</h3>
+          <p className="text-sm text-slate-500">
+            {formatNumber(users.length)} пользователей · {formatNumber(sortedOrganizations.length)} организаций
+          </p>
         </div>
         <button
           type="button"
@@ -363,26 +449,51 @@ export const UsersPage = () => {
         </button>
       </div>
 
+      <section className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h4 className="text-base font-semibold text-slate-900">Топ пользователей по активности</h4>
+          <div className="inline-flex items-center gap-2">
+            {TIMEFRAME_OPTIONS.map(option => (
+              <button
+                key={option.id}
+                type="button"
+                onClick={() => setTimeframe(option.id)}
+                className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                  timeframe === option.id
+                    ? 'bg-orange-500 text-white shadow'
+                    : 'border border-slate-300 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          {globalUsageContent()}
+        </div>
+      </section>
+
       <div className="space-y-4">
         {sortedOrganizations.map(org => renderOrganization(org, org.id))}
 
-        {unassignedUsers.length > 0 && (
+        {usersByOrg[UNASSIGNED_KEY]?.length ? (
           renderOrganization(
             {
               id: UNASSIGNED_KEY,
               name: 'Без организации',
               state: null,
               primary_user_id: null,
-              user_count: unassignedUsers.length,
+              user_count: usersByOrg[UNASSIGNED_KEY].length,
               created_at: null,
               updated_at: null,
               logoUrl: null,
             },
             UNASSIGNED_KEY,
           )
-        )}
+        ) : null}
 
-        {sortedOrganizations.length === 0 && unassignedUsers.length === 0 && (
+        {sortedOrganizations.length === 0 && !usersByOrg[UNASSIGNED_KEY]?.length && (
           <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500">
             Пользователи пока не найдены.
           </div>

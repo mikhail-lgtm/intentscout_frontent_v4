@@ -64,10 +64,11 @@ export const adminApi = {
   },
   analytics: {
     overview: () => apiClient.get<AdminAnalyticsOverview>('/admin/analytics/overview'),
-    usersUsage: (organizationId?: string, limit = 20) =>
+    usersUsage: (organizationId?: string, limit = 20, days?: number) =>
       apiClient.get<AdminUsageLeaderboardEntry[]>(`/admin/analytics/users/usage${buildQueryString({
         organization_id: organizationId,
         limit,
+        days,
       })}`),
   },
   system: {
