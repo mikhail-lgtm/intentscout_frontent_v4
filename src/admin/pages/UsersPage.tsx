@@ -51,6 +51,22 @@ export const UsersPage = () => {
     void load()
   }, [load])
 
+  const filteredUsers = useMemo(() => {
+    const base = selectedOrganization === 'all'
+      ? users
+      : users.filter(user => user.organizations.includes(selectedOrganization))
+
+    const resolveName = (user: AdminUserSummary) => {
+      const names = user.organizations.map(orgId => organizationMap[orgId] ?? orgId)
+      if (names.length === 0) {
+        return ''
+      }
+      return [...names].sort()[0]
+    }
+
+    return [...base].sort((a, b) => resolveName(a).localeCompare(resolveName(b)))
+  }, [users, selectedOrganization, organizationMap])
+
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -79,22 +95,6 @@ export const UsersPage = () => {
       </div>
     )
   }
-
-  const filteredUsers = useMemo(() => {
-    const base = selectedOrganization === 'all'
-      ? users
-      : users.filter(user => user.organizations.includes(selectedOrganization))
-
-    const resolveName = (user: AdminUserSummary) => {
-      const names = user.organizations.map(orgId => organizationMap[orgId] ?? orgId)
-      if (names.length === 0) {
-        return ''
-      }
-      return [...names].sort()[0]
-    }
-
-    return [...base].sort((a, b) => resolveName(a).localeCompare(resolveName(b)))
-  }, [users, selectedOrganization, organizationMap])
 
   return (
     <div className="space-y-6">
