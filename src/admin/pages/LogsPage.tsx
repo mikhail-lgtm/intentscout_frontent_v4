@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
-import { adminApi } from '../../lib/api/admin'
+import { useEffect, useState } from 'react'
 import type { AdminActivityLog } from '../../types/admin'
 import { LogsViewer } from '../components/LogsViewer'
 import { useEventSource } from '../../hooks/useEventSource'
@@ -18,9 +17,7 @@ type TabId = typeof TABS[number]['id']
 export const LogsPage = () => {
   const [activeTab, setActiveTab] = useState<TabId>('api')
   const [autoScroll, setAutoScroll] = useState(true)
-  const [initialApiLogs, setInitialApiLogs] = useState<AdminActivityLog[]>([])
   const [token, setToken] = useState<string | null>(null)
-  const [initialLoaded, setInitialLoaded] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -46,25 +43,6 @@ export const LogsPage = () => {
     }
   }, [])
 
-  useEffect(() => {
-    if (!token || initialLoaded) return
-    const loadInitial = async () => {
-      const response = await adminApi.logs.recent(100)
-      if (response.data) {
-        setInitialApiLogs(response.data as AdminActivityLog[])
-      }
-      setInitialLoaded(true)
-    }
-    void loadInitial()
-  }, [token, initialLoaded])
-
-  useEffect(() => {
-    if (!token) {
-      setInitialApiLogs([])
-      setInitialLoaded(false)
-    }
-  }, [token])
-
   const apiStream = useEventSource<AdminActivityLog>({
     endpoint: token ? `${API_STREAM_ENDPOINT}?token=${encodeURIComponent(token)}` : null,
     mapItem: (value) => (value ? (value as AdminActivityLog) : null),
@@ -85,21 +63,16 @@ export const LogsPage = () => {
     }
   }, [token])
 
-  const apiLogs = useMemo(() => [...initialApiLogs, ...apiStream.data], [initialApiLogs, apiStream.data])
-
   const renderContent = () => {
     if (activeTab === 'api') {
       return (
         <LogsViewer
-          logs={apiLogs}
+          logs={apiStream.data}
           loading={!apiStream.connected}
           error={apiStream.error}
           autoScroll={autoScroll}
           onToggleAutoScroll={() => setAutoScroll(prev => !prev)}
-          onClear={() => {
-            apiStream.clear()
-            setInitialApiLogs([])
-          }}
+          onClear={() => apiStream.clear()}
         />
       )
     }

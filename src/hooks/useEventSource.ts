@@ -45,7 +45,8 @@ export function useEventSource<T = any>({
         eventSourceRef.current.close()
       }
 
-      const url = endpoint.startsWith('http') ? endpoint : `${window.location.origin}${endpoint}`
+      const base = (import.meta.env.VITE_API_BASE_URL || window.location.origin).replace(/\/$/, '')
+      const url = endpoint.startsWith('http') ? endpoint : `${base}${endpoint}`
       const es = new EventSource(url, { withCredentials: true })
       eventSourceRef.current = es
 
