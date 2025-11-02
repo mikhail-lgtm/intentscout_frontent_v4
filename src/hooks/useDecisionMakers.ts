@@ -212,17 +212,23 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
   }, [])
 
   // Restart a failed search
-  const restartSearch = useCallback(async () => {
-    if (!state.searchStatus?.search_id) return
+  const restartSearch = useCallback(async (customGuidance?: string) => {
+    if (!state.searchStatus?.search_id) {
+      return { success: false, error: 'No decision maker search to restart' }
+    }
 
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }))
       
-      const response = await api.decisionMakers.restart(state.searchStatus.search_id)
+      const response = await api.decisionMakers.restart(
+        state.searchStatus.search_id,
+        customGuidance?.trim() || undefined
+      )
       
       if (response.error) {
-        setState(prev => ({ ...prev, isLoading: false, error: response.error || 'Failed to restart search' }))
-        return
+        const errorMessage = response.error || 'Failed to restart search'
+        setState(prev => ({ ...prev, isLoading: false, error: errorMessage }))
+        return { success: false, error: errorMessage }
       }
 
       setState(prev => ({ 
@@ -231,12 +237,16 @@ export const useDecisionMakers = (signalId: string | null | undefined) => {
         isLoading: false,
         error: null
       }))
+
+      return { success: true }
     } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to restart search'
       setState(prev => ({ 
         ...prev, 
         isLoading: false, 
-        error: err instanceof Error ? err.message : 'Failed to restart search'
+        error: errorMessage
       }))
+      return { success: false, error: errorMessage }
     }
   }, [state.searchStatus?.search_id])
 

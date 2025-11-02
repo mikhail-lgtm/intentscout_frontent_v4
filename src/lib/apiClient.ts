@@ -150,6 +150,7 @@ class ApiClient {
         headers: requestHeaders,
         body: body ? JSON.stringify(body) : undefined,
         signal: controller.signal,
+        credentials: 'include',
       })
 
       clearTimeout(timeoutId)
@@ -387,8 +388,8 @@ export const api = {
       apiClient.getWithTimeout(endpoints.decisionMakers.getStatus(searchId), 200000), // 200 seconds
     getBySignal: (signalId: string) => 
       apiClient.get(endpoints.decisionMakers.getBySignal(signalId)),
-    restart: (searchId: string) => 
-      apiClient.post(endpoints.decisionMakers.restart(searchId)),
+    restart: (searchId: string, customGuidance?: string) => 
+      apiClient.post(endpoints.decisionMakers.restart(searchId), customGuidance ? { custom_guidance: customGuidance } : {}),
   },
 
   // Email Finder (Copied from Decision Makers pattern)

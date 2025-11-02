@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { X, Search, CheckCircle, Users, Loader2, AlertCircle, ExternalLink, UserPlus, UserMinus, Check, Upload, FileSpreadsheet } from 'lucide-react'
 import { useDecisionMakers } from '../../hooks/useDecisionMakers'
 import { useContacts } from '../../hooks/useContacts'
@@ -72,8 +72,11 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
   const [isUploadingCSV, setIsUploadingCSV] = useState(false)
   const [csvPreviewData, setCsvPreviewData] = useState<any[] | null>(null)
   const [csvError, setCsvError] = useState<string | null>(null)
+  const [isRestartingSearch, setIsRestartingSearch] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const linkedinPollIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const contactsAutoRefreshIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const contactsAutoRefreshTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   
   // Use the decision makers hook
   const {
@@ -171,10 +174,57 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
     }
   }, [])
 
+  const startContactsAutoRefresh = useCallback(() => {
+    if (contactsAutoRefreshIntervalRef.current) {
+      clearInterval(contactsAutoRefreshIntervalRef.current)
+      contactsAutoRefreshIntervalRef.current = null
+    }
+    if (contactsAutoRefreshTimeoutRef.current) {
+      clearTimeout(contactsAutoRefreshTimeoutRef.current)
+      contactsAutoRefreshTimeoutRef.current = null
+    }
+
+    refetchContacts().catch(err => {
+      console.error('Failed to auto-refresh contacts immediately:', err)
+    })
+
+    contactsAutoRefreshIntervalRef.current = setInterval(() => {
+      refetchContacts().catch(err => {
+        console.error('Failed to auto-refresh contacts during interval:', err)
+      })
+    }, 30000)
+
+    contactsAutoRefreshTimeoutRef.current = setTimeout(() => {
+      if (contactsAutoRefreshIntervalRef.current) {
+        clearInterval(contactsAutoRefreshIntervalRef.current)
+        contactsAutoRefreshIntervalRef.current = null
+      }
+      if (contactsAutoRefreshTimeoutRef.current) {
+        clearTimeout(contactsAutoRefreshTimeoutRef.current)
+        contactsAutoRefreshTimeoutRef.current = null
+      }
+    }, 5 * 60 * 1000)
+  }, [refetchContacts])
+
+  useEffect(() => {
+    return () => {
+      if (contactsAutoRefreshIntervalRef.current) {
+        clearInterval(contactsAutoRefreshIntervalRef.current)
+        contactsAutoRefreshIntervalRef.current = null
+      }
+      if (contactsAutoRefreshTimeoutRef.current) {
+        clearTimeout(contactsAutoRefreshTimeoutRef.current)
+        contactsAutoRefreshTimeoutRef.current = null
+      }
+    }
+  }, [])
+
   const handleStartSearch = async () => {
     const searchId = await startSearch(guidance)
     
     if (searchId) {
+      startContactsAutoRefresh()
+
       // Show success animation
       setShowSuccess(true)
       
@@ -501,6 +551,64 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
     }
   }
 
+  const handleRestartFailedSearch = async () => {
+    setIsRestartingSearch(true)
+
+    try {
+      const result = await restartSearch()
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to restart search')
+      }
+
+      startContactsAutoRefresh()
+    } catch (err) {
+      console.error('Failed to restart decision maker search:', err)
+      const message = err instanceof Error ? err.message : 'Failed to restart decision maker search'
+      alert(message)
+    } finally {
+      setIsRestartingSearch(false)
+    }
+  }
+
+  const handleFindDifferentDecisionMakers = async () => {
+    const guidanceInput = window.prompt(
+      'Describe the types of decision makers you want to prioritize (optional):',
+      guidance.trim() || 'CFO, VP Finance, Procurement Director'
+    )
+
+    if (guidanceInput === null) {
+      return
+    }
+
+    const trimmedGuidance = guidanceInput.trim()
+    const customGuidance = trimmedGuidance.length > 0 ? trimmedGuidance : undefined
+
+    setIsRestartingSearch(true)
+
+    try {
+      if (searchStatus?.search_id) {
+        const result = await restartSearch(customGuidance)
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to restart decision maker search')
+        }
+      } else {
+        const newSearchId = await startSearch(customGuidance)
+        if (!newSearchId) {
+          throw new Error('Failed to start decision maker search')
+        }
+      }
+
+      setGuidance(trimmedGuidance)
+      startContactsAutoRefresh()
+    } catch (err) {
+      console.error('Failed to find different decision makers:', err)
+      const message = err instanceof Error ? err.message : 'Failed to refresh decision maker search'
+      alert(message)
+    } finally {
+      setIsRestartingSearch(false)
+    }
+  }
+
   const handleClose = () => {
     setGuidance('')
     setShowSuccess(false)
@@ -516,6 +624,14 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
     if (linkedinPollIntervalRef.current) {
       clearInterval(linkedinPollIntervalRef.current)
       linkedinPollIntervalRef.current = null
+    }
+    if (contactsAutoRefreshIntervalRef.current) {
+      clearInterval(contactsAutoRefreshIntervalRef.current)
+      contactsAutoRefreshIntervalRef.current = null
+    }
+    if (contactsAutoRefreshTimeoutRef.current) {
+      clearTimeout(contactsAutoRefreshTimeoutRef.current)
+      contactsAutoRefreshTimeoutRef.current = null
     }
     onClose()
   }
@@ -758,7 +874,7 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
           {/* AI Search Results */}
           <div>
             <div className="mb-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">
                     {totalDMs} Decision Makers from AI Search
@@ -767,25 +883,44 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
                     {importedCount} imported • Ready for outreach at {companyName}
                   </p>
                 </div>
-                {canImportAll && (
+                <div className="flex items-center gap-2">
                   <button
-                    onClick={handleImportAll}
-                    disabled={importingAll}
-                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md transition-colors bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleFindDifferentDecisionMakers}
+                    disabled={isRestartingSearch || isSearchInProgress}
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md transition-colors bg-purple-100 text-purple-700 hover:bg-purple-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {importingAll ? (
+                    {isRestartingSearch || isSearchInProgress ? (
                       <>
                         <Loader2 className="w-3 h-3 animate-spin" />
-                        Importing...
+                        Refreshing...
                       </>
                     ) : (
                       <>
-                        <UserPlus className="w-3 h-3" />
-                        Import All
+                        <Users className="w-3 h-3" />
+                        Find Different Decision Makers
                       </>
                     )}
                   </button>
-                )}
+                  {canImportAll && (
+                    <button
+                      onClick={handleImportAll}
+                      disabled={importingAll}
+                      className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md transition-colors bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {importingAll ? (
+                        <>
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          Importing...
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus className="w-3 h-3" />
+                          Import All
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -864,10 +999,18 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
             {searchStatus?.error_message || error || 'Something went wrong while finding decision makers.'}
           </p>
           <button
-            onClick={restartSearch}
-            className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
+            onClick={handleRestartFailedSearch}
+            disabled={isRestartingSearch}
+            className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Try Again
+            {isRestartingSearch ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Refreshing...
+              </>
+            ) : (
+              'Try Again'
+            )}
           </button>
         </div>
       )
