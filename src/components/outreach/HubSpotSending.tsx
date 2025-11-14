@@ -59,6 +59,8 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
     imported: boolean
     hubspot_company_id: string | null
     imported_at: string | null
+    company_name?: string
+    reason?: string
   }>({
     imported: false,
     hubspot_company_id: null,
@@ -70,7 +72,9 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
     imported: boolean
     import_id: string | null
     contacts_count: number
+    total_contacts?: number
     imported_at: string | null
+    message?: string
   }>({
     imported: false,
     import_id: null,
@@ -290,15 +294,18 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
 
   const checkCompanyImportStatus = async () => {
     if (!signalId) return
-    
+
     try {
       const response = await api.settings.getCompanyImportStatus(signalId)
       if (response.data && typeof response.data === 'object') {
         const data = response.data as any
+        console.log('[HubSpot] Company status:', data)
         setCompanyImportStatus({
           imported: data.imported || false,
           hubspot_company_id: data.hubspot_company_id || null,
-          imported_at: data.imported_at || null
+          imported_at: data.imported_at || null,
+          company_name: data.company_name || null,
+          reason: data.reason || null
         })
       }
     } catch (error) {
@@ -308,16 +315,19 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
 
   const checkContactImportStatus = async () => {
     if (!signalId) return
-    
+
     try {
       const response = await api.settings.getContactsImportStatus(signalId)
       if (response.data && typeof response.data === 'object') {
         const data = response.data as any
+        console.log('[HubSpot] Contacts status:', data)
         setContactImportStatus({
           imported: data.imported || false,
           import_id: data.import_id || null,
           contacts_count: data.contacts_count || 0,
-          imported_at: data.imported_at || null
+          total_contacts: data.total_contacts || null,
+          imported_at: data.imported_at || null,
+          message: data.message || null
         })
       }
     } catch (error) {
@@ -560,7 +570,11 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
                         ? 'bg-green-500 text-white'
                         : 'bg-orange-500 hover:bg-orange-600 text-white'
                     }`}
-                    title={companyImportStatus.imported ? "Company Imported" : "Import Company"}
+                    title={
+                      companyImportStatus.imported
+                        ? `Company already in HubSpot${companyImportStatus.company_name ? `: ${companyImportStatus.company_name}` : ''}`
+                        : "Import Company to HubSpot"
+                    }
                   >
                     {companyImportStatus.imported ? (
                       <CheckCircle className="w-3 h-3" />
@@ -580,10 +594,12 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
                     title={
-                      contactImportStatus.imported 
-                        ? `${contactImportStatus.contacts_count} Contacts Imported`
+                      contactImportStatus.imported
+                        ? contactImportStatus.total_contacts && contactImportStatus.contacts_count < contactImportStatus.total_contacts
+                          ? `${contactImportStatus.contacts_count} of ${contactImportStatus.total_contacts} contacts already in HubSpot`
+                          : `${contactImportStatus.contacts_count} contacts already in HubSpot`
                         : companyImportStatus.imported
-                        ? "Import Contacts"
+                        ? "Import Contacts to HubSpot"
                         : "Import Company First"
                     }
                   >
