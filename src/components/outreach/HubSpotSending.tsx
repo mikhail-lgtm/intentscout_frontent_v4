@@ -449,7 +449,7 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
         ) : (
           <>
             {/* Token Expiration Warning */}
-            {connectionStatus === 'token_expired' && (
+            {hubspotConfig.connection_status === 'token_expired' && (
               <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
                 <div className="flex items-start gap-2">
                   <span className="text-yellow-600 text-sm">⚠</span>
