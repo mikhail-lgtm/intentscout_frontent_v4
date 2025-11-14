@@ -7,6 +7,7 @@ interface ContactImportPopupProps {
   onClose: () => void
   signalId: string
   onImportSuccess: () => void
+  senderEmail: string
 }
 
 interface ContactData {
@@ -56,7 +57,8 @@ export const ContactImportPopup: React.FC<ContactImportPopupProps> = ({
   isOpen,
   onClose,
   signalId,
-  onImportSuccess
+  onImportSuccess,
+  senderEmail
 }) => {
   const [contactsData, setContactsData] = useState<MappedContact[]>([])
   const [editedContacts, setEditedContacts] = useState<MappedContact[]>([])
@@ -98,7 +100,8 @@ export const ContactImportPopup: React.FC<ContactImportPopupProps> = ({
     
     try {
       const response = await api.settings.importContacts(signalId, {
-        contacts: editedContacts
+        contacts: editedContacts,
+        sender_email: senderEmail
       })
       if (response.data && typeof response.data === 'object') {
         const data = response.data as any

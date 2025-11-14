@@ -646,6 +646,7 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
           isOpen={showCompanyImportPopup}
           onClose={() => setShowCompanyImportPopup(false)}
           signalId={signalId}
+          senderEmail={senderEmail}
           onImportSuccess={handleCompanyImportSuccess}
         />
       )}
@@ -656,6 +657,7 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
           isOpen={showContactImportPopup}
           onClose={() => setShowContactImportPopup(false)}
           signalId={signalId}
+          senderEmail={senderEmail}
           onImportSuccess={handleContactImportSuccess}
         />
       )}

@@ -7,6 +7,7 @@ interface CompanyImportPopupProps {
   onClose: () => void
   signalId: string
   onImportSuccess: () => void
+  senderEmail: string
 }
 
 interface CompanyData {
@@ -39,7 +40,8 @@ export const CompanyImportPopup: React.FC<CompanyImportPopupProps> = ({
   isOpen,
   onClose,
   signalId,
-  onImportSuccess
+  onImportSuccess,
+  senderEmail
 }) => {
   const [companyData, setCompanyData] = useState<CompanyData | null>(null)
   const [hubspotProperties, setHubspotProperties] = useState<HubSpotProperties | null>(null)
@@ -81,7 +83,8 @@ export const CompanyImportPopup: React.FC<CompanyImportPopupProps> = ({
     
     try {
       const response = await api.settings.importCompany(signalId, {
-        properties: editedProperties
+        properties: editedProperties,
+        sender_email: senderEmail
       })
       if (response.data && typeof response.data === 'object') {
         const data = response.data as any
