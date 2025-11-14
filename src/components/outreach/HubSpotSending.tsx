@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Settings, Wifi, WifiOff, Search, X, ExternalLink, Building, Users, CheckCircle, Loader2 } from 'lucide-react'
+import { Settings, Wifi, WifiOff, Search, X, ExternalLink, Building, Users, CheckCircle, Loader2, Mail } from 'lucide-react'
 import { api } from '../../lib/apiClient'
 import { CompanyImportPopup } from './CompanyImportPopup'
 import { ContactImportPopup } from './ContactImportPopup'
@@ -78,6 +78,23 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
     imported_at: null
   })
 
+  // Email sync status
+  const [emailSyncStatus, setEmailSyncStatus] = useState<{
+    synced: boolean
+    contacts_synced: number
+    contacts_created: number
+    contacts_updated: number
+    synced_at: string | null
+  }>({
+    synced: false,
+    contacts_synced: 0,
+    contacts_created: 0,
+    contacts_updated: 0,
+    synced_at: null
+  })
+
+  const [isSyncingEmails, setIsSyncingEmails] = useState(false)
+
   // Search
   const [sequenceSearch, setSequenceSearch] = useState('')
 
@@ -138,13 +155,26 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
       
       // Check HubSpot connection status
       const statusResponse = await api.hubspot.getStatus()
-      
+
       let connectionStatus = 'disconnected'
       let isConnected = false
-      
+
       if (statusResponse.data && typeof statusResponse.data === 'object' && 'connected' in statusResponse.data) {
-        isConnected = (statusResponse.data as any).connected
-        connectionStatus = isConnected ? 'connected' : 'disconnected'
+        const data = statusResponse.data as any
+        isConnected = data.connected
+
+        // Check if token is valid
+        if (isConnected && data.token_valid === false) {
+          connectionStatus = 'token_expired'
+          console.warn('HubSpot token expired:', data.warning)
+        } else if (isConnected && data.token_valid === true) {
+          connectionStatus = 'connected'
+        } else if (isConnected) {
+          // Connected but token validity unknown
+          connectionStatus = 'connected'
+        } else {
+          connectionStatus = 'disconnected'
+        }
       }
       
       // Get signal-specific settings
@@ -321,10 +351,10 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
 
   const handleSequenceEnrollment = async () => {
     if (!signalId || !selectedSequence || !senderEmail || !contactImportStatus.imported) return
-    
+
     try {
       setIsEnrollingInSequence(true)
-      
+
       // For now, we'll assume all imported contacts should be enrolled
       // In a more sophisticated implementation, we might let users select specific contacts
       const response = await api.settings.enrollContactsInSequence(signalId, {
@@ -332,7 +362,7 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
         sender_email: senderEmail,
         contact_ids: [] // Empty array means enroll all contacts from the import
       })
-      
+
       if (response.data) {
         console.log('Enrollment successful:', response.data)
         // Could show success notification here
@@ -342,6 +372,34 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
       // Could show error notification here
     } finally {
       setIsEnrollingInSequence(false)
+    }
+  }
+
+  const handleEmailSync = async () => {
+    if (!signalId) return
+
+    try {
+      setIsSyncingEmails(true)
+
+      const response = await api.emails.syncToHubSpot(signalId)
+
+      if (response.data && typeof response.data === 'object') {
+        const data = response.data as any
+        if (data.success) {
+          setEmailSyncStatus({
+            synced: true,
+            contacts_synced: data.contacts_synced || 0,
+            contacts_created: data.contacts_created || 0,
+            contacts_updated: data.contacts_updated || 0,
+            synced_at: new Date().toISOString()
+          })
+          console.log('Email sync successful:', data)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to sync emails to HubSpot:', error)
+    } finally {
+      setIsSyncingEmails(false)
     }
   }
 
@@ -390,6 +448,29 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
           </div>
         ) : (
           <>
+            {/* Token Expiration Warning */}
+            {connectionStatus === 'token_expired' && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
+                <div className="flex items-start gap-2">
+                  <span className="text-yellow-600 text-sm">⚠</span>
+                  <div className="flex-1">
+                    <div className="text-xs font-medium text-yellow-900 mb-1">
+                      Access Token Expired
+                    </div>
+                    <div className="text-xs text-yellow-800 mb-2">
+                      Your HubSpot connection token has expired. Please reconnect to continue sending.
+                    </div>
+                    <button
+                      onClick={() => window.open('/settings', '_blank')}
+                      className="px-3 py-1 bg-yellow-600 text-white rounded text-xs hover:bg-yellow-700"
+                    >
+                      Reconnect HubSpot
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Sender Email */}
             <div>
               <label className="text-xs font-medium text-gray-700 block mb-1">
@@ -565,6 +646,54 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
                     <span className="hidden sm:inline">3</span>
                   </button>
                 </div>
+              </div>
+            )}
+
+            {/* Email Sync Section */}
+            {isFullyConfigured && (
+              <div className="pt-3 border-t border-gray-200">
+                <div className="text-xs font-medium text-gray-700 mb-2">
+                  Sync Generated Emails
+                </div>
+
+                {emailSyncStatus.synced ? (
+                  <div className="bg-green-50 border border-green-200 rounded p-2 mb-2">
+                    <div className="flex items-center gap-2 mb-1">
+                      <CheckCircle className="w-3 h-3 text-green-600" />
+                      <span className="text-xs font-medium text-green-900">
+                        {emailSyncStatus.contacts_synced} contacts synced to HubSpot
+                      </span>
+                    </div>
+                    <div className="text-xs text-green-700">
+                      {emailSyncStatus.contacts_created} created, {emailSyncStatus.contacts_updated} updated
+                    </div>
+                  </div>
+                ) : null}
+
+                <button
+                  onClick={handleEmailSync}
+                  disabled={isSyncingEmails}
+                  className={`w-full px-3 py-2 rounded text-xs font-medium flex items-center justify-center gap-2 ${
+                    isSyncingEmails
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : emailSyncStatus.synced
+                      ? 'bg-blue-500 hover:bg-blue-600 text-white'
+                      : 'bg-orange-500 hover:bg-orange-600 text-white'
+                  }`}
+                  title="Sync generated emails to HubSpot contacts"
+                >
+                  {isSyncingEmails ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Syncing Emails...
+                    </>
+                  ) : (
+                    <>
+                      <Mail className="w-4 h-4" />
+                      {emailSyncStatus.synced ? 'Sync Again' : 'Sync Emails to HubSpot'}
+                    </>
+                  )}
+                </button>
               </div>
             )}
           </>
