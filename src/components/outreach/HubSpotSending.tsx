@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Settings, Wifi, WifiOff, Search, X, ExternalLink, Building, Users, CheckCircle, Loader2, Mail } from 'lucide-react'
+import { Settings, Wifi, WifiOff, Search, X, ExternalLink, Building, Users, CheckCircle, Loader2 } from 'lucide-react'
 import { api } from '../../lib/apiClient'
 import { CompanyImportPopup } from './CompanyImportPopup'
 import { ContactImportPopup } from './ContactImportPopup'
@@ -77,23 +77,6 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
     contacts_count: 0,
     imported_at: null
   })
-
-  // Email sync status
-  const [emailSyncStatus, setEmailSyncStatus] = useState<{
-    synced: boolean
-    contacts_synced: number
-    contacts_created: number
-    contacts_updated: number
-    synced_at: string | null
-  }>({
-    synced: false,
-    contacts_synced: 0,
-    contacts_created: 0,
-    contacts_updated: 0,
-    synced_at: null
-  })
-
-  const [isSyncingEmails, setIsSyncingEmails] = useState(false)
 
   // Search
   const [sequenceSearch, setSequenceSearch] = useState('')
@@ -375,34 +358,6 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
     }
   }
 
-  const handleEmailSync = async () => {
-    if (!signalId) return
-
-    try {
-      setIsSyncingEmails(true)
-
-      const response = await api.emails.syncToHubSpot(signalId)
-
-      if (response.data && typeof response.data === 'object') {
-        const data = response.data as any
-        if (data.success) {
-          setEmailSyncStatus({
-            synced: true,
-            contacts_synced: data.contacts_synced || 0,
-            contacts_created: data.contacts_created || 0,
-            contacts_updated: data.contacts_updated || 0,
-            synced_at: new Date().toISOString()
-          })
-          console.log('Email sync successful:', data)
-        }
-      }
-    } catch (error) {
-      console.error('Failed to sync emails to HubSpot:', error)
-    } finally {
-      setIsSyncingEmails(false)
-    }
-  }
-
   const isFullyConfigured = hubspotConfig.is_connected && senderEmail && selectedSequence
   const canSaveConfig = senderEmail && selectedSequence && !isSavingConfig
 
@@ -646,54 +601,6 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
                     <span className="hidden sm:inline">3</span>
                   </button>
                 </div>
-              </div>
-            )}
-
-            {/* Email Sync Section */}
-            {isFullyConfigured && (
-              <div className="pt-3 border-t border-gray-200">
-                <div className="text-xs font-medium text-gray-700 mb-2">
-                  Sync Generated Emails
-                </div>
-
-                {emailSyncStatus.synced ? (
-                  <div className="bg-green-50 border border-green-200 rounded p-2 mb-2">
-                    <div className="flex items-center gap-2 mb-1">
-                      <CheckCircle className="w-3 h-3 text-green-600" />
-                      <span className="text-xs font-medium text-green-900">
-                        {emailSyncStatus.contacts_synced} contacts synced to HubSpot
-                      </span>
-                    </div>
-                    <div className="text-xs text-green-700">
-                      {emailSyncStatus.contacts_created} created, {emailSyncStatus.contacts_updated} updated
-                    </div>
-                  </div>
-                ) : null}
-
-                <button
-                  onClick={handleEmailSync}
-                  disabled={isSyncingEmails}
-                  className={`w-full px-3 py-2 rounded text-xs font-medium flex items-center justify-center gap-2 ${
-                    isSyncingEmails
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : emailSyncStatus.synced
-                      ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                      : 'bg-orange-500 hover:bg-orange-600 text-white'
-                  }`}
-                  title="Sync generated emails to HubSpot contacts"
-                >
-                  {isSyncingEmails ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Syncing Emails...
-                    </>
-                  ) : (
-                    <>
-                      <Mail className="w-4 h-4" />
-                      {emailSyncStatus.synced ? 'Sync Again' : 'Sync Emails to HubSpot'}
-                    </>
-                  )}
-                </button>
               </div>
             )}
           </>

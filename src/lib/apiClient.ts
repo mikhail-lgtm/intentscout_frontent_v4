@@ -573,10 +573,6 @@ export const api = {
       body_prompt: string;
       data_sources?: any[];
     }) => apiClient.postWithTimeout('/emails/regenerate-bulk', data, 180000), // 3 minutes timeout for bulk
-    syncToHubSpot: (signalId: string) =>
-      apiClient.post(`/emails/sync-to-hubspot/${signalId}`, {}),
-    getHubSpotSyncedEmails: (signalId?: string) =>
-      apiClient.get(`/emails/hubspot-synced-emails${signalId ? `?signal_id=${signalId}` : ''}`),
   },
 
   // Signal Notes
