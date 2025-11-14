@@ -70,7 +70,6 @@ export const ProductSelector = ({ value, onChange }: Props) => {
     // Special cases for known products
     const specialCases: Record<string, string> = {
       'xr_vr': 'XR/VR',
-      'metaverse': 'XR/VR',  // Display old metaverse as XR/VR
       'b2b': 'B2B'
     }
 
