@@ -102,6 +102,17 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
     }
   }, [signalId, hubspotConfig.is_connected])
 
+  // Auto-select sequence when both config and sequences are loaded
+  useEffect(() => {
+    if (hubspotConfig.selected_sequence_id && availableSequences.length > 0 && !selectedSequence) {
+      const sequence = availableSequences.find(s => s.id === hubspotConfig.selected_sequence_id)
+      if (sequence) {
+        console.log('Auto-selecting sequence:', sequence.name)
+        setSelectedSequence(sequence)
+      }
+    }
+  }, [hubspotConfig.selected_sequence_id, availableSequences, selectedSequence])
+
   // Client-side filtering
   const filteredSequences = availableSequences.filter(seq =>
     seq.name.toLowerCase().includes(sequenceSearch.toLowerCase())
@@ -318,18 +329,24 @@ export const HubSpotSending = ({ signalId, companyName, onConfigurationChange }:
     setShowCompanyImportPopup(true)
   }
 
-  const handleCompanyImportSuccess = () => {
-    // Refresh import status after successful import
-    checkCompanyImportStatus()
+  const handleCompanyImportSuccess = async () => {
+    console.log('[HubSpot] Company imported successfully, refreshing status...')
+    // Small delay to ensure backend has saved the status
+    await new Promise(resolve => setTimeout(resolve, 500))
+    await checkCompanyImportStatus()
+    console.log('[HubSpot] Company import status refreshed')
   }
 
   const handleContactImport = () => {
     setShowContactImportPopup(true)
   }
 
-  const handleContactImportSuccess = () => {
-    // Refresh import status after successful import
-    checkContactImportStatus()
+  const handleContactImportSuccess = async () => {
+    console.log('[HubSpot] Contacts imported successfully, refreshing status...')
+    // Small delay to ensure backend has saved the status
+    await new Promise(resolve => setTimeout(resolve, 500))
+    await checkContactImportStatus()
+    console.log('[HubSpot] Contact import status refreshed')
   }
 
   const handleSequenceEnrollment = async () => {
