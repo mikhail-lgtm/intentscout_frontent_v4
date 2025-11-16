@@ -524,13 +524,13 @@ export const api = {
       }),
     previewCompany: (signalId: string) =>
       apiClient.get(endpoints.settings.previewCompany(signalId)),
-    importCompany: (signalId: string, data: { properties: Record<string, string> }) =>
+    importCompany: (signalId: string, data: { properties: Record<string, string>; sender_email: string }) =>
       apiClient.post(endpoints.settings.importCompany(signalId), data),
     getCompanyImportStatus: (signalId: string) =>
       apiClient.get(endpoints.settings.companyImportStatus(signalId)),
     previewContacts: (signalId: string) =>
       apiClient.get(endpoints.settings.previewContacts(signalId)),
-    importContacts: (signalId: string, data: { contacts: any[] }) =>
+    importContacts: (signalId: string, data: { contacts: any[]; sender_email: string }) =>
       apiClient.post(endpoints.settings.importContacts(signalId), data),
     getContactsImportStatus: (signalId: string) =>
       apiClient.get(endpoints.settings.contactsImportStatus(signalId)),
