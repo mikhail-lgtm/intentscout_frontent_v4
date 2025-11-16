@@ -79,33 +79,9 @@ export const OrganizationSelector = () => {
     )
   }
 
-  if (organizations.length === 0) {
-    return (
-      <div className="text-sm text-gray-500">
-        No organizations found
-      </div>
-    )
-  }
-
-  if (organizations.length === 1) {
-    // Only one organization - no need for switcher
-    return (
-      <div>
-        <p className="text-sm text-gray-600 mb-2">Current Organization</p>
-        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-          {currentOrg?.logoUrl ? (
-            <img
-              src={currentOrg.logoUrl}
-              alt={currentOrg.name}
-              className="w-8 h-8 rounded object-cover"
-            />
-          ) : (
-            <Building2 className="w-8 h-8 text-gray-400" />
-          )}
-          <span className="font-medium text-gray-900">{currentOrg?.name}</span>
-        </div>
-      </div>
-    )
+  // Don't show this module if user has 0 or 1 organizations
+  if (organizations.length <= 1) {
+    return null
   }
 
   return (
