@@ -56,6 +56,10 @@ export const OrganizationSelector = () => {
     localStorage.setItem('currentOrganizationId', orgId)
     console.log('[OrganizationSelector] Saved to localStorage:', localStorage.getItem('currentOrganizationId'))
 
+    // Clear organization cache to force refresh
+    localStorage.removeItem('intentscout_organization')
+    console.log('[OrganizationSelector] Cleared organization cache')
+
     // Small delay to ensure localStorage is written
     await new Promise(resolve => setTimeout(resolve, 100))
 
