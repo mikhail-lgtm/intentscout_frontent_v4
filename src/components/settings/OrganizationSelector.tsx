@@ -49,10 +49,18 @@ export const OrganizationSelector = () => {
 
     setSwitching(true)
 
+    const org = organizations.find(o => o.id === orgId)
+    console.log('[OrganizationSelector] Switching to:', org?.name, orgId)
+
     // Save to localStorage
     localStorage.setItem('currentOrganizationId', orgId)
+    console.log('[OrganizationSelector] Saved to localStorage:', localStorage.getItem('currentOrganizationId'))
+
+    // Small delay to ensure localStorage is written
+    await new Promise(resolve => setTimeout(resolve, 100))
 
     // Reload page to refresh all data
+    console.log('[OrganizationSelector] Reloading page...')
     window.location.reload()
   }
 

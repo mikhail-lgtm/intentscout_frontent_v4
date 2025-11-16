@@ -144,6 +144,13 @@ class ApiClient {
       const currentOrgId = localStorage.getItem('currentOrganizationId')
       if (currentOrgId) {
         requestHeaders['X-Organization-Id'] = currentOrgId
+        if (config.features.enableDebugLogs) {
+          console.log('[API] Using Organization ID:', currentOrgId)
+        }
+      } else {
+        if (config.features.enableDebugLogs) {
+          console.log('[API] No Organization ID in localStorage')
+        }
       }
 
       // Create abort controller for timeout
