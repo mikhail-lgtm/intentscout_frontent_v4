@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import { useOrganizationMembers } from '../../hooks/useOrganizationMembers'
 import { useHubSpot } from '../../hooks/useHubSpot'
+import { OrganizationSelector } from './OrganizationSelector'
 
 export const SettingsPage = () => {
   const { user, organization } = useAuth()
@@ -44,11 +45,18 @@ export const SettingsPage = () => {
         {/* Organization Section */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Organization</h3>
-          
+
+          {/* Organization Selector */}
+          <div className="mb-6">
+            <OrganizationSelector />
+          </div>
+
+          <div className="border-t border-gray-200 pt-6 mb-6"></div>
+
           <div className="flex items-center gap-4 mb-4">
             {organization?.logoUrl && (
-              <img 
-                src={organization.logoUrl} 
+              <img
+                src={organization.logoUrl}
                 alt={organization.name}
                 className="w-12 h-12 rounded-lg object-cover"
               />

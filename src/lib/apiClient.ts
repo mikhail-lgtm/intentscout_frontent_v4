@@ -140,6 +140,12 @@ class ApiClient {
         requestHeaders['Authorization'] = `Bearer ${token}`
       }
 
+      // Add organization ID header if set
+      const currentOrgId = localStorage.getItem('currentOrganizationId')
+      if (currentOrgId) {
+        requestHeaders['X-Organization-Id'] = currentOrgId
+      }
+
       // Create abort controller for timeout
       const controller = createManagedAbortController()
       const timeoutId = setTimeout(() => controller.abort(), timeout)
@@ -312,10 +318,17 @@ export const api = {
     me: () => apiClient.get(endpoints.auth.me),
   },
   
-  // Organization  
+  // Organization
   organization: {
     current: () => apiClient.get(endpoints.organization.current),
     members: () => apiClient.get(endpoints.organization.members),
+  },
+
+  // Organizations (Multi-org)
+  organizations: {
+    getMyOrganizations: () => apiClient.get('/organizations/me'),
+    getStats: (organizationId: string) => apiClient.get(`/organizations/${organizationId}/stats`),
+    verifyAccess: (organizationId: string) => apiClient.get(`/organizations/${organizationId}/verify-access`),
   },
   
   // Signals
