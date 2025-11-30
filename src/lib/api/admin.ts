@@ -80,6 +80,26 @@ export const adminApi = {
     intentspy: (limit = 100) =>
       apiClient.get(`/admin/intentspy/logs/recent?limit=${limit}`),
   },
+  pipeline: {
+    status: () =>
+      apiClient.get('/admin/pipeline/status'),
+    start: (params: {
+      organization?: string
+      skip_scraping?: boolean
+      skip_embedding?: boolean
+      limit?: number
+      continue_on_fail?: boolean
+    }) =>
+      apiClient.post('/admin/pipeline/start', params),
+    stop: () =>
+      apiClient.post('/admin/pipeline/stop', {}),
+    runs: (limit = 20) =>
+      apiClient.get(`/admin/pipeline/runs?limit=${limit}`),
+    runLogs: (runId: string, limit = 500) =>
+      apiClient.get(`/admin/pipeline/runs/${runId}/logs?limit=${limit}`),
+    output: (lines = 100) =>
+      apiClient.get(`/admin/pipeline/output?lines=${lines}`),
+  },
 }
 
 export type {

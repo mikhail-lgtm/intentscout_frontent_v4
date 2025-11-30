@@ -5,6 +5,7 @@ import type { AdminProfile } from '../../types/admin'
 
 const navItems = [
   { to: '/admin', label: 'Dashboard', end: true },
+  { to: '/admin/pipeline', label: 'Pipeline' },
   { to: '/admin/users', label: 'Users' },
   { to: '/admin/logs', label: 'Logs' },
   { to: '/admin/system', label: 'System Health' },
