@@ -47,6 +47,11 @@ export const PipelinePage = () => {
   const [testMode, setTestMode] = useState(false)
   const [limit, setLimit] = useState(50)
 
+  // Logs viewer state
+  const [selectedRunId, setSelectedRunId] = useState<string | null>(null)
+  const [runLogs, setRunLogs] = useState<{ timestamp: string; line: string }[]>([])
+  const [logsLoading, setLogsLoading] = useState(false)
+
   const loadData = useCallback(async () => {
     setError(null)
     try {
@@ -114,6 +119,21 @@ export const PipelinePage = () => {
       setError(e instanceof Error ? e.message : 'Failed to stop pipeline')
     } finally {
       setActionLoading(false)
+    }
+  }
+
+  const loadRunLogs = async (runId: string) => {
+    setLogsLoading(true)
+    setSelectedRunId(runId)
+    try {
+      const res = await adminApi.pipeline.runLogs(runId, 1000)
+      if (res.data) {
+        setRunLogs(res.data as { timestamp: string; line: string }[])
+      }
+    } catch (e) {
+      console.error('Failed to load logs:', e)
+    } finally {
+      setLogsLoading(false)
     }
   }
 
@@ -282,14 +302,22 @@ export const PipelinePage = () => {
       {/* Recent Output */}
       {status?.recent_output && status.recent_output.length > 0 && (
         <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="px-4 py-3 border-b border-slate-200 bg-slate-50">
+          <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
             <h4 className="text-sm font-semibold text-slate-900">Live Output</h4>
+            <span className="text-xs text-slate-500">{status.recent_output.length} lines</span>
           </div>
-          <div className="p-4 max-h-64 overflow-y-auto font-mono text-xs bg-slate-900 text-slate-100 rounded-b-xl">
+          <div className="p-4 max-h-[500px] overflow-y-auto font-mono text-xs bg-slate-900 text-slate-100 rounded-b-xl">
             {status.recent_output.map((line, i) => (
-              <div key={i} className="py-0.5">{line}</div>
+              <div key={i} className={`py-0.5 ${line.includes('ERROR') ? 'text-red-400' : line.includes('WARNING') ? 'text-yellow-400' : line.includes('Step') ? 'text-green-400 font-bold' : ''}`}>{line}</div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Show message when no output */}
+      {status?.status === 'running' && (!status?.recent_output || status.recent_output.length === 0) && (
+        <div className="rounded-xl border border-slate-200 bg-white shadow-sm p-4 text-center text-slate-500">
+          Waiting for output...
         </div>
       )}
 
@@ -320,21 +348,77 @@ export const PipelinePage = () => {
                     {run.organization} | {new Date(run.started_at).toLocaleString()}
                   </p>
                 </div>
-                <div className="text-right text-xs text-slate-500">
-                  {run.finished_at ? (
-                    <>
-                      <p>Finished: {new Date(run.finished_at).toLocaleString()}</p>
-                      {run.exit_code !== null && <p>Exit code: {run.exit_code}</p>}
-                    </>
-                  ) : (
-                    <p>In progress...</p>
-                  )}
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => { void loadRunLogs(run.run_id) }}
+                    className="text-xs text-orange-600 hover:text-orange-700 font-medium"
+                  >
+                    View Logs
+                  </button>
+                  <div className="text-right text-xs text-slate-500">
+                    {run.finished_at ? (
+                      <>
+                        <p>Finished: {new Date(run.finished_at).toLocaleString()}</p>
+                        {run.exit_code !== null && <p>Exit code: {run.exit_code}</p>}
+                      </>
+                    ) : (
+                      <p>In progress...</p>
+                    )}
+                  </div>
                 </div>
               </div>
             ))
           )}
         </div>
       </div>
+
+      {/* Logs Modal */}
+      {selectedRunId && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[80vh] flex flex-col">
+            <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-slate-900">Pipeline Logs</h3>
+                <p className="text-xs text-slate-500">Run: {selectedRunId}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setSelectedRunId(null); setRunLogs([]) }}
+                className="text-slate-400 hover:text-slate-600 text-xl font-bold"
+              >
+                x
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 bg-slate-900">
+              {logsLoading ? (
+                <div className="text-center text-slate-400 py-8">Loading logs...</div>
+              ) : runLogs.length === 0 ? (
+                <div className="text-center text-slate-400 py-8">No logs found for this run</div>
+              ) : (
+                <div className="font-mono text-xs text-slate-100 space-y-0.5">
+                  {runLogs.map((log, i) => (
+                    <div key={i} className={`${log.line.includes('ERROR') ? 'text-red-400' : log.line.includes('WARNING') ? 'text-yellow-400' : log.line.includes('Step') ? 'text-green-400 font-bold' : ''}`}>
+                      <span className="text-slate-500 mr-2">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                      {log.line}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="px-4 py-3 border-t border-slate-200 text-right">
+              <span className="text-xs text-slate-500 mr-4">{runLogs.length} lines</span>
+              <button
+                type="button"
+                onClick={() => { setSelectedRunId(null); setRunLogs([]) }}
+                className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
