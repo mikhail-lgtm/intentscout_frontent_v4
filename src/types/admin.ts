@@ -147,3 +147,130 @@ export interface SystemHealthResponse {
   supabase: SystemHealthStatus
   intentspy: { status: string; detail?: string }
 }
+
+// Cost Tracking Types
+
+export interface CostByDayEntry {
+  _id: string
+  total_cost: number
+  total_requests: number
+  total_tokens: number
+}
+
+export interface CostByProviderEntry {
+  _id: string
+  total_cost: number
+  total_requests: number
+  total_tokens: number
+}
+
+export interface CostByServiceEntry {
+  _id: {
+    service: string
+    operation: string
+  }
+  total_cost: number
+  total_requests: number
+  avg_tokens: number
+}
+
+export interface CostByModelEntry {
+  _id: string
+  total_cost: number
+  total_requests: number
+  total_tokens: number
+  avg_tokens_per_request: number
+}
+
+export interface CostByOrganizationEntry {
+  _id: string | null
+  total_cost: number
+  total_requests: number
+  services_used: string[]
+}
+
+export interface CostByUserEntry {
+  _id: string
+  organization_id: string | null
+  total_cost: number
+  total_requests: number
+  services_used: string[]
+}
+
+export interface CostSummaryResponse {
+  period_days: number
+  total_api_cost_usd: number
+  total_manual_cost_usd: number
+  total_cost_usd: number
+  by_day: CostByDayEntry[]
+  by_provider: CostByProviderEntry[]
+  by_service: CostByServiceEntry[]
+  by_model: CostByModelEntry[]
+}
+
+export interface UsageLogEntry {
+  _id: string
+  timestamp: string
+  provider: string
+  service: string
+  operation: string
+  model?: string | null
+  organization_id?: string | null
+  user_id?: string | null
+  tokens?: {
+    prompt_tokens?: number
+    completion_tokens?: number
+    total_tokens?: number
+  } | null
+  request_count: number
+  cost: {
+    calculated_usd: number
+    pricing_version?: string
+  }
+  metadata: Record<string, unknown>
+}
+
+export interface ManualExpense {
+  _id: string
+  date: string
+  category: string
+  provider: string
+  description: string
+  amount_usd: number
+  recurring: boolean
+  recurring_period?: string | null
+  created_by: string
+  created_at: string
+}
+
+export interface ManualExpenseRequest {
+  date: string
+  category: string
+  provider: string
+  description: string
+  amount_usd: number
+  recurring: boolean
+  recurring_period?: string | null
+}
+
+export interface OpenRouterCreditsResponse {
+  credits: number
+  credits_used: number
+  credits_remaining: number
+  usage_today: number
+  error?: string | null
+}
+
+export interface OpenAICostsResponse {
+  costs: Record<string, unknown>[]
+  total_usd: number
+  error?: string | null
+}
+
+export interface BillingSnapshotResponse {
+  snapshot_id: string
+  timestamp: string
+  openrouter: OpenRouterCreditsResponse
+  openai: OpenAICostsResponse
+  total_balance_usd: number
+}
