@@ -26,7 +26,7 @@ export const useBlockedCompanies = () => {
         throw new Error(response.error)
       }
 
-      setBlockedCompanies(response.data || [])
+      setBlockedCompanies(Array.isArray(response.data) ? response.data : [])
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch blocked companies'
       setError(errorMessage)
