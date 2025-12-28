@@ -685,20 +685,20 @@ export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onRej
             </button>
           </div>
         </div>
-
-        {/* Block Company Button */}
-        {onBlockCompany && (
-          <div className="flex justify-center mt-4">
-            <button
-              onClick={handleBlockCompany}
-              className="flex items-center gap-2 px-4 py-2 text-sm text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            >
-              <Ban className="w-4 h-4" />
-              Block Company
-            </button>
-          </div>
-        )}
       </div>
+
+      {/* Block Company Button */}
+      {onBlockCompany && (
+        <div className="flex justify-center mt-4">
+          <button
+            onClick={handleBlockCompany}
+            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+          >
+            <Ban className="w-4 h-4" />
+            Block Company
+          </button>
+        </div>
+      )}
 
       </div>
 
