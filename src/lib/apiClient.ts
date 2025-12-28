@@ -377,9 +377,16 @@ export const api = {
       
       if (params.search) searchParams.append('search', params.search)
       if (params.date_filter) searchParams.append('date_filter', params.date_filter)
-      
+
       return apiClient.get(`/signals/approved?${searchParams.toString()}`)
     },
+    // Company blocking
+    blockCompany: (data: { companyId: string; companyName: string; reason?: string }) =>
+      apiClient.post('/signals/block-company', data),
+    unblockCompany: (companyId: string) =>
+      apiClient.post('/signals/unblock-company', { companyId }),
+    getBlockedCompanies: () =>
+      apiClient.get('/signals/blocked-companies'),
   },
   
   // Outreach

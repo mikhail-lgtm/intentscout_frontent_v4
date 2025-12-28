@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useOrganizationMembers } from '../../hooks/useOrganizationMembers'
 import { useHubSpot } from '../../hooks/useHubSpot'
 import { OrganizationSelector } from './OrganizationSelector'
+import { BlockedCompaniesSection } from './BlockedCompaniesSection'
 
 export const SettingsPage = () => {
   const { user, organization } = useAuth()
@@ -198,7 +199,7 @@ export const SettingsPage = () => {
         {hubspotStatus?.connected && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">HubSpot Configuration</h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -212,8 +213,8 @@ export const SettingsPage = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 />
               </div>
-              
-              <button 
+
+              <button
                 onClick={handleSaveConfig}
                 disabled={configLoading || !senderEmail}
                 className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -223,6 +224,9 @@ export const SettingsPage = () => {
             </div>
           </div>
         )}
+
+        {/* Blocked Companies Section */}
+        <BlockedCompaniesSection />
 
       </div>
     </div>

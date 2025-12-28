@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { TrendingUp, Building, Calendar, Users, ExternalLink, Linkedin, Briefcase, ChevronDown, ChevronUp, ThumbsUp, ThumbsDown, Minus } from 'lucide-react'
+import { TrendingUp, Building, Calendar, Users, ExternalLink, Linkedin, Briefcase, ChevronDown, ChevronUp, ThumbsUp, ThumbsDown, Minus, Ban } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { Signal } from '../../hooks/useSignals'
 import { api } from '../../lib/apiClient'
@@ -10,6 +10,7 @@ interface IntentCardProps {
   onApprove?: () => void
   onReject?: () => void
   onRemoveDecision?: () => void
+  onBlockCompany?: (companyId: string, companyName: string) => void
   isLoading?: boolean
 }
 
@@ -196,7 +197,7 @@ const JobCitationCard: React.FC<{ job: any; citationIndex: number; isExpanded: b
   )
 }
 
-export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onReject, onRemoveDecision, isLoading = false }) => {
+export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onReject, onRemoveDecision, onBlockCompany, isLoading = false }) => {
   const [expandedJobs, setExpandedJobs] = useState<Set<number>>(new Set())
   const [isUpdating, setIsUpdating] = useState(false)
   const [confirmationModal, setConfirmationModal] = useState<{
@@ -211,6 +212,15 @@ export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onRej
     message: '',
     action: () => {},
     variant: 'warning'
+  })
+  const [blockModal, setBlockModal] = useState<{
+    isOpen: boolean
+    companyId: string
+    companyName: string
+  }>({
+    isOpen: false,
+    companyId: '',
+    companyName: ''
   })
 
   const handleApprove = async () => {
@@ -303,7 +313,7 @@ export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onRej
 
   const executeRemoveDecision = async () => {
     if (!signal?.id || isUpdating) return
-    
+
     setIsUpdating(true)
     try {
       const response = await api.signals.updateDecision(signal.id, 'remove')
@@ -315,6 +325,23 @@ export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onRej
       console.error('Failed to remove decision:', err)
     } finally {
       setIsUpdating(false)
+    }
+  }
+
+  const handleBlockCompany = () => {
+    if (!signal?.company) return
+
+    setBlockModal({
+      isOpen: true,
+      companyId: signal.company.id,
+      companyName: signal.company.name
+    })
+  }
+
+  const confirmBlockCompany = () => {
+    if (blockModal.companyId && blockModal.companyName) {
+      onBlockCompany?.(blockModal.companyId, blockModal.companyName)
+      setBlockModal({ isOpen: false, companyId: '', companyName: '' })
     }
   }
 
@@ -658,6 +685,19 @@ export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onRej
             </button>
           </div>
         </div>
+
+        {/* Block Company Button */}
+        {onBlockCompany && (
+          <div className="flex justify-center mt-4">
+            <button
+              onClick={handleBlockCompany}
+              className="flex items-center gap-2 px-4 py-2 text-sm text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            >
+              <Ban className="w-4 h-4" />
+              Block Company
+            </button>
+          </div>
+        )}
       </div>
 
       </div>
@@ -671,6 +711,18 @@ export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onRej
         message={confirmationModal.message}
         variant={confirmationModal.variant}
         confirmText="Yes, Continue"
+        cancelText="Cancel"
+      />
+
+      {/* Block Company Modal */}
+      <ConfirmationModal
+        isOpen={blockModal.isOpen}
+        onClose={() => setBlockModal({ isOpen: false, companyId: '', companyName: '' })}
+        onConfirm={confirmBlockCompany}
+        title="Block Company"
+        message={`Are you sure you want to block "${blockModal.companyName}"? This company will no longer appear in your signals. You can unblock it later in Settings.`}
+        variant="danger"
+        confirmText="Block Company"
         cancelText="Cancel"
       />
     </div>

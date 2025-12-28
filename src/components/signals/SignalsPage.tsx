@@ -6,6 +6,7 @@ import { FilterPanel } from './FilterPanel'
 import { IntentCard } from './IntentCard'
 import { QueueSidebar } from './QueueSidebar'
 import { useSignals } from '../../hooks/useSignals'
+import { useBlockedCompanies } from '../../hooks/useBlockedCompanies'
 
 interface FilterOptions {
   product: string
@@ -33,17 +34,20 @@ export const SignalsPage = () => {
   const [showFilters, setShowFilters] = useState(false)
 
   // Custom hook for signals data with comprehensive loading states
-  const { 
-    signals, 
+  const {
+    signals,
     isLoading,
     isIntentScoresLoading,
     isCompaniesLoading,
     isJobsLoading,
-    error, 
+    error,
     refetch,
     markSignal,
     removeDecision
   } = useSignals(selectedDate, filters)
+
+  // Hook for blocking companies
+  const { blockCompany } = useBlockedCompanies()
 
   const currentSignal = signals[currentIndex] || null
 
@@ -78,6 +82,20 @@ export const SignalsPage = () => {
     if (!currentSignal) return
     await removeDecision(currentSignal.id)
   }, [currentSignal, removeDecision])
+
+  const handleBlockCompany = useCallback(async (companyId: string, companyName: string) => {
+    const result = await blockCompany(companyId, companyName)
+    if (result.success) {
+      // Refresh signals to remove blocked company
+      refetch()
+      // Move to next signal if possible
+      if (currentIndex < signals.length - 1) {
+        setCurrentIndex(currentIndex + 1)
+      } else if (currentIndex > 0) {
+        setCurrentIndex(currentIndex - 1)
+      }
+    }
+  }, [blockCompany, refetch, currentIndex, signals.length])
 
   // Filter status
   const hasActiveFilters = filters.minScore > 3 || filters.vertical
@@ -213,6 +231,7 @@ export const SignalsPage = () => {
                 onApprove={handleApprove}
                 onReject={handleReject}
                 onRemoveDecision={handleRemoveDecision}
+                onBlockCompany={handleBlockCompany}
                 isLoading={isAnyLoading}
               />
             </div>
