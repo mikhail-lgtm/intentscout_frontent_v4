@@ -123,6 +123,16 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
     }, {} as Record<string, typeof generationStatus.generated_emails>)
   }, [generationStatus?.generated_emails])
 
+  // Find contacts that don't have generated emails yet (new contacts)
+  const contactsWithoutEmails = useMemo(() => {
+    if (!generationStatus?.generated_emails) return contactsWithEmails
+    const contactIdsWithEmails = new Set(generationStatus.generated_emails.map(e => e.contact_id))
+    return contactsWithEmails.filter(c => !contactIdsWithEmails.has(c.id))
+  }, [contactsWithEmails, generationStatus?.generated_emails])
+
+  // Check if there are new contacts that need email generation
+  const hasNewContactsWithoutEmails = contactsWithoutEmails.length > 0
+
   // Validate data sources when sequence changes - MEMOIZED to prevent infinite re-renders
   const validateDataSources = useCallback(async () => {
     if (!selectedSequence || contactsWithEmails.length === 0 || !signalId) {
@@ -165,10 +175,13 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
   }, [selectedSequence, contactsWithEmails.length, signalId, validateDataSources])
 
   const handleStartGeneration = async () => {
-    if (!selectedSequence || contactsWithEmails.length === 0) return
+    // Use contactsWithoutEmails if we have existing results, otherwise use all contacts with emails
+    const contactsToGenerate = hasNewContactsWithoutEmails ? contactsWithoutEmails : contactsWithEmails
+
+    if (!selectedSequence || contactsToGenerate.length === 0) return
 
     // Convert contacts to the format expected by the API
-    const contactsData = contactsWithEmails.map(contact => ({
+    const contactsData = contactsToGenerate.map(contact => ({
       id: contact.id,
       name: `${contact.first_name} ${contact.last_name}`,
       first_name: contact.first_name,
@@ -447,10 +460,44 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
       )
     }
 
-    // Show results
+    // Show results (and optionally form for new contacts)
     if (hasResults && generationStatus) {
       return (
         <div>
+          {/* Show notice about new contacts */}
+          {hasNewContactsWithoutEmails && (
+            <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <AlertCircle className="w-5 h-5 text-yellow-600" />
+                <span className="font-medium text-yellow-800">
+                  {contactsWithoutEmails.length} new contact{contactsWithoutEmails.length !== 1 ? 's' : ''} without emails
+                </span>
+              </div>
+              <p className="text-sm text-yellow-700 mb-3">
+                {contactsWithoutEmails.map(c => `${c.first_name} ${c.last_name}`).join(', ')}
+              </p>
+              <div className="flex items-center gap-3">
+                <select
+                  value={selectedSequence}
+                  onChange={(e) => setSelectedSequence(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-yellow-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-yellow-500"
+                >
+                  <option value="">Select sequence...</option>
+                  {sequences.map(seq => (
+                    <option key={seq.id} value={seq.id}>{seq.name}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={handleStartGeneration}
+                  disabled={!selectedSequence || isLoading}
+                  className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-sm whitespace-nowrap"
+                >
+                  Generate for New
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="mb-4 flex items-start justify-between">
             <div>
               <h3 className="text-lg font-semibold text-gray-900">
