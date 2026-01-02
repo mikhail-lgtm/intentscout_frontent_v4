@@ -6,6 +6,7 @@ import { OutreachPage } from '../outreach/OutreachPage'
 import { SettingsPage } from '../settings'
 import type { TabKey } from '../../types'
 import { USGDemoContainer } from '../usg/USGDemoContainer'
+import { EnerpacDemoContainer } from '../enerpac/EnerpacDemoContainer'
 
 export const Dashboard = () => {
   const location = useLocation()
@@ -22,10 +23,15 @@ export const Dashboard = () => {
     }
   }, [location.pathname])
 
-  const isDemoRoute = location.pathname === '/usg-demo'
+  const isUSGDemoRoute = location.pathname === '/usg-demo'
+  const isEnerpacDemoRoute = location.pathname === '/enerpac-demo'
 
-  if (isDemoRoute) {
+  if (isUSGDemoRoute) {
     return <USGDemoContainer />
+  }
+
+  if (isEnerpacDemoRoute) {
+    return <EnerpacDemoContainer />
   }
 
   return (
