@@ -22,43 +22,43 @@ interface Lead {
 // Demo data for fallback (safe for production)
 const DEMO_LEADS: Lead[] = [
   {
-    id: "mf-41249",
+    id: "mil-16th-st",
     organization_id: "org_enerpac_demo",
-    project_name: "Campbell Dr Bridge Replacement",
-    location: "Menomonee Falls, WI",
-    bid_due: "TBD 2026",
+    project_name: "16th Street Bridge over Menomonee River",
+    location: "Milwaukee, WI",
+    bid_due: "Q1 2025",
     spec_fit: 0.95,
-    urgency: 0.6,
-    confidence: 0.9,
-    reason_codes: ["bridge_work", "heavy_lift_potential", "structural_steel", "girder_placement"],
-    description: "Complete bridge removal and replacement over waterway. Project includes demolition of existing structure, installation of new bridge deck, girder placement, and structural steel work.",
-    project_url: "https://www.menomonee-falls.org/832/Project-Bidding"
-  },
-  {
-    id: "mf-41248",
-    organization_id: "org_enerpac_demo",
-    project_name: "Overview Dr Bridge",
-    location: "Menomonee Falls, WI",
-    bid_due: "Summer 2025",
-    spec_fit: 0.90,
     urgency: 0.8,
-    confidence: 0.85,
-    reason_codes: ["bridge_work", "heavy_lift_potential", "infrastructure_project"],
-    description: "Bridge construction and rehabilitation project. Scope includes structural improvements, deck work, and associated infrastructure.",
-    project_url: "https://www.menomonee-falls.org/832/Project-Bidding"
+    confidence: 0.9,
+    reason_codes: ["bridge_work", "heavy_lift_potential", "girder_placement", "structural_steel"],
+    description: "Major bridge construction project over the Menomonee River. Full bridge replacement including substructure work, girder erection, and deck construction.",
+    project_url: "https://city.milwaukee.gov/dpw/infrastructure/Programs/Bridges"
   },
   {
-    id: "mf-64080",
+    id: "mil-bridge-maint-2025",
     organization_id: "org_enerpac_demo",
-    project_name: "Pedestrian Bridges - Lime Kiln & Rotary Parks",
-    location: "Menomonee Falls, WI",
-    bid_due: "Oct-Nov 2025",
-    spec_fit: 0.65,
+    project_name: "Milwaukee Bridge Maintenance Program 2025",
+    location: "Milwaukee, WI",
+    bid_due: "Rolling",
+    spec_fit: 0.85,
     urgency: 0.7,
-    confidence: 0.8,
-    reason_codes: ["bridge_work", "structural_steel"],
-    description: "Installation of pedestrian bridges at Lime Kiln Park and Rotary Park. Project includes bridge fabrication, delivery, and installation.",
-    project_url: "https://www.menomonee-falls.org/832/Project-Bidding"
+    confidence: 0.7,
+    reason_codes: ["bridge_work", "bearing_replacement", "heavy_lift_potential"],
+    description: "Annual bridge maintenance program. Work includes bearing replacement, deck repairs, joint replacement, and structural repairs.",
+    project_url: "https://city.milwaukee.gov/dpw/infrastructure/Programs/Bridges"
+  },
+  {
+    id: "mil-industrial-mro",
+    organization_id: "org_enerpac_demo",
+    project_name: "We Energies Power Plant Maintenance",
+    location: "Milwaukee, WI",
+    bid_due: "Rolling",
+    spec_fit: 0.92,
+    urgency: 0.6,
+    confidence: 0.65,
+    reason_codes: ["energy_sector", "turbine_work", "heavy_lift_potential", "bolting_tensioning"],
+    description: "Ongoing maintenance at power generation facilities. Includes turbine maintenance, generator repairs, and heat exchanger work.",
+    project_url: "https://www.we-energies.com"
   }
 ]
 
@@ -155,7 +155,7 @@ export const EnerpacDemoPage = () => {
       <div className="flex-shrink-0 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 bg-gray-50 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <h1 className="text-xl font-bold text-gray-900">Menomonee Falls Bids</h1>
+            <h1 className="text-xl font-bold text-gray-900">Milwaukee Area Bids</h1>
 
             <div className="flex items-center gap-2">
               <button
@@ -198,7 +198,7 @@ export const EnerpacDemoPage = () => {
             <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
               <div className="flex items-center gap-2">
                 <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></div>
-                <div className="text-blue-700">Loading Menomonee Falls bids...</div>
+                <div className="text-blue-700">Loading Milwaukee area bids...</div>
               </div>
             </div>
           )}
@@ -233,7 +233,7 @@ export const EnerpacDemoPage = () => {
                 No Projects Found
               </h3>
               <p className="text-gray-600 mb-6">
-                No bids are currently available for Menomonee Falls.
+                No bids are currently available for Milwaukee area.
                 Try refreshing to check for new opportunities.
               </p>
               <div className="flex justify-center gap-3">
@@ -268,7 +268,7 @@ export const EnerpacDemoPage = () => {
                 All Projects Reviewed!
               </h3>
               <p className="text-gray-600 mb-6">
-                You've completed your review of all {leads.length} Menomonee Falls bids.
+                You've completed your review of all {leads.length} Milwaukee area bids.
               </p>
               <button
                 onClick={() => {

@@ -7,9 +7,9 @@ const getIntentScore = (spec_fit: number) => Math.round(spec_fit * 5)
 
 // Demo projects data - will be replaced with real data
 const DEMO_PROJECTS_FALLBACK = [
-  { id: "mf-41249", name: "Campbell Dr Bridge Replacement", project: "Bridge removal and replacement", score: 5 },
-  { id: "mf-41248", name: "Overview Dr Bridge", project: "Bridge rehabilitation", score: 5 },
-  { id: "mf-64080", name: "Pedestrian Bridges", project: "Lime Kiln & Rotary Parks", score: 3 }
+  { id: "mil-16th-st", name: "16th Street Bridge", project: "Bridge over Menomonee River", score: 5 },
+  { id: "mil-bridge-maint-2025", name: "Milwaukee Bridge Program", project: "Bridge maintenance", score: 4 },
+  { id: "mil-industrial-mro", name: "We Energies", project: "Power plant maintenance", score: 5 }
 ]
 
 // Demo components (simplified versions of the real ones)
