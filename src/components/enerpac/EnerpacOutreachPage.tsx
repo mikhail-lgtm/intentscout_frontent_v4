@@ -177,7 +177,7 @@ const DemoIntentCard = ({ selectedProject }: { selectedProject?: any }) => {
   )
 }
 
-const DemoHubSpotSending = ({ selectedProject }: { selectedProject?: any }) => {
+const DemoCRMConnection = ({ selectedProject }: { selectedProject?: any }) => {
   const [isConfigured, setIsConfigured] = useState(false)
   const [isSending, setIsSending] = useState(false)
   const [emailsSent, setEmailsSent] = useState(0)
@@ -196,7 +196,7 @@ const DemoHubSpotSending = ({ selectedProject }: { selectedProject?: any }) => {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">HubSpot Integration</h3>
+        <h3 className="text-lg font-semibold text-gray-900">CRM Connection</h3>
         <div className={`w-2 h-2 rounded-full ${isConfigured ? 'bg-green-500' : 'bg-gray-400'}`}></div>
       </div>
 
@@ -205,14 +205,14 @@ const DemoHubSpotSending = ({ selectedProject }: { selectedProject?: any }) => {
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <div className="text-sm font-medium text-yellow-800 mb-2">Setup Required</div>
             <div className="text-xs text-yellow-700">
-              Connect your HubSpot account to sync contacts and send personalized emails.
+              Connect your CRM to sync contacts and send personalized emails.
             </div>
           </div>
           <button
             onClick={handleConfigure}
             className="w-full px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium"
           >
-            Configure HubSpot
+            Configure CRM
           </button>
         </div>
       ) : (
@@ -220,7 +220,7 @@ const DemoHubSpotSending = ({ selectedProject }: { selectedProject?: any }) => {
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
             <div className="text-sm font-medium text-green-800 mb-2">Connected</div>
             <div className="text-xs text-green-700">
-              HubSpot integration is active. Ready to send emails.
+              CRM connected. Ready to send emails.
             </div>
           </div>
 
@@ -392,7 +392,7 @@ Your Sales Team`)
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Email Drafting</h3>
+        <h3 className="text-lg font-semibold text-gray-900">Outreach Drafting</h3>
         {isGenerated && (
           <button
             onClick={handleEdit}
@@ -504,9 +504,9 @@ export const EnerpacOutreachPage = () => {
               <DemoIntentCard selectedProject={selectedProject} />
             </div>
 
-            {/* Top-right: HubSpot Sending */}
+            {/* Top-right: CRM Connection */}
             <div className="overflow-y-auto custom-scrollbar bg-white rounded-lg shadow-sm border border-gray-200">
-              <DemoHubSpotSending selectedProject={selectedProject} />
+              <DemoCRMConnection selectedProject={selectedProject} />
             </div>
 
             {/* Bottom-left: Contacts */}
