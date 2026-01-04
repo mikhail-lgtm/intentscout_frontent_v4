@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Settings, Plus, MoreVertical, Check, Search, Mail, Linkedin, UserPlus, ExternalLink, Building, MapPin, Calendar, DollarSign } from 'lucide-react'
 import { useDemoContext } from './EnerpacDemoContainer'
+import { config } from '../../lib/config'
 
 // Convert spec_fit (0-1) to intent score (1-5)
 const getIntentScore = (spec_fit: number) => Math.round(spec_fit * 5)
@@ -456,7 +457,8 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
     setSearchError(null)
 
     try {
-      const response = await fetch('/api/enerpac/enrich-contacts', {
+      const apiUrl = `${config.api.baseUrl.replace(/\/$/, '')}/api/enerpac/enrich-contacts`
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
