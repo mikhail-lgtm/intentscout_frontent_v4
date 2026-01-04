@@ -262,20 +262,76 @@ const DemoCRMConnection = ({ selectedProject }: { selectedProject?: any }) => {
 
 const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) => {
   const [contactedIds, setContactedIds] = useState<string[]>([])
+  const [isSearching, setIsSearching] = useState(false)
+  const [enrichedContacts, setEnrichedContacts] = useState<any[]>([])
+  const [searchError, setSearchError] = useState<string | null>(null)
 
-  // Get real contacts from project data
-  const contacts = selectedProject?.contacts ?
+  // Get real contacts from project data + enriched contacts
+  const projectContacts = selectedProject?.contacts ?
     selectedProject.contacts.map((contact: any, index: number) => ({
       id: `${selectedProject.id}-contact-${index}`,
       name: contact.name || 'Unknown Contact',
       role: contact.role || 'Contact',
       email: contact.email || '',
-      linkedin: Math.random() > 0.5 // Random LinkedIn presence
+      linkedin: Math.random() > 0.5, // Random LinkedIn presence
+      source: 'Project Data'
     })).filter((contact: any) => contact.email) // Only show contacts with emails
     : []
 
+  // Combine project contacts with enriched contacts
+  const contacts = [...projectContacts, ...enrichedContacts]
+
   const handleContact = (contactId: string) => {
     setContactedIds(prev => [...prev, contactId])
+  }
+
+  const handleFindContacts = async () => {
+    if (!selectedProject) return
+
+    setIsSearching(true)
+    setSearchError(null)
+
+    try {
+      // Call Enerpac API endpoint
+      const response = await fetch('/api/enerpac/enrich-contacts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          project_name: selectedProject.project_name || selectedProject.name,
+          company_name: selectedProject.source || 'City of Milwaukee',
+          location: selectedProject.location || 'Milwaukee, WI',
+          project_type: selectedProject.project_type,
+          description: selectedProject.description
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.contacts && data.contacts.length > 0) {
+          const newContacts = data.contacts.map((contact: any, index: number) => ({
+            id: `enriched-${selectedProject.id}-${index}`,
+            name: contact.name,
+            role: contact.role,
+            email: contact.email || '',
+            phone: contact.phone || '',
+            linkedin: !!contact.linkedin,
+            source: 'AI Search'
+          }))
+          setEnrichedContacts(newContacts)
+        } else {
+          setSearchError('No contacts found. Try refining the search.')
+        }
+      } else {
+        setSearchError('Search failed. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error finding contacts:', error)
+      setSearchError('Connection error. Please check API.')
+    } finally {
+      setIsSearching(false)
+    }
   }
 
   if (!selectedProject) {
@@ -293,7 +349,27 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
     <div>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900">Contacts ({contacts.length})</h3>
+        <button
+          onClick={handleFindContacts}
+          disabled={isSearching}
+          className="px-3 py-1.5 bg-orange-500 text-white text-xs font-medium rounded-lg hover:bg-orange-600 disabled:bg-gray-300 transition-colors flex items-center gap-2"
+        >
+          {isSearching ? (
+            <>
+              <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              Searching...
+            </>
+          ) : (
+            'Find Contacts'
+          )}
+        </button>
       </div>
+
+      {searchError && (
+        <div className="mb-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-700">
+          {searchError}
+        </div>
+      )}
 
       <div className="space-y-3">
         {contacts.map((contact: any) => (
