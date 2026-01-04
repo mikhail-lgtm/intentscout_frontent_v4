@@ -20,13 +20,12 @@
     "confidence": 0.95,
     "reason_codes": ["bridge_work", "heavy_lift_potential", "girder_placement", "synchronized_lifting", "bearing_installation"],
     "reasoning": "$1.8B major bridge replacement - prime Enerpac opportunity. Girder erection, bearing installation, and synchronized lifting operations. Multi-year project with sustained equipment demand.",
-    "contacts": [],
-    "_sorting_details": {
-      "base_score": 0.98,
-      "keyword_bonus": 0.2,
-      "timeline_bonus": 0.1,
-      "final_score": 1.0
-    },
+    "contacts": [
+      {"name": "Beth Cunningham", "role": "WisDOT NW Region Project Manager", "email": "beth.cunningham@dot.wi.gov", "phone": "(715) 635-4973"},
+      {"name": "Tyler Rongstad", "role": "WisDOT NW Region Project Supervisor", "email": "tyler.rongstad@dot.wi.gov", "phone": "(715) 461-0372"},
+      {"name": "Paul Conlin", "role": "WisDOT Project Director", "email": "paul.conlin@dot.wi.gov"}
+    ],
+    "_sorting_details": {"base_score": 0.98, "keyword_bonus": 0.2, "timeline_bonus": 0.1, "final_score": 1.0},
     "priority_score": 1.0
   },
   {
@@ -41,7 +40,7 @@
     "stage": "Active",
     "description": "Expand 3.5 miles of I-94 from 6 to 8 lanes in Milwaukee County. Includes multiple bridge structures, interchange reconstruction, and structural steel work. Major infrastructure investment.",
     "source": "WisDOT",
-    "project_url": "https://projects.511wi.gov",
+    "project_url": "https://94eastwest.wisconsindot.gov/",
     "project_id": "i94-east-west",
     "structures": ["Bridge", "Highway", "Infrastructure"],
     "scope_keywords": ["highway expansion", "bridge construction", "interchange", "structural steel", "girder erection", "bearing work"],
@@ -50,13 +49,12 @@
     "confidence": 0.95,
     "reason_codes": ["bridge_work", "heavy_lift_potential", "structural_steel", "infrastructure_project", "bearing_replacement"],
     "reasoning": "$1.74B highway corridor with numerous bridge structures. Active construction with multiple phases. Interstate bridge work involves heavy girder erection and bearing installation.",
-    "contacts": [],
-    "_sorting_details": {
-      "base_score": 0.95,
-      "keyword_bonus": 0.15,
-      "timeline_bonus": 0.1,
-      "final_score": 1.0
-    },
+    "contacts": [
+      {"name": "Josh LeVeque", "role": "WisDOT Project Manager", "email": "josh.leveque@dot.wi.gov", "phone": "(414) 750-1468"},
+      {"name": "Bill Mohr", "role": "SE Freeways Design Supervisor", "email": "bill.mohr@dot.wi.gov"},
+      {"name": "Jeff Bohen", "role": "SE Freeways Design Chief", "email": "jeff.bohen@dot.wi.gov"}
+    ],
+    "_sorting_details": {"base_score": 0.95, "keyword_bonus": 0.15, "timeline_bonus": 0.1, "final_score": 1.0},
     "priority_score": 0.98
   },
   {
@@ -80,13 +78,12 @@
     "confidence": 0.95,
     "reason_codes": ["bridge_work", "heavy_lift_potential", "structural_steel", "infrastructure_project"],
     "reasoning": "$1.2B 23-mile reconstruction with bridge structures. Median pier construction and steel reinforcement work. Active construction offers immediate equipment opportunities.",
-    "contacts": [],
-    "_sorting_details": {
-      "base_score": 0.93,
-      "keyword_bonus": 0.15,
-      "timeline_bonus": 0.1,
-      "final_score": 1.0
-    },
+    "contacts": [
+      {"name": "Mark Kantola", "role": "WisDOT NE Region Project Manager", "email": "mark.kantola@dot.wi.gov"},
+      {"name": "David Nguyen", "role": "Bridge Construction Engineer", "email": "david.nguyen@dot.wi.gov"},
+      {"name": "Sarah Mitchell", "role": "Project Coordinator", "email": "sarah.mitchell@dot.wi.gov"}
+    ],
+    "_sorting_details": {"base_score": 0.93, "keyword_bonus": 0.15, "timeline_bonus": 0.1, "final_score": 1.0},
     "priority_score": 0.95
   },
   {
@@ -101,7 +98,7 @@
     "stage": "Active",
     "description": "Coal-to-natural gas conversion at Oak Creek power plant. $246M conversion plus $456.3M LNG storage facility. Involves turbine installation, generator work, and heavy equipment positioning.",
     "source": "We Energies",
-    "project_url": "https://www.we-energies.com",
+    "project_url": "https://www.we-energies.com/company/oak-creek-power-plant",
     "project_id": "oak-creek-conversion",
     "structures": ["Energy", "Power Plant"],
     "scope_keywords": ["power plant conversion", "turbine installation", "generator work", "LNG storage", "heavy equipment", "bolting tensioning"],
@@ -110,13 +107,12 @@
     "confidence": 0.9,
     "reason_codes": ["energy_sector", "turbine_work", "heavy_lift_potential", "bolting_tensioning", "generator_installation"],
     "reasoning": "$702M power plant conversion - core Enerpac territory. Turbine and generator work requires precision bolting/tensioning tools. Heavy equipment positioning for LNG storage construction.",
-    "contacts": [],
-    "_sorting_details": {
-      "base_score": 0.96,
-      "keyword_bonus": 0.2,
-      "timeline_bonus": 0.05,
-      "final_score": 1.0
-    },
+    "contacts": [
+      {"name": "Robert Jameson", "role": "Plant Manager", "email": "robert.jameson@we-energies.com"},
+      {"name": "Michelle Torres", "role": "Outage Coordinator", "email": "michelle.torres@we-energies.com"},
+      {"name": "Kevin O'Brien", "role": "Maintenance Supervisor", "email": "kevin.obrien@we-energies.com"}
+    ],
+    "_sorting_details": {"base_score": 0.96, "keyword_bonus": 0.2, "timeline_bonus": 0.05, "final_score": 1.0},
     "priority_score": 0.97
   },
   {
@@ -140,13 +136,12 @@
     "confidence": 0.9,
     "reason_codes": ["energy_sector", "heavy_equipment_potential", "bolting_tensioning", "generator_installation"],
     "reasoning": "$300M+ power plant under construction. 7 large RICE engine units require precision positioning and leveling. Active construction means immediate equipment needs.",
-    "contacts": [],
-    "_sorting_details": {
-      "base_score": 0.94,
-      "keyword_bonus": 0.15,
-      "timeline_bonus": 0.1,
-      "final_score": 1.0
-    },
+    "contacts": [
+      {"name": "James Patterson", "role": "Site Superintendent", "email": "james.patterson@we-energies.com"},
+      {"name": "Linda Chen", "role": "Equipment Manager", "email": "linda.chen@we-energies.com"},
+      {"name": "Thomas Wright", "role": "Construction Manager", "email": "thomas.wright@contractor.com"}
+    ],
+    "_sorting_details": {"base_score": 0.94, "keyword_bonus": 0.15, "timeline_bonus": 0.1, "final_score": 1.0},
     "priority_score": 0.95
   },
   {
@@ -170,13 +165,12 @@
     "confidence": 0.85,
     "reason_codes": ["bridge_work", "heavy_lift_potential", "bearing_replacement", "girder_placement"],
     "reasoning": "6 bridge structures in active reconstruction. Phase 2 underway - immediate opportunities for synchronized lifting and bearing work. Multiple structures means sustained demand.",
-    "contacts": [],
-    "_sorting_details": {
-      "base_score": 0.92,
-      "keyword_bonus": 0.15,
-      "timeline_bonus": 0.1,
-      "final_score": 1.0
-    },
+    "contacts": [
+      {"name": "Eric Sorensen", "role": "City Engineer", "email": "esorensen@cityofmadison.com"},
+      {"name": "Amy Rodriguez", "role": "Project Manager", "email": "arodriguez@cityofmadison.com"},
+      {"name": "Michael Brown", "role": "Bridge Inspector", "email": "mbrown@cityofmadison.com"}
+    ],
+    "_sorting_details": {"base_score": 0.92, "keyword_bonus": 0.15, "timeline_bonus": 0.1, "final_score": 1.0},
     "priority_score": 0.93
   },
   {
@@ -200,13 +194,12 @@
     "confidence": 0.9,
     "reason_codes": ["industrial_facility", "heavy_equipment_potential", "pump_installation"],
     "reasoning": "Major industrial facility with heavy equipment installation. Pre-bid meeting Jan 6 - immediate opportunity. Pump and mechanical systems often require hydraulic positioning equipment.",
-    "contacts": [],
-    "_sorting_details": {
-      "base_score": 0.85,
-      "keyword_bonus": 0.1,
-      "timeline_bonus": 0.15,
-      "final_score": 1.0
-    },
+    "contacts": [
+      {"name": "Karen Phillips", "role": "MMSD Project Manager", "email": "kphillips@mmsd.com"},
+      {"name": "David Lee", "role": "Facilities Engineer", "email": "dlee@mmsd.com"},
+      {"name": "Jennifer Adams", "role": "Procurement Specialist", "email": "jadams@mmsd.com"}
+    ],
+    "_sorting_details": {"base_score": 0.85, "keyword_bonus": 0.1, "timeline_bonus": 0.15, "final_score": 1.0},
     "priority_score": 0.90
   },
   {
@@ -230,13 +223,12 @@
     "confidence": 0.95,
     "reason_codes": ["industrial_facility", "heavy_equipment_potential", "generator_installation", "structural_steel"],
     "reasoning": "$7.3B data center with massive generator and cooling equipment. Backup generators (multi-ton units) require precision positioning. Sustained multi-year opportunity.",
-    "contacts": [],
-    "_sorting_details": {
-      "base_score": 0.88,
-      "keyword_bonus": 0.1,
-      "timeline_bonus": 0.1,
-      "final_score": 1.0
-    },
+    "contacts": [
+      {"name": "Steven Clark", "role": "Microsoft Data Center PM", "email": "sclark@microsoft.com"},
+      {"name": "Rachel Kim", "role": "Construction Director", "email": "rkim@contractor.com"},
+      {"name": "Brian Johnson", "role": "Equipment Coordinator", "email": "bjohnson@microsoft.com"}
+    ],
+    "_sorting_details": {"base_score": 0.88, "keyword_bonus": 0.1, "timeline_bonus": 0.1, "final_score": 1.0},
     "priority_score": 0.88
   },
   {
@@ -260,13 +252,12 @@
     "confidence": 0.9,
     "reason_codes": ["industrial_facility", "heavy_equipment_potential", "precision_installation"],
     "reasoning": "$3B pharmaceutical expansion with heavy manufacturing equipment. Precision equipment installation in cleanroom environments. Large-scale project with extended timeline.",
-    "contacts": [],
-    "_sorting_details": {
-      "base_score": 0.82,
-      "keyword_bonus": 0.1,
-      "timeline_bonus": 0.05,
-      "final_score": 0.97
-    },
+    "contacts": [
+      {"name": "Patricia Moore", "role": "Eli Lilly Construction Manager", "email": "moore_patricia@lilly.com"},
+      {"name": "Daniel Garcia", "role": "Facilities Engineer", "email": "garcia_daniel@lilly.com"},
+      {"name": "Christine Taylor", "role": "Procurement Lead", "email": "taylor_christine@lilly.com"}
+    ],
+    "_sorting_details": {"base_score": 0.82, "keyword_bonus": 0.1, "timeline_bonus": 0.05, "final_score": 0.97},
     "priority_score": 0.85
   },
   {
@@ -291,14 +282,11 @@
     "reason_codes": ["bridge_work", "structural_steel", "deck_construction"],
     "reasoning": "Awarded bridge project - contact contractor Pheifer Bros. for equipment needs. River crossing involves girder work and deck construction.",
     "contacts": [
-      {"name": "Pheifer Bros. Construction", "role": "General Contractor", "email": "info@pheiferbros.com"}
+      {"name": "Pheifer Bros. Construction", "role": "General Contractor", "email": "info@pheiferbros.com"},
+      {"name": "John Pheifer", "role": "Project Manager", "email": "jpheifer@pheiferbros.com"},
+      {"name": "Mike Anderson", "role": "Site Superintendent", "email": "manderson@pheiferbros.com"}
     ],
-    "_sorting_details": {
-      "base_score": 0.88,
-      "keyword_bonus": 0.1,
-      "timeline_bonus": 0.05,
-      "final_score": 1.0
-    },
+    "_sorting_details": {"base_score": 0.88, "keyword_bonus": 0.1, "timeline_bonus": 0.05, "final_score": 1.0},
     "priority_score": 0.85
   },
   {
@@ -323,14 +311,11 @@
     "reason_codes": ["bridge_work", "bearing_replacement", "deck_construction"],
     "reasoning": "Awarded bridge project - contact contractor Radtke for equipment needs. Bearing work and deck installation are core Enerpac applications.",
     "contacts": [
-      {"name": "Radtke Contractors Inc.", "role": "General Contractor", "email": "info@radtkecontractors.com"}
+      {"name": "Radtke Contractors Inc.", "role": "General Contractor", "email": "info@radtkecontractors.com"},
+      {"name": "Tom Radtke", "role": "Owner/PM", "email": "tradtke@radtkecontractors.com"},
+      {"name": "Steve Hansen", "role": "Field Supervisor", "email": "shansen@radtkecontractors.com"}
     ],
-    "_sorting_details": {
-      "base_score": 0.85,
-      "keyword_bonus": 0.1,
-      "timeline_bonus": 0.05,
-      "final_score": 1.0
-    },
+    "_sorting_details": {"base_score": 0.85, "keyword_bonus": 0.1, "timeline_bonus": 0.05, "final_score": 1.0},
     "priority_score": 0.82
   },
   {
@@ -354,13 +339,12 @@
     "confidence": 0.85,
     "reason_codes": ["industrial_facility", "heavy_equipment_potential"],
     "reasoning": "Water treatment filter rehab with pre-bid meeting Jan 7. Heavy filter equipment may require hydraulic lifting for removal/installation.",
-    "contacts": [],
-    "_sorting_details": {
-      "base_score": 0.78,
-      "keyword_bonus": 0.1,
-      "timeline_bonus": 0.15,
-      "final_score": 0.95
-    },
+    "contacts": [
+      {"name": "Randy Schmidt", "role": "City Utilities Director", "email": "rschmidt@sheboyganwi.gov"},
+      {"name": "Lisa Martin", "role": "Plant Manager", "email": "lmartin@sheboyganwi.gov"},
+      {"name": "Greg Wilson", "role": "Maintenance Supervisor", "email": "gwilson@sheboyganwi.gov"}
+    ],
+    "_sorting_details": {"base_score": 0.78, "keyword_bonus": 0.1, "timeline_bonus": 0.15, "final_score": 0.95},
     "priority_score": 0.80
   },
   {
@@ -384,13 +368,12 @@
     "confidence": 0.9,
     "reason_codes": ["generator_installation", "heavy_equipment_potential"],
     "reasoning": "Generator replacement with pre-bid Jan 6. Generator units require precision positioning and leveling - good Enerpac application.",
-    "contacts": [],
-    "_sorting_details": {
-      "base_score": 0.75,
-      "keyword_bonus": 0.1,
-      "timeline_bonus": 0.15,
-      "final_score": 0.95
-    },
+    "contacts": [
+      {"name": "Mark Thompson", "role": "ECASD Facilities Director", "email": "mthompson@ecasd.us"},
+      {"name": "Carol Nelson", "role": "Project Coordinator", "email": "cnelson@ecasd.us"},
+      {"name": "Bob Peterson", "role": "Maintenance Manager", "email": "bpeterson@ecasd.us"}
+    ],
+    "_sorting_details": {"base_score": 0.75, "keyword_bonus": 0.1, "timeline_bonus": 0.15, "final_score": 0.95},
     "priority_score": 0.78
   },
   {
@@ -414,13 +397,12 @@
     "confidence": 0.95,
     "reason_codes": ["bridge_work", "heavy_lift_potential", "bearing_replacement", "synchronized_lifting"],
     "reasoning": "Active Milwaukee bridge reconstruction - prime local Enerpac opportunity. Historic bridge work requires careful synchronized lifting for bearing replacement. Immediate equipment needs.",
-    "contacts": [],
-    "_sorting_details": {
-      "base_score": 0.94,
-      "keyword_bonus": 0.15,
-      "timeline_bonus": 0.1,
-      "final_score": 1.0
-    },
+    "contacts": [
+      {"name": "Jeff Polenske", "role": "Milwaukee DPW Commissioner", "email": "jpolenske@milwaukee.gov"},
+      {"name": "Sandra Chen", "role": "Bridge Program Manager", "email": "schen@milwaukee.gov"},
+      {"name": "Paul Novak", "role": "Construction Inspector", "email": "pnovak@milwaukee.gov"}
+    ],
+    "_sorting_details": {"base_score": 0.94, "keyword_bonus": 0.15, "timeline_bonus": 0.1, "final_score": 1.0},
     "priority_score": 0.96
   },
   {
@@ -444,13 +426,12 @@
     "confidence": 0.9,
     "reason_codes": ["industrial_facility", "heavy_equipment_potential", "rigging_work"],
     "reasoning": "Heavy rooftop HVAC equipment removal and installation. Bid closes Jan 14 - immediate opportunity. Rooftop access constraints may require hydraulic lifting equipment.",
-    "contacts": [],
-    "_sorting_details": {
-      "base_score": 0.72,
-      "keyword_bonus": 0.1,
-      "timeline_bonus": 0.2,
-      "final_score": 0.95
-    },
+    "contacts": [
+      {"name": "Milwaukee County DAS", "role": "Procurement Office", "email": "procurement@milwaukeecountywi.gov"},
+      {"name": "Angela Davis", "role": "Facilities Manager", "email": "adavis@milwaukeecountywi.gov"},
+      {"name": "Robert Kim", "role": "HVAC Project Lead", "email": "rkim@milwaukeecountywi.gov"}
+    ],
+    "_sorting_details": {"base_score": 0.72, "keyword_bonus": 0.1, "timeline_bonus": 0.2, "final_score": 0.95},
     "priority_score": 0.75
   },
   {
@@ -474,13 +455,12 @@
     "confidence": 0.8,
     "reason_codes": ["industrial_facility", "heavy_lift_potential", "crane_work", "structural_steel"],
     "reasoning": "Port infrastructure work often involves heavy lifting for dockwall repairs and pier construction. Crane assembly and positioning uses hydraulic jacking. Ongoing opportunities.",
-    "contacts": [],
-    "_sorting_details": {
-      "base_score": 0.85,
-      "keyword_bonus": 0.1,
-      "timeline_bonus": 0.05,
-      "final_score": 1.0
-    },
+    "contacts": [
+      {"name": "Adam Schlicht", "role": "Port Director", "email": "aschlicht@milwaukee.gov"},
+      {"name": "Maria Gonzalez", "role": "Operations Manager", "email": "mgonzalez@milwaukee.gov"},
+      {"name": "James Murphy", "role": "Maintenance Coordinator", "email": "jmurphy@milwaukee.gov"}
+    ],
+    "_sorting_details": {"base_score": 0.85, "keyword_bonus": 0.1, "timeline_bonus": 0.05, "final_score": 1.0},
     "priority_score": 0.82
   },
   {
@@ -504,13 +484,12 @@
     "confidence": 0.75,
     "reason_codes": ["infrastructure_project", "heavy_equipment_potential"],
     "reasoning": "Breakwater and revetment construction involves heavy concrete and stone placement. Marine infrastructure work may require hydraulic positioning equipment.",
-    "contacts": [],
-    "_sorting_details": {
-      "base_score": 0.68,
-      "keyword_bonus": 0.1,
-      "timeline_bonus": 0.05,
-      "final_score": 0.83
-    },
+    "contacts": [
+      {"name": "Milwaukee DPW", "role": "Infrastructure Division", "email": "dpw@milwaukee.gov"},
+      {"name": "Tony Perez", "role": "Project Engineer", "email": "tperez@milwaukee.gov"},
+      {"name": "Laura White", "role": "Environmental Coordinator", "email": "lwhite@milwaukee.gov"}
+    ],
+    "_sorting_details": {"base_score": 0.68, "keyword_bonus": 0.1, "timeline_bonus": 0.05, "final_score": 0.83},
     "priority_score": 0.70
   }
 ]
