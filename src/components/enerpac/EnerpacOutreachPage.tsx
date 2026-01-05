@@ -416,6 +416,7 @@ const DemoCRMConnection = ({ selectedProject }: { selectedProject?: any }) => {
 // Contacts Component with actions menu
 const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) => {
   const [contacts, setContacts] = useState<any[]>([])
+  const [activeContactMenu, setActiveContactMenu] = useState<string | null>(null)
   const [isSearching, setIsSearching] = useState(false)
   const [searchError, setSearchError] = useState<string | null>(null)
   const [showActionsMenu, setShowActionsMenu] = useState(false)
@@ -535,6 +536,23 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
     setContacts(prev => [...prev, contact])
     setNewContact({ name: '', role: '', email: '' })
     setShowAddContact(false)
+  }
+
+  const handleContactAction = (contactId: string, action: 'email' | 'linkedin' | 'phone') => {
+    const contact = contacts.find(c => c.id === contactId)
+    if (!contact) return
+    setActiveContactMenu(null)
+
+    if (action === 'email' && contact.email) {
+      const subject = encodeURIComponent(`Re: ${selectedProject?.project_name || 'Project Inquiry'}`)
+      window.open(`mailto:${contact.email}?subject=${subject}`, '_blank')
+    } else if (action === 'linkedin') {
+      const searchQuery = encodeURIComponent(contact.name)
+      window.open(`https://www.linkedin.com/search/results/people/?keywords=${searchQuery}`, '_blank')
+    } else if (action === 'phone' && contact.phone) {
+      navigator.clipboard.writeText(contact.phone)
+      alert(`Phone copied: ${contact.phone}`)
+    }
   }
 
   if (!selectedProject) {
@@ -681,10 +699,54 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
             key={contact.id}
             className="p-3 border border-gray-200 rounded-lg hover:border-gray-300 transition-all duration-200"
           >
-            <div className="font-medium text-sm">{contact.name}</div>
-            <div className="text-xs text-gray-500">{contact.role}</div>
-            {contact.email && <div className="text-xs text-gray-400">{contact.email}</div>}
-            {contact.phone && <div className="text-xs text-gray-400">{contact.phone}</div>}
+            <div className="flex items-start justify-between">
+              <div className="flex-1 min-w-0">
+                <div className="font-medium text-sm">{contact.name}</div>
+                <div className="text-xs text-gray-500">{contact.role}</div>
+                {contact.email && <div className="text-xs text-gray-400">{contact.email}</div>}
+                {contact.phone && <div className="text-xs text-gray-400">{contact.phone}</div>}
+              </div>
+
+              {/* Contact Actions Menu */}
+              <div className="relative">
+                <button
+                  onClick={() => setActiveContactMenu(activeContactMenu === contact.id ? null : contact.id)}
+                  className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </button>
+
+                {activeContactMenu === contact.id && (
+                  <div className="absolute right-0 top-6 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-20 w-40">
+                    {contact.email && (
+                      <button
+                        onClick={() => handleContactAction(contact.id, 'email')}
+                        className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                      >
+                        <Mail className="w-4 h-4 text-gray-500" />
+                        Send Email
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleContactAction(contact.id, 'linkedin')}
+                      className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <Linkedin className="w-4 h-4 text-blue-600" />
+                      Find on LinkedIn
+                    </button>
+                    {contact.phone && (
+                      <button
+                        onClick={() => handleContactAction(contact.id, 'phone')}
+                        className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                      >
+                        <ExternalLink className="w-4 h-4 text-gray-500" />
+                        Copy Phone
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         ))}
         {contacts.length === 0 && (
@@ -694,6 +756,10 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
         )}
       </div>
 
+      {/* Click outside to close menu */}
+      {activeContactMenu && (
+        <div className="fixed inset-0 z-10" onClick={() => setActiveContactMenu(null)} />
+      )}
     </div>
   )
 }
