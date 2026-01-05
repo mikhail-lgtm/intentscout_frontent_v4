@@ -143,117 +143,109 @@ const DemoIntentCard = ({ selectedProject }: { selectedProject?: any }) => {
   const score = selectedProject.enerpac_score || selectedProject.score || getIntentScore(selectedProject.spec_fit || 0.8)
 
   return (
-    <div className="p-6 overflow-y-auto">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900">{selectedProject.address || selectedProject.name}</h3>
-          <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
-            <MapPin className="w-4 h-4" />
-            <span>{selectedProject.city && selectedProject.state ? `${selectedProject.city}, ${selectedProject.state}` : selectedProject.location}</span>
+    <div className="p-4 overflow-y-auto h-full">
+      {/* Header - Compact */}
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex-1 min-w-0">
+          <h3 className="text-base font-semibold text-gray-900 truncate">{selectedProject.address || selectedProject.name}</h3>
+          <div className="flex items-center gap-2 text-xs text-gray-500">
+            <MapPin className="w-3 h-3 flex-shrink-0" />
+            <span className="truncate">{selectedProject.city && selectedProject.state ? `${selectedProject.city}, ${selectedProject.state}` : selectedProject.location}</span>
+            {selectedProject.permit_number && (
+              <span className="text-gray-400">#{selectedProject.permit_number}</span>
+            )}
           </div>
-          {selectedProject.permit_number && (
-            <div className="text-xs text-gray-400 mt-1">Permit #{selectedProject.permit_number}</div>
-          )}
         </div>
-        <div className={`px-3 py-1 rounded-full text-sm font-bold ${
+        <div className={`px-2 py-0.5 rounded-full text-xs font-bold flex-shrink-0 ${
           score >= 90 ? 'bg-green-100 text-green-700' :
           score >= 80 ? 'bg-blue-100 text-blue-700' :
           score >= 70 ? 'bg-yellow-100 text-yellow-700' :
           'bg-gray-100 text-gray-700'
         }`}>
-          Score: {score}
+          {score}
         </div>
       </div>
 
-      {/* Permit Details */}
-      <div className="grid grid-cols-2 gap-3 mb-4">
+      {/* Permit Details - Compact Grid */}
+      <div className="grid grid-cols-3 gap-2 mb-3">
         {selectedProject.valuation_display && (
-          <div className="bg-gray-50 rounded-lg p-3">
-            <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-              <DollarSign className="w-3 h-3" />
-              Valuation
-            </div>
-            <div className="font-medium text-sm">{selectedProject.valuation_display}</div>
+          <div className="bg-gray-50 rounded p-2">
+            <div className="text-[10px] text-gray-500">Valuation</div>
+            <div className="font-medium text-xs">{selectedProject.valuation_display}</div>
           </div>
         )}
         {selectedProject.issue_date && (
-          <div className="bg-gray-50 rounded-lg p-3">
-            <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-              <Calendar className="w-3 h-3" />
-              Issue Date
-            </div>
-            <div className="font-medium text-sm">{selectedProject.issue_date}</div>
-          </div>
-        )}
-        {selectedProject.permit_type && (
-          <div className="bg-gray-50 rounded-lg p-3">
-            <div className="text-xs text-gray-500 mb-1">Permit Type</div>
-            <div className="font-medium text-sm">{selectedProject.permit_type}</div>
+          <div className="bg-gray-50 rounded p-2">
+            <div className="text-[10px] text-gray-500">Issue Date</div>
+            <div className="font-medium text-xs">{selectedProject.issue_date}</div>
           </div>
         )}
         {selectedProject.contractor_name && (
-          <div className="bg-gray-50 rounded-lg p-3">
-            <div className="text-xs text-gray-500 mb-1">Contractor</div>
-            <div className="font-medium text-sm">{selectedProject.contractor_name}</div>
+          <div className="bg-gray-50 rounded p-2">
+            <div className="text-[10px] text-gray-500">Contractor</div>
+            <div className="font-medium text-xs truncate">{selectedProject.contractor_name}</div>
           </div>
         )}
-        {selectedProject.recommended_persona && (
-          <div className="bg-gray-50 rounded-lg p-3">
-            <div className="text-xs text-gray-500 mb-1">Target Contact</div>
-            <div className="font-medium text-sm">{selectedProject.recommended_persona}</div>
+        {selectedProject.permit_type && (
+          <div className="bg-gray-50 rounded p-2 col-span-2">
+            <div className="text-[10px] text-gray-500">Type</div>
+            <div className="font-medium text-xs truncate">{selectedProject.permit_type}</div>
           </div>
         )}
         {selectedProject.outreach_window && (
-          <div className="bg-gray-50 rounded-lg p-3">
-            <div className="text-xs text-gray-500 mb-1">Outreach Window</div>
-            <div className="font-medium text-sm">{selectedProject.outreach_window}</div>
+          <div className="bg-gray-50 rounded p-2">
+            <div className="text-[10px] text-gray-500">Window</div>
+            <div className="font-medium text-xs">{selectedProject.outreach_window}</div>
           </div>
         )}
       </div>
 
-      {/* Work Description */}
+      {/* Work Description - Compact */}
       {(selectedProject.work_description || selectedProject.description) && (
-        <div className="mb-4">
-          <div className="text-xs font-medium text-gray-500 mb-2">Work Description</div>
-          <p className="text-sm text-gray-700">{selectedProject.work_description || selectedProject.description}</p>
+        <div className="mb-3">
+          <div className="text-[10px] font-medium text-gray-500 mb-1">Work Description</div>
+          <p className="text-xs text-gray-700 line-clamp-3">{selectedProject.work_description || selectedProject.description}</p>
         </div>
       )}
 
-      {/* Reasoning / AI Analysis */}
+      {/* AI Analysis - Compact */}
       {selectedProject.reasoning && (
-        <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-3">
-          <div className="text-xs font-medium text-green-700 mb-2">AI Analysis</div>
-          <p className="text-sm text-green-800">{selectedProject.reasoning}</p>
+        <div className="mb-3 bg-green-50 border border-green-200 rounded p-2">
+          <div className="text-[10px] font-medium text-green-700 mb-1">AI Analysis</div>
+          <p className="text-xs text-green-800 line-clamp-2">{selectedProject.reasoning}</p>
         </div>
       )}
 
-      {/* Reason Codes */}
+      {/* Reason Codes - Compact */}
       {selectedProject.reason_codes && selectedProject.reason_codes.length > 0 && (
-        <div className="mb-4">
-          <div className="text-xs font-medium text-gray-500 mb-2">Matched Keywords</div>
-          <div className="flex flex-wrap gap-2">
-            {selectedProject.reason_codes.map((code: string, i: number) => (
-              <span key={i} className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs">
+        <div className="mb-3">
+          <div className="flex flex-wrap gap-1">
+            {selectedProject.reason_codes.slice(0, 4).map((code: string, i: number) => (
+              <span key={i} className="px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded text-[10px]">
                 {code.replace(/_/g, ' ')}
               </span>
             ))}
+            {selectedProject.reason_codes.length > 4 && (
+              <span className="px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded text-[10px]">
+                +{selectedProject.reason_codes.length - 4}
+              </span>
+            )}
           </div>
         </div>
       )}
 
-      {/* Source */}
+      {/* Source - Compact */}
       {selectedProject.source && (
-        <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-          <div className="text-xs text-gray-500">Source: {selectedProject.source}</div>
+        <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+          <div className="text-[10px] text-gray-500">{selectedProject.source}</div>
           {(selectedProject.permit_url || selectedProject.project_url) && (
             <a
               href={selectedProject.permit_url || selectedProject.project_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800"
+              className="flex items-center gap-1 text-[10px] text-blue-600 hover:text-blue-800"
             >
-              View Permit <ExternalLink className="w-3 h-3" />
+              View <ExternalLink className="w-2.5 h-2.5" />
             </a>
           )}
         </div>
