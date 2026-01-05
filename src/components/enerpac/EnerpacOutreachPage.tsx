@@ -6,11 +6,11 @@ import { config } from '../../lib/config'
 // Convert spec_fit (0-1) to intent score (1-5)
 const getIntentScore = (spec_fit: number) => Math.round(spec_fit * 5)
 
-// Demo projects data - will be replaced with real data
-const DEMO_PROJECTS_FALLBACK = [
-  { id: "mil-16th-st", name: "16th Street Bridge", project: "Bridge over Menomonee River", score: 5 },
-  { id: "mil-bridge-maint-2025", name: "Milwaukee Bridge Program", project: "Bridge maintenance", score: 4 },
-  { id: "mil-industrial-mro", name: "We Energies", project: "Power plant maintenance", score: 5 }
+// Demo permits data - will be replaced with real data
+const DEMO_PERMITS_FALLBACK = [
+  { id: "chi-101071588", address: "10000 W O'Hare St", city: "Chicago", state: "IL", valuation_display: "$100M", enerpac_score: 92 },
+  { id: "mil-2025-ind-002", address: "6701 W Calumet Rd", city: "Milwaukee", state: "WI", valuation_display: "$8.5M", enerpac_score: 94 },
+  { id: "ind-2025-ind-001", address: "4500 Indianapolis Blvd", city: "East Chicago", state: "IN", valuation_display: "$65M", enerpac_score: 98 }
 ]
 
 // Demo Sidebar Component
@@ -36,21 +36,21 @@ const DemoOutreachSidebar = ({
             .filter((project: any) => project.spec_fit > 0)
             .map((project: any) => ({
               id: project.id || `project-${Math.random()}`,
-              name: project.project_name,
-              project: project.description ? project.description.substring(0, 50) + '...' : 'Construction Project',
-              score: getIntentScore(project.spec_fit || 0.8),
-              location: project.location,
-              bid_due: project.bid_due,
+              name: project.address || project.project_name,
+              project: project.work_description ? project.work_description.substring(0, 50) + '...' : 'Building Permit',
+              score: project.enerpac_score || getIntentScore(project.spec_fit || 0.8),
+              location: project.city && project.state ? `${project.city}, ${project.state}` : project.location,
+              valuation_display: project.valuation_display,
               contacts: project.contacts || [],
               ...project
             }))
           setRealProjects(outreachProjects)
         } else {
-          setRealProjects(DEMO_PROJECTS_FALLBACK)
+          setRealProjects(DEMO_PERMITS_FALLBACK)
         }
       } catch (error) {
         console.error('Error loading projects:', error)
-        setRealProjects(DEMO_PROJECTS_FALLBACK)
+        setRealProjects(DEMO_PERMITS_FALLBACK)
       }
     }
     fetchProjects()
@@ -64,7 +64,7 @@ const DemoOutreachSidebar = ({
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 h-full flex flex-col">
       <h3 className="text-lg font-semibold text-gray-900 mb-3">
-        Approved Signals ({approvedProjectsData.length})
+        Approved Permits ({approvedProjectsData.length})
       </h3>
 
       {/* Search */}
@@ -72,7 +72,7 @@ const DemoOutreachSidebar = ({
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
           type="text"
-          placeholder="Search projects..."
+          placeholder="Search permits..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
@@ -82,9 +82,9 @@ const DemoOutreachSidebar = ({
       {approvedProjectsData.length === 0 ? (
         <div className="text-center py-8 flex-1">
           <div className="text-gray-500 text-sm">
-            {searchTerm ? 'No matching projects.' : 'No approved projects yet.'}
+            {searchTerm ? 'No matching permits.' : 'No approved permits yet.'}
             <br />
-            Go to Projects tab and approve some signals.
+            Go to Permits tab and approve some permits.
           </div>
         </div>
       ) : (
@@ -101,19 +101,23 @@ const DemoOutreachSidebar = ({
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-sm truncate">{project.name || project.project_name}</div>
-                  <div className="text-xs text-gray-500 truncate">{project.location}</div>
+                  <div className="font-medium text-sm truncate">{project.address || project.name}</div>
+                  <div className="text-xs text-gray-500 truncate">
+                    {project.location}
+                    {project.valuation_display && ` - ${project.valuation_display}`}
+                  </div>
                 </div>
                 <div className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                  project.score >= 4 ? 'bg-green-100 text-green-700' :
-                  project.score >= 3 ? 'bg-yellow-100 text-yellow-700' :
+                  project.score >= 90 ? 'bg-green-100 text-green-700' :
+                  project.score >= 80 ? 'bg-blue-100 text-blue-700' :
+                  project.score >= 70 ? 'bg-yellow-100 text-yellow-700' :
                   'bg-gray-100 text-gray-700'
                 }`}>
                   {project.score}
                 </div>
               </div>
-              {project.bid_due && (
-                <div className="text-xs text-orange-600 mt-1">Due: {project.bid_due}</div>
+              {project.contractor_name && (
+                <div className="text-xs text-orange-600 mt-1">{project.contractor_name}</div>
               )}
             </div>
           ))}
@@ -123,81 +127,97 @@ const DemoOutreachSidebar = ({
   )
 }
 
-// Intent Card - Shows project details
+// Intent Card - Shows permit details
 const DemoIntentCard = ({ selectedProject }: { selectedProject?: any }) => {
   if (!selectedProject) {
     return (
       <div className="p-6 flex items-center justify-center h-full">
         <div className="text-center text-gray-500">
           <Building className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-          <div className="text-lg font-medium mb-2">No Project Selected</div>
-          <div className="text-sm">Select a project from the sidebar to view details.</div>
+          <div className="text-lg font-medium mb-2">No Permit Selected</div>
+          <div className="text-sm">Select a permit from the sidebar to view details.</div>
         </div>
       </div>
     )
   }
 
-  const score = selectedProject.score || getIntentScore(selectedProject.spec_fit || 0.8)
+  const score = selectedProject.enerpac_score || selectedProject.score || getIntentScore(selectedProject.spec_fit || 0.8)
 
   return (
     <div className="p-6 overflow-y-auto">
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900">{selectedProject.name || selectedProject.project_name}</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{selectedProject.address || selectedProject.name}</h3>
           <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
             <MapPin className="w-4 h-4" />
-            <span>{selectedProject.location}</span>
+            <span>{selectedProject.city && selectedProject.state ? `${selectedProject.city}, ${selectedProject.state}` : selectedProject.location}</span>
           </div>
+          {selectedProject.permit_number && (
+            <div className="text-xs text-gray-400 mt-1">Permit #{selectedProject.permit_number}</div>
+          )}
         </div>
         <div className={`px-3 py-1 rounded-full text-sm font-bold ${
-          score >= 4 ? 'bg-green-100 text-green-700' :
-          score >= 3 ? 'bg-yellow-100 text-yellow-700' :
+          score >= 90 ? 'bg-green-100 text-green-700' :
+          score >= 80 ? 'bg-blue-100 text-blue-700' :
+          score >= 70 ? 'bg-yellow-100 text-yellow-700' :
           'bg-gray-100 text-gray-700'
         }`}>
           Score: {score}
         </div>
       </div>
 
-      {/* Project Details */}
+      {/* Permit Details */}
       <div className="grid grid-cols-2 gap-3 mb-4">
-        {selectedProject.budget && (
+        {selectedProject.valuation_display && (
           <div className="bg-gray-50 rounded-lg p-3">
             <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
               <DollarSign className="w-3 h-3" />
-              Budget
+              Valuation
             </div>
-            <div className="font-medium text-sm">{selectedProject.budget}</div>
+            <div className="font-medium text-sm">{selectedProject.valuation_display}</div>
           </div>
         )}
-        {selectedProject.timeline && (
+        {selectedProject.issue_date && (
           <div className="bg-gray-50 rounded-lg p-3">
             <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
               <Calendar className="w-3 h-3" />
-              Timeline
+              Issue Date
             </div>
-            <div className="font-medium text-sm">{selectedProject.timeline}</div>
+            <div className="font-medium text-sm">{selectedProject.issue_date}</div>
           </div>
         )}
-        {selectedProject.project_type && (
+        {selectedProject.permit_type && (
           <div className="bg-gray-50 rounded-lg p-3">
-            <div className="text-xs text-gray-500 mb-1">Type</div>
-            <div className="font-medium text-sm">{selectedProject.project_type}</div>
+            <div className="text-xs text-gray-500 mb-1">Permit Type</div>
+            <div className="font-medium text-sm">{selectedProject.permit_type}</div>
           </div>
         )}
-        {selectedProject.stage && (
+        {selectedProject.contractor_name && (
           <div className="bg-gray-50 rounded-lg p-3">
-            <div className="text-xs text-gray-500 mb-1">Stage</div>
-            <div className="font-medium text-sm">{selectedProject.stage}</div>
+            <div className="text-xs text-gray-500 mb-1">Contractor</div>
+            <div className="font-medium text-sm">{selectedProject.contractor_name}</div>
+          </div>
+        )}
+        {selectedProject.recommended_persona && (
+          <div className="bg-gray-50 rounded-lg p-3">
+            <div className="text-xs text-gray-500 mb-1">Target Contact</div>
+            <div className="font-medium text-sm">{selectedProject.recommended_persona}</div>
+          </div>
+        )}
+        {selectedProject.outreach_window && (
+          <div className="bg-gray-50 rounded-lg p-3">
+            <div className="text-xs text-gray-500 mb-1">Outreach Window</div>
+            <div className="font-medium text-sm">{selectedProject.outreach_window}</div>
           </div>
         )}
       </div>
 
-      {/* Description */}
-      {selectedProject.description && (
+      {/* Work Description */}
+      {(selectedProject.work_description || selectedProject.description) && (
         <div className="mb-4">
-          <div className="text-xs font-medium text-gray-500 mb-2">Description</div>
-          <p className="text-sm text-gray-700">{selectedProject.description}</p>
+          <div className="text-xs font-medium text-gray-500 mb-2">Work Description</div>
+          <p className="text-sm text-gray-700">{selectedProject.work_description || selectedProject.description}</p>
         </div>
       )}
 
@@ -227,14 +247,14 @@ const DemoIntentCard = ({ selectedProject }: { selectedProject?: any }) => {
       {selectedProject.source && (
         <div className="flex items-center justify-between pt-3 border-t border-gray-200">
           <div className="text-xs text-gray-500">Source: {selectedProject.source}</div>
-          {selectedProject.project_url && (
+          {(selectedProject.permit_url || selectedProject.project_url) && (
             <a
-              href={selectedProject.project_url}
+              href={selectedProject.permit_url || selectedProject.project_url}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800"
             >
-              View Source <ExternalLink className="w-3 h-3" />
+              View Permit <ExternalLink className="w-3 h-3" />
             </a>
           )}
         </div>
@@ -457,15 +477,19 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
 
     try {
       const apiUrl = `${config.api.baseUrl.replace(/\/$/, '')}/api/enerpac/enrich-contacts`
+      const location = selectedProject.city && selectedProject.state
+        ? `${selectedProject.city}, ${selectedProject.state}`
+        : selectedProject.location || 'Milwaukee, WI'
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          project_name: selectedProject.project_name || selectedProject.name,
-          company_name: selectedProject.source || 'City of Milwaukee',
-          location: selectedProject.location || 'Milwaukee, WI',
-          project_type: selectedProject.project_type,
-          description: selectedProject.description
+          project_name: selectedProject.address || selectedProject.project_name || selectedProject.name,
+          company_name: selectedProject.contractor_name || selectedProject.source || 'General Contractor',
+          location: location,
+          project_type: selectedProject.permit_type || selectedProject.project_type,
+          description: selectedProject.work_description || selectedProject.description
         })
       })
 
@@ -561,7 +585,7 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
         <div className="text-center text-gray-500">
           <UserPlus className="w-12 h-12 mx-auto mb-3 text-gray-300" />
           <div className="text-lg font-medium mb-2">No Contacts</div>
-          <div className="text-sm">Select a project to view contacts.</div>
+          <div className="text-sm">Select a permit to view contacts.</div>
         </div>
       </div>
     )
@@ -786,15 +810,30 @@ const DemoOutreachDrafting = ({ selectedProject }: { selectedProject?: any }) =>
 
     await new Promise(resolve => setTimeout(resolve, 2500))
 
-    const projectType = selectedProject.project_type || 'construction'
-    const templates: {[key: string]: string} = {
-      'Bridge': `Enerpac's synchronized lifting systems are ideal for your bridge project. Our EVO hydraulic systems can safely lift bridge decks for bearing replacement with precision up to 0.040" between lift points. We've successfully supported similar projects including the Savio Viaduct (1,224-6,600 tonnes) and UK bridge deck installations.`,
-      'Energy': `For your power plant work, Enerpac offers precision bolting and tensioning tools essential for turbine maintenance and generator repairs. Our tools ensure joint integrity on critical flanges, and we can mobilize quickly for scheduled outages. Our heat exchanger positioning equipment can speed up your maintenance schedule.`,
-      'Industrial': `Enerpac provides heavy lifting and positioning solutions for industrial equipment installation. Our hydraulic gantry systems and jack-up equipment can handle multi-ton generators, cooling systems, and manufacturing machinery with precision positioning and leveling capabilities.`,
-      'default': `Enerpac offers high-pressure hydraulic tools and synchronized lifting systems for your project. Our equipment is proven in bridge construction, power generation, and industrial maintenance applications. We can provide customized solutions based on your specific lifting, positioning, and bolting requirements.`
+    // Generate personalized value prop based on permit data
+    const reasonCodes = selectedProject.reason_codes || []
+    const contractor = selectedProject.contractor_name || 'your team'
+    const valuation = selectedProject.valuation_display || ''
+    const workDesc = selectedProject.work_description || selectedProject.description || ''
+
+    let template = ''
+
+    // Match based on reason codes for more specific messaging
+    if (reasonCodes.some((c: string) => c.includes('bearing') || c.includes('bridge') || c.includes('jacking'))) {
+      template = `For your bridge work${valuation ? ` (${valuation} project)` : ''}, Enerpac's synchronized lifting systems are the industry standard. Our EVO hydraulic systems provide precision lifting up to 0.040" between points for bearing replacement. We can support ${contractor} with rental equipment and on-site technical support.`
+    } else if (reasonCodes.some((c: string) => c.includes('refinery') || c.includes('heat_exchanger') || c.includes('bolt_tensioning'))) {
+      template = `For your refinery/process equipment work, Enerpac offers hydraulic bundle extractors for heat exchanger maintenance and precision bolting/tensioning tools for flange integrity. We support turnaround schedules with rapid equipment mobilization and can provide ${contractor} with the tools needed for this ${valuation} project.`
+    } else if (reasonCodes.some((c: string) => c.includes('steel_mill') || c.includes('rolling_mill') || c.includes('heavy_equipment'))) {
+      template = `For your heavy industrial equipment installation${valuation ? ` (${valuation})` : ''}, Enerpac provides synchronized jacking, precision alignment tools, and heavy-duty positioning systems. Our equipment is proven in steel mill and manufacturing applications - perfect for the scope ${contractor} is handling.`
+    } else if (reasonCodes.some((c: string) => c.includes('generator') || c.includes('equipment_install'))) {
+      template = `For your equipment installation project${valuation ? ` (${valuation})` : ''}, Enerpac hydraulic gantry and positioning systems handle multi-ton equipment with precision leveling. We can support ${contractor} with rental equipment and technical expertise for generator, HVAC, or heavy machinery placement.`
+    } else if (reasonCodes.some((c: string) => c.includes('structural_steel') || c.includes('foundation'))) {
+      template = `For your structural work${valuation ? ` (${valuation} project)` : ''}, Enerpac provides hydraulic jacking and positioning equipment for steel erection and foundation work. Our systems ensure precision alignment during assembly. We can support ${contractor} with the right equipment for this project.`
+    } else {
+      template = `Enerpac offers high-pressure hydraulic tools and synchronized lifting systems for your ${valuation} project. Our equipment supports ${contractor} with precision positioning, heavy lifting, and bolting solutions. We can customize rental packages based on your specific requirements.`
     }
 
-    setValueProp(templates[projectType] || templates.default)
+    setValueProp(template)
     setIsGenerating(false)
   }
 
@@ -810,8 +849,8 @@ const DemoOutreachDrafting = ({ selectedProject }: { selectedProject?: any }) =>
       <div className="p-6 flex items-center justify-center h-full">
         <div className="text-center text-gray-500">
           <Mail className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-          <div className="text-lg font-medium mb-2">No Project Selected</div>
-          <div className="text-sm">Select a project to draft outreach.</div>
+          <div className="text-lg font-medium mb-2">No Permit Selected</div>
+          <div className="text-sm">Select a permit to draft outreach.</div>
         </div>
       </div>
     )
@@ -851,7 +890,7 @@ const DemoOutreachDrafting = ({ selectedProject }: { selectedProject?: any }) =>
           <textarea
             value={valueProp}
             onChange={(e) => setValueProp(e.target.value)}
-            placeholder="Describe how Enerpac can help with this project..."
+            placeholder="Describe how Enerpac can help with this permit's scope of work..."
             rows={5}
             className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
           />

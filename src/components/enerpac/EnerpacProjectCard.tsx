@@ -9,13 +9,13 @@ interface Contact {
 
 interface Lead {
   id: string
-  organization_id: string
-  project_name: string
-  location: string
-  bid_due: string
+  organization_id?: string
+  project_name?: string
+  location?: string
+  bid_due?: string
   spec_fit: number
-  urgency: number
-  confidence: number
+  urgency?: number
+  confidence?: number
   reason_codes?: string[]
   description?: string
   project_url?: string
@@ -29,6 +29,24 @@ interface Lead {
   stage?: string
   source?: string
   scope_keywords?: string[]
+  // Permit-specific fields
+  permit_number?: string
+  issue_date?: string
+  address?: string
+  city?: string
+  state?: string
+  zip?: string
+  permit_type?: string
+  work_description?: string
+  valuation?: number
+  valuation_display?: string
+  contractor_name?: string
+  contractor_phone?: string
+  owner_name?: string
+  permit_url?: string
+  enerpac_score?: number
+  recommended_persona?: string
+  outreach_window?: string
 }
 
 interface EnerpacProjectCardProps {
@@ -184,9 +202,9 @@ export const EnerpacProjectCard: React.FC<EnerpacProjectCardProps> = ({ lead, is
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      {/* Project Header - Enhanced */}
+      {/* Project Header - Permit Style */}
       <div className="relative">
-        <div className="h-28 bg-gradient-to-r from-orange-500 to-orange-600 relative overflow-hidden">
+        <div className="h-32 bg-gradient-to-r from-orange-500 to-orange-600 relative overflow-hidden">
           <div className="absolute inset-0 bg-black bg-opacity-20"></div>
         </div>
 
@@ -197,22 +215,34 @@ export const EnerpacProjectCard: React.FC<EnerpacProjectCardProps> = ({ lead, is
                 <Building className="w-7 h-7" />
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-white mb-1">
-                  {lead.project_name}
+                <div className="flex items-center gap-2 mb-1">
+                  {lead.permit_number && (
+                    <span className="px-2 py-0.5 bg-white/20 rounded text-xs font-mono">
+                      #{lead.permit_number}
+                    </span>
+                  )}
+                  {lead.valuation_display && (
+                    <span className="px-2 py-0.5 bg-green-500/80 rounded text-xs font-semibold">
+                      {lead.valuation_display}
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-1">
+                  {lead.address || lead.project_name}
                 </h3>
                 <div className="flex items-center gap-4 text-sm text-gray-200">
                   <div className="flex items-center gap-1">
                     <MapPin className="w-4 h-4" />
-                    {lead.location}
+                    {lead.city}, {lead.state}
                   </div>
                   <div className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
-                    Due: {lead.bid_due}
+                    {lead.issue_date}
                   </div>
-                  {lead.project_id && (
+                  {lead.contractor_name && (
                     <div className="flex items-center gap-1">
-                      <Hash className="w-4 h-4" />
-                      {lead.project_id}
+                      <Users className="w-4 h-4" />
+                      {lead.contractor_name}
                     </div>
                   )}
                 </div>
@@ -220,9 +250,9 @@ export const EnerpacProjectCard: React.FC<EnerpacProjectCardProps> = ({ lead, is
             </div>
             <div className="text-right">
               <div className="text-3xl font-bold text-white">
-                {getIntentScore(lead.spec_fit)}
+                {lead.enerpac_score || getIntentScore(lead.spec_fit)}
               </div>
-              <div className="text-xs text-gray-200">Intent Score</div>
+              <div className="text-xs text-gray-200">Enerpac Score</div>
             </div>
           </div>
         </div>
@@ -241,14 +271,14 @@ export const EnerpacProjectCard: React.FC<EnerpacProjectCardProps> = ({ lead, is
               <div className="text-xs text-gray-600 mt-1">Intent</div>
             </div>
             <div className="text-center">
-              <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full text-lg font-bold ${getScoreBadgeColor(lead.urgency)}`}>
-                {Math.round(lead.urgency * 5)}
+              <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full text-lg font-bold ${getScoreBadgeColor(lead.urgency ?? 0.5)}`}>
+                {Math.round((lead.urgency ?? 0.5) * 5)}
               </div>
               <div className="text-xs text-gray-600 mt-1">Urgency</div>
             </div>
             <div className="text-center">
-              <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full text-lg font-bold ${getScoreBadgeColor(lead.confidence)}`}>
-                {Math.round(lead.confidence * 5)}
+              <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full text-lg font-bold ${getScoreBadgeColor(lead.confidence ?? 0.5)}`}>
+                {Math.round((lead.confidence ?? 0.5) * 5)}
               </div>
               <div className="text-xs text-gray-600 mt-1">Confidence</div>
             </div>
@@ -270,66 +300,73 @@ export const EnerpacProjectCard: React.FC<EnerpacProjectCardProps> = ({ lead, is
           </div>
         )}
 
-        {/* Project Details - NEW */}
+        {/* Permit Details */}
         <div>
-          <h4 className="text-sm font-medium text-gray-900 mb-3">Project Details</h4>
+          <h4 className="text-sm font-medium text-gray-900 mb-3">Permit Details</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex items-center gap-3">
-              <MapPin className="w-5 h-5 text-gray-400" />
-              <div>
-                <div className="text-xs text-gray-500">Location</div>
-                <div className="text-sm text-gray-900">{lead.location}</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Calendar className="w-5 h-5 text-gray-400" />
-              <div>
-                <div className="text-xs text-gray-500">Bid Due</div>
-                <div className="text-sm text-gray-900">{lead.bid_due}</div>
-              </div>
-            </div>
-            {lead.project_type && (
-              <div className="flex items-center gap-3">
-                <Building className="w-5 h-5 text-gray-400" />
-                <div>
-                  <div className="text-xs text-gray-500">Project Type</div>
-                  <div className="text-sm text-gray-900">{lead.project_type}</div>
-                </div>
-              </div>
-            )}
-            {lead.timeline && (
-              <div className="flex items-center gap-3">
-                <Clock className="w-5 h-5 text-gray-400" />
-                <div>
-                  <div className="text-xs text-gray-500">Timeline</div>
-                  <div className="text-sm text-gray-900">{lead.timeline}</div>
-                </div>
-              </div>
-            )}
-            {lead.stage && (
-              <div className="flex items-center gap-3">
-                <Target className="w-5 h-5 text-gray-400" />
-                <div>
-                  <div className="text-xs text-gray-500">Stage</div>
-                  <div className="text-sm text-gray-900">{lead.stage}</div>
-                </div>
-              </div>
-            )}
-            {lead.project_id && (
-              <div className="flex items-center gap-3">
-                <Hash className="w-5 h-5 text-gray-400" />
-                <div>
-                  <div className="text-xs text-gray-500">Project ID</div>
-                  <div className="text-sm text-gray-900">{lead.project_id}</div>
-                </div>
-              </div>
-            )}
-            {lead.structures && lead.structures.length > 0 && (
+            {lead.permit_type && (
               <div className="flex items-center gap-3">
                 <Layers className="w-5 h-5 text-gray-400" />
                 <div>
-                  <div className="text-xs text-gray-500">Structure Type</div>
-                  <div className="text-sm text-gray-900">{lead.structures.join(', ')}</div>
+                  <div className="text-xs text-gray-500">Permit Type</div>
+                  <div className="text-sm text-gray-900">{lead.permit_type}</div>
+                </div>
+              </div>
+            )}
+            {lead.issue_date && (
+              <div className="flex items-center gap-3">
+                <Calendar className="w-5 h-5 text-gray-400" />
+                <div>
+                  <div className="text-xs text-gray-500">Issue Date</div>
+                  <div className="text-sm text-gray-900">{lead.issue_date}</div>
+                </div>
+              </div>
+            )}
+            {lead.contractor_name && (
+              <div className="flex items-center gap-3">
+                <Users className="w-5 h-5 text-gray-400" />
+                <div>
+                  <div className="text-xs text-gray-500">Contractor</div>
+                  <div className="text-sm text-gray-900">{lead.contractor_name}</div>
+                  {lead.contractor_phone && (
+                    <div className="text-xs text-blue-600">{lead.contractor_phone}</div>
+                  )}
+                </div>
+              </div>
+            )}
+            {lead.owner_name && (
+              <div className="flex items-center gap-3">
+                <Building className="w-5 h-5 text-gray-400" />
+                <div>
+                  <div className="text-xs text-gray-500">Owner</div>
+                  <div className="text-sm text-gray-900">{lead.owner_name}</div>
+                </div>
+              </div>
+            )}
+            {lead.recommended_persona && (
+              <div className="flex items-center gap-3">
+                <Target className="w-5 h-5 text-gray-400" />
+                <div>
+                  <div className="text-xs text-gray-500">Target Contact</div>
+                  <div className="text-sm text-gray-900">{lead.recommended_persona}</div>
+                </div>
+              </div>
+            )}
+            {lead.outreach_window && (
+              <div className="flex items-center gap-3">
+                <Clock className="w-5 h-5 text-gray-400" />
+                <div>
+                  <div className="text-xs text-gray-500">Outreach Window</div>
+                  <div className="text-sm text-gray-900">{lead.outreach_window}</div>
+                </div>
+              </div>
+            )}
+            {lead.source && (
+              <div className="flex items-center gap-3">
+                <Hash className="w-5 h-5 text-gray-400" />
+                <div>
+                  <div className="text-xs text-gray-500">Source</div>
+                  <div className="text-sm text-gray-900">{lead.source}</div>
                 </div>
               </div>
             )}
@@ -385,13 +422,13 @@ export const EnerpacProjectCard: React.FC<EnerpacProjectCardProps> = ({ lead, is
           </div>
         )}
 
-        {/* Project Description - Full Text, No Truncation */}
-        {lead.description && (
+        {/* Work Description */}
+        {(lead.work_description || lead.description) && (
           <div>
-            <h4 className="text-sm font-medium text-gray-900 mb-3">Project Description</h4>
+            <h4 className="text-sm font-medium text-gray-900 mb-3">Work Description</h4>
             <div className="bg-gray-50 rounded-lg p-4">
               <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-                {lead.description}
+                {lead.work_description || lead.description}
               </p>
             </div>
           </div>
@@ -456,16 +493,16 @@ export const EnerpacProjectCard: React.FC<EnerpacProjectCardProps> = ({ lead, is
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-center">
-          {lead.project_url && (
+        <div className="flex justify-center gap-3">
+          {(lead.permit_url || lead.project_url) && (
             <a
-              href={lead.project_url}
+              href={lead.permit_url || lead.project_url}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium"
             >
               <ExternalLink className="w-4 h-4" />
-              View Source
+              View Permit
             </a>
           )}
         </div>

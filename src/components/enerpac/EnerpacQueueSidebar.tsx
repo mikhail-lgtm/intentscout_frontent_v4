@@ -3,17 +3,25 @@ import { Building, TrendingUp } from 'lucide-react'
 
 interface Lead {
   id: string
-  organization_id: string
-  project_name: string
-  location: string
-  bid_due: string
+  organization_id?: string
+  project_name?: string
+  location?: string
+  bid_due?: string
   spec_fit: number
-  urgency: number
-  confidence: number
+  urgency?: number
+  confidence?: number
   reason_codes?: string[]
   description?: string
   project_url?: string
   decision?: 'approve' | 'reject' | null
+  // Permit-specific fields
+  permit_number?: string
+  address?: string
+  city?: string
+  state?: string
+  valuation_display?: string
+  enerpac_score?: number
+  contractor_name?: string
 }
 
 interface EnerpacQueueSidebarProps {
@@ -99,10 +107,13 @@ export const EnerpacQueueSidebar: React.FC<EnerpacQueueSidebarProps> = ({
   // Convert spec_fit (0-1) to intent score (0-5) like LinkedIn signals
   const getIntentScore = (spec_fit: number) => Math.round(spec_fit * 5)
 
-  // Calculate score distribution
-  const score5Count = leads.filter(l => getIntentScore(l.spec_fit) === 5).length
-  const score4Count = leads.filter(l => getIntentScore(l.spec_fit) === 4).length
-  const score3Count = leads.filter(l => getIntentScore(l.spec_fit) === 3).length
+  // Get Enerpac score (0-100 scale) or fallback to calculated
+  const getScore = (lead: Lead) => lead.enerpac_score || Math.round(lead.spec_fit * 100)
+
+  // Calculate score distribution using enerpac_score (0-100 scale)
+  const score5Count = leads.filter(l => getScore(l) >= 90).length
+  const score4Count = leads.filter(l => getScore(l) >= 80 && getScore(l) < 90).length
+  const score3Count = leads.filter(l => getScore(l) >= 70 && getScore(l) < 80).length
   const highScoreCount = score5Count + score4Count + score3Count
 
   return (
@@ -110,32 +121,32 @@ export const EnerpacQueueSidebar: React.FC<EnerpacQueueSidebarProps> = ({
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-semibold text-gray-900">
-          Project Queue
+          Permit Queue
         </h3>
         <span className="text-sm text-gray-500">
-          {totalLeads > 0 ? `${totalLeads} projects` : "Empty"}
+          {totalLeads > 0 ? `${totalLeads} permits` : "Empty"}
         </span>
       </div>
 
-      {/* Intent Score Stats */}
+      {/* Enerpac Score Stats */}
       {totalLeads > 0 && (
         <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
-          <div className="text-xs font-medium text-gray-700 mb-2">Intent Score Distribution</div>
+          <div className="text-xs font-medium text-gray-700 mb-2">Enerpac Score Distribution</div>
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-green-500 rounded-full"></div>
               <span className="text-xs text-green-600 font-medium">{score5Count}</span>
-              <span className="text-xs text-gray-500">5s</span>
+              <span className="text-xs text-gray-500">90+</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
               <span className="text-xs text-blue-600 font-medium">{score4Count}</span>
-              <span className="text-xs text-gray-500">4s</span>
+              <span className="text-xs text-gray-500">80+</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
               <span className="text-xs text-yellow-600 font-medium">{score3Count}</span>
-              <span className="text-xs text-gray-500">3s</span>
+              <span className="text-xs text-gray-500">70+</span>
             </div>
             <div className="text-xs text-gray-500">
               {highScoreCount}/{totalLeads} high
@@ -189,29 +200,30 @@ export const EnerpacQueueSidebar: React.FC<EnerpacQueueSidebarProps> = ({
                     </div>
                   </div>
 
-                  {/* Project info */}
+                  {/* Permit info */}
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-gray-900 truncate">
-                      {lead.project_name || "Untitled Project"}
+                      {lead.address || lead.project_name || "Untitled Permit"}
                     </div>
                     <div className="text-xs text-gray-500 truncate">
-                      {lead.location}
+                      {lead.city && lead.state ? `${lead.city}, ${lead.state}` : lead.location}
+                      {lead.valuation_display && ` - ${lead.valuation_display}`}
                     </div>
                   </div>
 
-                  {/* Intent Score (0-5) */}
+                  {/* Enerpac Score */}
                   <div className="flex-shrink-0 flex items-center gap-1">
                     <TrendingUp className={`w-3 h-3 ${
-                      intentScore >= 4 ? 'text-green-500' :
-                      intentScore >= 3 ? 'text-blue-500' :
-                      intentScore >= 2 ? 'text-yellow-500' : 'text-gray-400'
+                      (lead.enerpac_score || intentScore) >= 85 ? 'text-green-500' :
+                      (lead.enerpac_score || intentScore) >= 70 ? 'text-blue-500' :
+                      (lead.enerpac_score || intentScore) >= 50 ? 'text-yellow-500' : 'text-gray-400'
                     }`} />
                     <span className={`text-xs font-medium ${
-                      intentScore >= 4 ? 'text-green-600' :
-                      intentScore >= 3 ? 'text-blue-600' :
-                      intentScore >= 2 ? 'text-yellow-600' : 'text-gray-500'
+                      (lead.enerpac_score || intentScore) >= 85 ? 'text-green-600' :
+                      (lead.enerpac_score || intentScore) >= 70 ? 'text-blue-600' :
+                      (lead.enerpac_score || intentScore) >= 50 ? 'text-yellow-600' : 'text-gray-500'
                     }`}>
-                      {intentScore}
+                      {lead.enerpac_score || intentScore}
                     </span>
                   </div>
                 </div>

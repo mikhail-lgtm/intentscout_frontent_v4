@@ -155,7 +155,7 @@ export const EnerpacDemoPage = () => {
       <div className="flex-shrink-0 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 bg-gray-50 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <h1 className="text-xl font-bold text-gray-900">Milwaukee Area Bids</h1>
+            <h1 className="text-xl font-bold text-gray-900">Building Permits</h1>
 
             <div className="flex items-center gap-2">
               <button
@@ -170,17 +170,14 @@ export const EnerpacDemoPage = () => {
 
           {/* Status Text */}
           <div className="flex items-center gap-3 text-xs text-gray-500">
-            <span>Source: QuestCDN / City Website</span>
+            <span>Source: Socrata Open Data / City Portals</span>
             {usingFallback && <span className="text-orange-600">Demo Data</span>}
-            <span>Projects: {leads.length}</span>
+            <span>Permits: {leads.length}</span>
             {leads.length > 0 && (
               <>
                 <span>|</span>
                 <span className="text-green-600 font-medium">
                   {approvedProjects.length} Approved
-                </span>
-                <span className="text-blue-600 font-medium">
-                  {leads.filter(l => Math.round(l.spec_fit * 5) === 3).length} Score 3
                 </span>
               </>
             )}
@@ -198,7 +195,7 @@ export const EnerpacDemoPage = () => {
             <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
               <div className="flex items-center gap-2">
                 <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></div>
-                <div className="text-blue-700">Loading Milwaukee area bids...</div>
+                <div className="text-blue-700">Loading building permits...</div>
               </div>
             </div>
           )}
@@ -230,10 +227,10 @@ export const EnerpacDemoPage = () => {
                 <Building className="w-8 h-8 text-gray-400" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                No Projects Found
+                No Permits Found
               </h3>
               <p className="text-gray-600 mb-6">
-                No bids are currently available for Milwaukee area.
+                No building permits are currently available.
                 Try refreshing to check for new opportunities.
               </p>
               <div className="flex justify-center gap-3">
@@ -262,13 +259,13 @@ export const EnerpacDemoPage = () => {
           {!loading && leads.length > 0 && currentIndex >= leads.length && (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
               <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <span className="text-green-600 text-2xl">🎉</span>
+                <TrendingUp className="w-8 h-8 text-green-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                All Projects Reviewed!
+                All Permits Reviewed!
               </h3>
               <p className="text-gray-600 mb-6">
-                You've completed your review of all {leads.length} Milwaukee area bids.
+                You've completed your review of all {leads.length} building permits.
               </p>
               <button
                 onClick={() => {
