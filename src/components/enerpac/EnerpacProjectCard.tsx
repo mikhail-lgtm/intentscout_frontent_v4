@@ -3,8 +3,10 @@ import { Building, Calendar, ExternalLink, MapPin, ChevronDown, ChevronUp, Trend
 import ReactMarkdown from 'react-markdown'
 
 interface Contact {
-  email: string
+  email?: string
   name?: string
+  role?: string
+  phone?: string
 }
 
 interface Lead {
