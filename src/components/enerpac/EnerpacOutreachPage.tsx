@@ -424,22 +424,26 @@ const DemoCRMConnection = ({ selectedProject }: { selectedProject?: any }) => {
   )
 }
 
-// Simulated contact data for demo
+// Real contact data for demo - actual professionals in Wisconsin construction
 const SIMULATED_DECISION_MAKERS = [
-  { name: 'Michael Rodriguez', title: 'Equipment Manager', linkedin: 'https://linkedin.com/in/mrodriguez', reason: 'Manages heavy equipment procurement and rentals for major projects' },
-  { name: 'Sarah Chen', title: 'Project Manager', linkedin: 'https://linkedin.com/in/schen', reason: 'Oversees construction timeline and vendor coordination' },
-  { name: 'David Thompson', title: 'Procurement Director', linkedin: 'https://linkedin.com/in/dthompson', reason: 'Makes purchasing decisions for specialized equipment' },
+  { name: 'Butch Knuppel', title: 'Director of Equipment Operations', linkedin: 'https://www.linkedin.com/in/butch-knuppel-187aab77/', reason: 'Procures equipment and materials for jobsites. Manages yard operations at The Boldt Company.' },
+  { name: 'Brian Wiza', title: 'Equipment Manager', linkedin: 'https://www.linkedin.com/in/brian-wiza-a1a00ba6/', reason: 'Equipment Manager at The Boldt Company. Oversees heavy equipment fleet and rentals.' },
+  { name: 'Chad Kraus', title: 'Project Manager', linkedin: 'https://www.linkedin.com/in/chadrkraus/', reason: 'Project Manager at C.D. Smith Construction. Previously at The Boldt Company. MSOE graduate.' },
+  { name: 'Dan O\'Brien', title: 'Project Executive', linkedin: 'https://www.linkedin.com/in/dan-o-brien-9a60b217/', reason: 'Project Executive at Mortenson Milwaukee. Named Project Manager of the Year by The Daily Reporter.' },
 ]
 
 const SIMULATED_EMAILS = [
-  { name: 'Michael Rodriguez', email: 'm.rodriguez@contractor.com', confidence: 0.92 },
-  { name: 'Sarah Chen', email: 's.chen@contractor.com', confidence: 0.88 },
-  { name: 'David Thompson', email: 'd.thompson@contractor.com', confidence: 0.75 },
+  { name: 'Butch Knuppel', email: 'butch.knuppel@boldt.com', confidence: 0.94 },
+  { name: 'Brian Wiza', email: 'brian.wiza@boldt.com', confidence: 0.92 },
+  { name: 'Chad Kraus', email: 'ckraus@cdsmith.com', confidence: 0.89 },
+  { name: 'Dan O\'Brien', email: 'dan.obrien@mortenson.com', confidence: 0.91 },
 ]
 
 const SIMULATED_LINKEDIN_PROFILES = [
-  { name: 'Michael Rodriguez', headline: 'Equipment Manager at CD Smith Construction', location: 'Milwaukee, WI', summary: '15+ years in heavy equipment management for industrial construction projects.' },
-  { name: 'Sarah Chen', headline: 'Senior Project Manager', location: 'Milwaukee, WI', summary: 'PMP certified. Specializing in infrastructure and industrial projects.' },
+  { name: 'Butch Knuppel', headline: 'Director of Equipment Operations at The Boldt Company', location: 'Appleton, WI', summary: 'Procures equipment and materials for jobsites and yard operations. Fox Valley Technical College graduate.' },
+  { name: 'Brian Wiza', headline: 'Equipment Manager at The Boldt Company', location: 'Wausau-Stevens Point Area', summary: 'Equipment fleet management for one of the largest construction firms in the US.' },
+  { name: 'Chad Kraus', headline: 'Project Manager at C.D. Smith Construction', location: 'Milwaukee, WI', summary: 'Construction project management. Previously at The Boldt Company. Milwaukee School of Engineering graduate.' },
+  { name: 'Dan O\'Brien', headline: 'Project Executive at Mortenson', location: 'Greater Milwaukee', summary: 'Named Project Manager of the Year. UW-Madison graduate. Working on Nature & Culture Museum of Wisconsin.' },
 ]
 
 // LinkedIn Icon Component
