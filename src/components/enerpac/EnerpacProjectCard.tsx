@@ -390,32 +390,37 @@ export const EnerpacProjectCard: React.FC<EnerpacProjectCardProps> = ({ lead, is
           </div>
         )}
 
-        {/* Contacts */}
+        {/* Companies */}
         {lead.contacts && lead.contacts.length > 0 && (
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <Users className="w-5 h-5 text-gray-600" />
-              <h4 className="text-sm font-medium text-gray-900">Key Contacts</h4>
+              <Building className="w-5 h-5 text-gray-600" />
+              <h4 className="text-sm font-medium text-gray-900">Companies Involved</h4>
             </div>
             <div className="space-y-2">
               {lead.contacts.slice(0, 3).map((contact, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div>
                     <div className="text-sm font-medium text-gray-900">
-                      {contact.name || 'Contact'}
+                      {contact.name || 'Unknown Company'}
                     </div>
-                    <a 
+                    <div className="text-xs text-gray-500">
+                      {contact.role || 'Contractor'}
+                    </div>
+                  </div>
+                  {contact.email && (
+                    <a
                       href={`mailto:${contact.email}`}
-                      className="text-sm text-blue-600 hover:text-blue-700"
+                      className="text-xs text-blue-600 hover:text-blue-700"
                     >
                       {contact.email}
                     </a>
-                  </div>
+                  )}
                 </div>
               ))}
               {lead.contacts.length > 3 && (
                 <div className="text-xs text-gray-500 text-center">
-                  +{lead.contacts.length - 3} more contacts
+                  +{lead.contacts.length - 3} more companies
                 </div>
               )}
             </div>
