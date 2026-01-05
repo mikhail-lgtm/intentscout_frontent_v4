@@ -442,10 +442,20 @@ const SIMULATED_LINKEDIN_PROFILES = [
   { name: 'Sarah Chen', headline: 'Senior Project Manager', location: 'Milwaukee, WI', summary: 'PMP certified. Specializing in infrastructure and industrial projects.' },
 ]
 
-// Contacts Component with full IntentScout-like workflow
+// LinkedIn Icon Component
+const LinkedInIcon: React.FC<{ className?: string }> = ({ className = "w-4 h-4" }) => {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+    </svg>
+  )
+}
+
+// Contacts Component - Matches main site design
 const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) => {
   const [contacts, setContacts] = useState<any[]>([])
   const [activeContactMenu, setActiveContactMenu] = useState<string | null>(null)
+  const [showHeaderMenu, setShowHeaderMenu] = useState(false)
 
   // Modal states
   const [showDMFinder, setShowDMFinder] = useState(false)
@@ -459,8 +469,8 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
   const [dmProgress, setDmProgress] = useState(0)
   const [foundDMs, setFoundDMs] = useState<any[]>([])
 
-  const [emailStatus, setEmailStatus] = useState<'idle' | 'searching' | 'completed'>('idle')
-  const [emailProgress, setEmailProgress] = useState(0)
+  const [emailFinderStatus, setEmailFinderStatus] = useState<'idle' | 'searching' | 'completed'>('idle')
+  const [emailFinderProgress, setEmailFinderProgress] = useState(0)
   const [foundEmails, setFoundEmails] = useState<any[]>([])
 
   const [linkedinStatus, setLinkedinStatus] = useState<'idle' | 'scraping' | 'completed'>('idle')
@@ -493,7 +503,7 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
     }
     // Reset all states
     setDmStatus('idle')
-    setEmailStatus('idle')
+    setEmailFinderStatus('idle')
     setLinkedinStatus('idle')
     setEmailGenStatus('idle')
     setFoundDMs([])
@@ -501,6 +511,20 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
     setScrapedProfiles([])
     setGeneratedEmails([])
   }, [selectedProject?.id])
+
+  // Close menus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setActiveContactMenu(null)
+      setShowHeaderMenu(false)
+    }
+    if (activeContactMenu || showHeaderMenu) {
+      document.addEventListener('click', handleClickOutside)
+    }
+    return () => {
+      document.removeEventListener('click', handleClickOutside)
+    }
+  }, [activeContactMenu, showHeaderMenu])
 
   // Decision Maker Finder simulation
   const startDMSearch = useCallback(() => {
@@ -532,7 +556,7 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
       linkedinScraped: false,
       emailFound: false,
       emailConfidence: 0,
-      source: 'Decision Maker Finder',
+      source: 'decision_maker_finder',
       reason: dm.reason
     }))
     setContacts(prev => [...prev, ...newContacts])
@@ -541,16 +565,15 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
 
   // Email Finder simulation
   const startEmailSearch = useCallback(() => {
-    setEmailStatus('searching')
-    setEmailProgress(0)
+    setEmailFinderStatus('searching')
+    setEmailFinderProgress(0)
     setFoundEmails([])
 
     const interval = setInterval(() => {
-      setEmailProgress(prev => {
+      setEmailFinderProgress(prev => {
         if (prev >= 100) {
           clearInterval(interval)
-          setEmailStatus('completed')
-          // Match emails to existing contacts
+          setEmailFinderStatus('completed')
           const emailResults = contacts.map(c => {
             const match = SIMULATED_EMAILS.find(e => e.name === c.name)
             return match || { name: c.name, email: `${c.name.toLowerCase().replace(' ', '.')}@company.com`, confidence: 0.6 + Math.random() * 0.35 }
@@ -580,8 +603,8 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
     setLinkedinProgress(0)
     setScrapedProfiles([])
 
+    const contactsToScrape = contacts.filter(c => c.linkedinUrl || c.source === 'decision_maker_finder')
     let currentIndex = 0
-    const contactsToScrape = contacts.filter(c => c.linkedinUrl || c.source === 'Decision Maker Finder')
 
     const interval = setInterval(() => {
       setLinkedinProgress(prev => {
@@ -662,19 +685,22 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
     }
   }
 
-  const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 0.85) return 'text-green-600 bg-green-50'
-    if (confidence >= 0.7) return 'text-yellow-600 bg-yellow-50'
-    return 'text-red-600 bg-red-50'
-  }
-
   if (!selectedProject) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center text-gray-500">
-          <UserPlus className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-          <div className="text-lg font-medium mb-2">No Contacts</div>
-          <div className="text-sm">Select a permit to view contacts.</div>
+      <div className="h-full flex flex-col">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-gray-900">Contacts</h3>
+          </div>
+          <button disabled className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md bg-blue-500 text-white opacity-50 cursor-not-allowed">
+            <MoreVertical className="w-3 h-3" />
+            Actions
+          </button>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center text-gray-400">
+            <div className="text-sm">Select a signal to view contacts</div>
+          </div>
         </div>
       </div>
     )
@@ -682,156 +708,348 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
 
   return (
     <div className="h-full flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      {/* Header with title and Actions button */}
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <h3 className="text-lg font-semibold text-gray-900">Contacts</h3>
           {contacts.length > 0 && (
-            <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full">
-              {contacts.length}
-            </span>
+            <span className="text-sm text-gray-500">({contacts.length})</span>
           )}
         </div>
-        <button
-          onClick={() => setShowAddContact(true)}
-          className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded"
-          title="Add Contact"
-        >
-          <Plus className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="grid grid-cols-2 gap-2 mb-3">
-        <button
-          onClick={() => { setShowDMFinder(true); if (dmStatus === 'idle') startDMSearch(); }}
-          className={`px-3 py-2 text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 transition-colors ${
-            dmStatus === 'completed'
-              ? 'bg-green-100 text-green-700 border border-green-200'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          <Users className="w-3.5 h-3.5" />
-          Find Decision Makers
-          {dmStatus === 'completed' && <Check className="w-3.5 h-3.5" />}
-        </button>
-        <button
-          onClick={() => { setShowEmailFinder(true); if (emailStatus === 'idle') startEmailSearch(); }}
-          disabled={contacts.length === 0}
-          className={`px-3 py-2 text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 transition-colors ${
-            emailStatus === 'completed'
-              ? 'bg-green-100 text-green-700 border border-green-200'
-              : contacts.length === 0
-              ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          <Mail className="w-3.5 h-3.5" />
-          Find Emails
-          {emailStatus === 'completed' && <Check className="w-3.5 h-3.5" />}
-        </button>
-        <button
-          onClick={() => { setShowLinkedInScraper(true); if (linkedinStatus === 'idle') startLinkedInScrape(); }}
-          disabled={contacts.length === 0}
-          className={`px-3 py-2 text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 transition-colors ${
-            linkedinStatus === 'completed'
-              ? 'bg-green-100 text-green-700 border border-green-200'
-              : contacts.length === 0
-              ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          <Linkedin className="w-3.5 h-3.5" />
-          Scrape LinkedIn
-          {linkedinStatus === 'completed' && <Check className="w-3.5 h-3.5" />}
-        </button>
-        <button
-          onClick={() => { setShowEmailGenerator(true); if (emailGenStatus === 'idle') startEmailGeneration(); }}
-          disabled={contacts.filter(c => c.email).length === 0}
-          className={`px-3 py-2 text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 transition-colors ${
-            emailGenStatus === 'completed'
-              ? 'bg-green-100 text-green-700 border border-green-200'
-              : contacts.filter(c => c.email).length === 0
-              ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
-              : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
-          }`}
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          Generate Emails
-          {emailGenStatus === 'completed' && <Check className="w-3.5 h-3.5" />}
-        </button>
-      </div>
-
-      {/* Add Contact Form */}
-      {showAddContact && (
-        <div className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-sm font-medium">Add Contact</div>
-            <button onClick={() => setShowAddContact(false)} className="text-gray-400 hover:text-gray-600">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-          <div className="space-y-2">
-            <input type="text" placeholder="Name" value={newContact.name} onChange={(e) => setNewContact(prev => ({ ...prev, name: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-200 rounded text-sm" />
-            <input type="text" placeholder="Role" value={newContact.role} onChange={(e) => setNewContact(prev => ({ ...prev, role: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-200 rounded text-sm" />
-            <input type="email" placeholder="Email" value={newContact.email} onChange={(e) => setNewContact(prev => ({ ...prev, email: e.target.value }))} className="w-full px-3 py-1.5 border border-gray-200 rounded text-sm" />
-            <button onClick={handleAddContact} className="w-full px-3 py-1.5 bg-orange-500 text-white rounded text-sm hover:bg-orange-600">Add Contact</button>
-          </div>
-        </div>
-      )}
-
-      {/* Contacts List */}
-      <div className="flex-1 overflow-y-auto space-y-2">
-        {contacts.map((contact) => (
-          <div key={contact.id} className="p-3 border border-gray-200 rounded-lg hover:border-gray-300 transition-all duration-200">
-            <div className="flex items-start justify-between">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <div className="font-medium text-sm">{contact.name}</div>
-                  {contact.emailFound && contact.emailConfidence > 0 && (
-                    <span className={`px-1.5 py-0.5 text-xs rounded ${getConfidenceColor(contact.emailConfidence)}`}>
-                      {Math.round(contact.emailConfidence * 100)}%
-                    </span>
-                  )}
-                </div>
-                <div className="text-xs text-gray-500">{contact.role}</div>
-                {contact.email && <div className="text-xs text-blue-600">{contact.email}</div>}
-                {contact.linkedinScraped && contact.linkedinHeadline && (
-                  <div className="text-xs text-gray-400 mt-1 italic">{contact.linkedinHeadline}</div>
-                )}
+        <div className="relative">
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowHeaderMenu(!showHeaderMenu); }}
+            className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md transition-colors bg-blue-500 hover:bg-blue-600 text-white"
+          >
+            <MoreVertical className="w-3 h-3" />
+            Actions
+            {dmStatus === 'searching' && <Loader2 className="w-3 h-3 animate-spin ml-1" />}
+            {dmStatus === 'completed' && (
+              <div className="relative ml-1">
+                <Users className="w-3 h-3 text-green-300" />
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
               </div>
-              <div className="relative">
-                <button onClick={() => setActiveContactMenu(activeContactMenu === contact.id ? null : contact.id)} className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded">
-                  <MoreVertical className="w-4 h-4" />
-                </button>
-                {activeContactMenu === contact.id && (
-                  <div className="absolute right-0 top-6 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-20 w-40">
-                    {contact.email && (
-                      <button onClick={() => handleContactAction(contact.id, 'email')} className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2">
-                        <Mail className="w-4 h-4 text-gray-500" /> Send Email
-                      </button>
-                    )}
-                    <button onClick={() => handleContactAction(contact.id, 'linkedin')} className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2">
-                      <Linkedin className="w-4 h-4 text-blue-600" /> Find on LinkedIn
-                    </button>
-                    {contact.email && (
-                      <button onClick={() => handleContactAction(contact.id, 'copy')} className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2">
-                        <Copy className="w-4 h-4 text-gray-500" /> Copy Email
-                      </button>
-                    )}
+            )}
+            {linkedinStatus === 'completed' && (
+              <div className="relative ml-1">
+                <Linkedin className="w-3 h-3 text-blue-300" />
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+              </div>
+            )}
+          </button>
+
+          {/* Header Dropdown Menu */}
+          {showHeaderMenu && (
+            <div
+              className="absolute right-0 top-8 mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Add Contact */}
+              <button
+                onClick={() => { setShowAddContact(true); setShowHeaderMenu(false); }}
+                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors flex items-center gap-3"
+              >
+                <Plus className="w-4 h-4 text-orange-500" />
+                <span className="text-gray-700">Add Contact</span>
+              </button>
+
+              <div className="border-t border-gray-100 my-1"></div>
+
+              {/* Decision Makers */}
+              <button
+                onClick={() => { setShowDMFinder(true); setShowHeaderMenu(false); if (dmStatus === 'idle') startDMSearch(); }}
+                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors flex items-center gap-3"
+              >
+                {dmStatus === 'searching' ? <Loader2 className="w-4 h-4 animate-spin text-orange-500" /> :
+                 dmStatus === 'completed' ? <CheckCircle className="w-4 h-4 text-green-500" /> :
+                 <Search className="w-4 h-4 text-orange-500" />}
+                <div className="flex flex-col">
+                  <span className={dmStatus === 'completed' ? 'text-green-700' : 'text-gray-700'}>
+                    {dmStatus === 'completed' ? `Found ${foundDMs.length} DMs` : dmStatus === 'searching' ? 'Finding...' : 'Find Decision Makers'}
+                  </span>
+                  <span className="text-xs text-gray-500">Search for key contacts</span>
+                </div>
+              </button>
+
+              {/* Email Finder */}
+              <button
+                onClick={() => { setShowEmailFinder(true); setShowHeaderMenu(false); if (emailFinderStatus === 'idle' && contacts.length > 0) startEmailSearch(); }}
+                disabled={contacts.length === 0}
+                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors flex items-center gap-3 disabled:opacity-50"
+              >
+                {emailFinderStatus === 'searching' ? <Loader2 className="w-4 h-4 animate-spin text-purple-500" /> :
+                 emailFinderStatus === 'completed' ? <CheckCircle className="w-4 h-4 text-green-500" /> :
+                 <Mail className="w-4 h-4 text-purple-500" />}
+                <div className="flex flex-col">
+                  <span className={emailFinderStatus === 'completed' ? 'text-green-700' : 'text-gray-700'}>
+                    {emailFinderStatus === 'completed' ? `Found ${foundEmails.length} Emails` : emailFinderStatus === 'searching' ? 'Finding...' : 'Find Email Addresses'}
+                  </span>
+                  <span className="text-xs text-gray-500">Find email addresses for contacts</span>
+                </div>
+              </button>
+
+              {/* LinkedIn Scraping */}
+              <button
+                onClick={() => { setShowLinkedInScraper(true); setShowHeaderMenu(false); if (linkedinStatus === 'idle' && contacts.length > 0) startLinkedInScrape(); }}
+                disabled={contacts.length === 0}
+                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors flex items-center gap-3 disabled:opacity-50"
+              >
+                {linkedinStatus === 'scraping' ? <Loader2 className="w-4 h-4 animate-spin text-blue-500" /> :
+                 linkedinStatus === 'completed' ? <CheckCircle className="w-4 h-4 text-green-500" /> :
+                 <Linkedin className="w-4 h-4 text-blue-600" />}
+                <div className="flex flex-col">
+                  <span className={linkedinStatus === 'completed' ? 'text-green-700' : 'text-gray-700'}>
+                    {linkedinStatus === 'completed' ? `Found ${scrapedProfiles.length} Profiles` : linkedinStatus === 'scraping' ? 'Scraping...' : 'Scrape LinkedIn Profiles'}
+                  </span>
+                  <span className="text-xs text-gray-500">Scrape LinkedIn profiles</span>
+                </div>
+              </button>
+
+              {/* Email Generation */}
+              <button
+                onClick={() => { setShowEmailGenerator(true); setShowHeaderMenu(false); if (emailGenStatus === 'idle') startEmailGeneration(); }}
+                disabled={contacts.filter(c => c.email).length === 0}
+                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors flex items-center gap-3 disabled:opacity-50"
+              >
+                {emailGenStatus === 'generating' ? <Loader2 className="w-4 h-4 animate-spin text-orange-500" /> :
+                 emailGenStatus === 'completed' ? <CheckCircle className="w-4 h-4 text-green-500" /> :
+                 <Sparkles className="w-4 h-4 text-orange-500" />}
+                <div className="flex flex-col">
+                  <span className={emailGenStatus === 'completed' ? 'text-green-700' : 'text-gray-700'}>
+                    {emailGenStatus === 'completed' ? 'Email Results' : emailGenStatus === 'generating' ? 'Generating...' : 'Generate Emails'}
+                  </span>
+                  <span className="text-xs text-gray-500">Generate emails for all contacts</span>
+                </div>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Content area */}
+      <div className="flex-1 overflow-y-auto">
+        {/* Decision Makers Search Status Banner */}
+        {dmStatus === 'searching' && (
+          <div className="mb-4 bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-lg p-3">
+            <div className="flex items-center gap-3">
+              <Loader2 className="w-5 h-5 text-orange-600 animate-spin flex-shrink-0" />
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-orange-900 text-sm">Finding Decision Makers</h4>
+                  <span className="text-xs text-orange-700 bg-orange-100 px-2 py-0.5 rounded-full">AI Analyzing...</span>
+                </div>
+                <p className="text-xs text-orange-800 mt-1">Searching job postings, LinkedIn, and company data...</p>
+                <div className="mt-2">
+                  <div className="flex-1 bg-orange-200 rounded-full h-1.5">
+                    <div className="bg-orange-500 h-1.5 rounded-full transition-all duration-300" style={{width: `${Math.min(dmProgress, 100)}%`}}></div>
                   </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
-        ))}
-        {contacts.length === 0 && (
-          <div className="text-center py-6 text-gray-500 text-sm">
-            <Users className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-            Click "Find Decision Makers" to start
+        )}
+
+        {/* Decision Makers Completed Banner */}
+        {dmStatus === 'completed' && foundDMs.length > 0 && (
+          <div className="mb-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-3">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-green-900 text-sm">Decision Makers Found</h4>
+                  <button
+                    onClick={() => setShowDMFinder(true)}
+                    className="text-xs text-green-700 bg-green-100 px-2 py-0.5 rounded-full hover:bg-green-200"
+                  >
+                    {foundDMs.length} DMs - View
+                  </button>
+                </div>
+                <p className="text-xs text-green-800 mt-1">Click to view and import decision makers as contacts.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* LinkedIn Scraping Status Banner */}
+        {linkedinStatus === 'scraping' && (
+          <div className="mb-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-3">
+            <div className="flex items-center gap-3">
+              <Loader2 className="w-5 h-5 text-blue-600 animate-spin flex-shrink-0" />
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-blue-900 text-sm">Scraping LinkedIn Profiles</h4>
+                  <span className="text-xs text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">
+                    {Math.round(linkedinProgress)}%
+                  </span>
+                </div>
+                <p className="text-xs text-blue-800 mt-1">Gathering profile information from LinkedIn...</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Email Finder Status Banner */}
+        {emailFinderStatus === 'searching' && (
+          <div className="mb-4 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-3">
+            <div className="flex items-center gap-3">
+              <Loader2 className="w-5 h-5 text-purple-600 animate-spin flex-shrink-0" />
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-purple-900 text-sm">Finding Email Addresses</h4>
+                  <span className="text-xs text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full">
+                    {Math.round(emailFinderProgress)}%
+                  </span>
+                </div>
+                <p className="text-xs text-purple-800 mt-1">Predicting and verifying email addresses...</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Contacts List */}
+        {contacts.length > 0 ? (
+          <div className="space-y-2">
+            {contacts.map((contact) => (
+              <div key={contact.id} className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-medium text-gray-900 text-sm">{contact.name}</h4>
+
+                      {/* Status Icons */}
+                      <div className="flex items-center gap-1">
+                        {contact.emailFound && (
+                          <div className="relative group">
+                            <Mail className="w-3 h-3 text-green-500" />
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                              Email Found ({Math.round(contact.emailConfidence * 100)}%)
+                            </div>
+                          </div>
+                        )}
+                        {contact.linkedinScraped && (
+                          <div className="relative group">
+                            <Linkedin className="w-3 h-3 text-blue-500" />
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                              LinkedIn Scraped
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-gray-600 text-xs mt-0.5">{contact.role}</p>
+                    {contact.email && (
+                      <p className="text-gray-500 text-xs mt-1">{contact.email}</p>
+                    )}
+                    {contact.linkedinHeadline && (
+                      <p className="text-gray-400 text-xs mt-1 line-clamp-1">{contact.linkedinHeadline}</p>
+                    )}
+                  </div>
+
+                  {/* Right Side - LinkedIn Link, DM Badge, Actions */}
+                  <div className="flex items-center gap-2 ml-3">
+                    {contact.linkedinUrl && (
+                      <a
+                        href={contact.linkedinUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded px-1 py-0.5 transition-colors"
+                        title="View LinkedIn Profile"
+                      >
+                        <LinkedInIcon className="w-3 h-3" />
+                        <ExternalLink className="w-2 h-2 opacity-70" />
+                      </a>
+                    )}
+
+                    {contact.source === 'decision_maker_finder' && (
+                      <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded">DM</span>
+                    )}
+
+                    {/* Actions Menu */}
+                    <div className="relative">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setActiveContactMenu(activeContactMenu === contact.id ? null : contact.id); }}
+                        className="flex items-center justify-center w-7 h-7 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+
+                      {activeContactMenu === contact.id && (
+                        <div
+                          className="absolute right-0 top-8 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {contact.email && (
+                            <button
+                              onClick={() => handleContactAction(contact.id, 'email')}
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-3"
+                            >
+                              <Mail className="w-4 h-4 text-gray-400" />
+                              <span className="text-gray-700">Send Email</span>
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleContactAction(contact.id, 'linkedin')}
+                            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-3"
+                          >
+                            <Linkedin className="w-4 h-4 text-blue-600" />
+                            <span className="text-gray-700">Find on LinkedIn</span>
+                          </button>
+                          {contact.email && (
+                            <button
+                              onClick={() => handleContactAction(contact.id, 'copy')}
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-3"
+                            >
+                              <Copy className="w-4 h-4 text-gray-400" />
+                              <span className="text-gray-700">Copy Email</span>
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center text-gray-400 flex items-center justify-center h-32">
+            <div>
+              <Users className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+              <div className="text-sm">No contacts yet</div>
+              <div className="text-xs mt-1">Add a contact or find decision makers</div>
+            </div>
           </div>
         )}
       </div>
+
+      {/* Add Contact Popup */}
+      {showAddContact && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Add Contact</h3>
+              <button onClick={() => setShowAddContact(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input type="text" value={newContact.name} onChange={(e) => setNewContact(prev => ({ ...prev, name: e.target.value }))} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Full name" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
+                <input type="text" value={newContact.role} onChange={(e) => setNewContact(prev => ({ ...prev, role: e.target.value }))} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="e.g. Equipment Manager" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email (optional)</label>
+                <input type="email" value={newContact.email} onChange={(e) => setNewContact(prev => ({ ...prev, email: e.target.value }))} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="email@company.com" />
+              </div>
+              <button onClick={handleAddContact} disabled={!newContact.name} className="w-full px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+                Add Contact
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Decision Maker Finder Modal */}
       {showDMFinder && (
@@ -887,18 +1105,18 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
               <button onClick={() => setShowEmailFinder(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
             </div>
 
-            {emailStatus === 'searching' && (
+            {emailFinderStatus === 'searching' && (
               <div className="text-center py-8">
-                <Loader2 className="w-10 h-10 text-blue-500 animate-spin mx-auto mb-4" />
+                <Loader2 className="w-10 h-10 text-purple-500 animate-spin mx-auto mb-4" />
                 <div className="text-sm font-medium text-gray-700 mb-2">Predicting Email Addresses...</div>
                 <div className="text-xs text-gray-500 mb-4">Analyzing email patterns and verifying addresses</div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-blue-500 h-2 rounded-full transition-all duration-300" style={{ width: `${Math.min(emailProgress, 100)}%` }} />
+                  <div className="bg-purple-500 h-2 rounded-full transition-all duration-300" style={{ width: `${Math.min(emailFinderProgress, 100)}%` }} />
                 </div>
               </div>
             )}
 
-            {emailStatus === 'completed' && (
+            {emailFinderStatus === 'completed' && (
               <div>
                 <div className="flex items-center gap-2 mb-4 p-3 bg-green-50 rounded-lg">
                   <CheckCircle className="w-5 h-5 text-green-600" />
@@ -911,13 +1129,17 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
                         <div className="text-sm font-medium">{e.name}</div>
                         <div className="text-xs text-blue-600">{e.email}</div>
                       </div>
-                      <span className={`px-2 py-1 text-xs rounded ${getConfidenceColor(e.confidence)}`}>
+                      <span className={`px-2 py-1 text-xs rounded ${
+                        e.confidence >= 0.85 ? 'text-green-600 bg-green-50' :
+                        e.confidence >= 0.7 ? 'text-yellow-600 bg-yellow-50' :
+                        'text-red-600 bg-red-50'
+                      }`}>
                         {Math.round(e.confidence * 100)}%
                       </span>
                     </div>
                   ))}
                 </div>
-                <button onClick={applyEmails} className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium">
+                <button onClick={applyEmails} className="w-full px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 font-medium">
                   Apply Email Addresses
                 </button>
               </div>
@@ -1020,11 +1242,6 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
             )}
           </div>
         </div>
-      )}
-
-      {/* Click outside to close menu */}
-      {activeContactMenu && (
-        <div className="fixed inset-0 z-10" onClick={() => setActiveContactMenu(null)} />
       )}
     </div>
   )
