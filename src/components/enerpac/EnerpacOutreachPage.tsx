@@ -552,8 +552,8 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
       window.open(`mailto:${contact.email}?subject=${subject}`, '_blank')
       setContactedIds(prev => prev.includes(contactId) ? prev : [...prev, contactId])
     } else if (action === 'linkedin') {
-      // Open LinkedIn search for this person
-      const searchQuery = encodeURIComponent(`${contact.name} ${contact.role}`)
+      // Open LinkedIn search - only by name for better results
+      const searchQuery = encodeURIComponent(contact.name)
       window.open(`https://www.linkedin.com/search/results/people/?keywords=${searchQuery}`, '_blank')
       setContactedIds(prev => prev.includes(contactId) ? prev : [...prev, contactId])
     } else if (action === 'phone' && contact.phone) {
