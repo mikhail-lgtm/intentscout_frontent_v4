@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Settings, Plus, MoreVertical, Check, Search, Mail, Linkedin, UserPlus, ExternalLink, Building, MapPin, Calendar, DollarSign, X, Loader2, Users, Sparkles, Copy, CheckCircle, AlertCircle } from 'lucide-react'
 import { useDemoContext } from './EnerpacDemoContainer'
 
@@ -455,6 +455,19 @@ const LinkedInIcon: React.FC<{ className?: string }> = ({ className = "w-4 h-4" 
   )
 }
 
+// Store contacts per project (persists across signal switches)
+const projectContactsCache = useRef<Record<string, {
+  contacts: any[]
+  dmStatus: 'idle' | 'searching' | 'completed'
+  foundDMs: any[]
+  emailFinderStatus: 'idle' | 'searching' | 'completed'
+  foundEmails: any[]
+  linkedinStatus: 'idle' | 'scraping' | 'completed'
+  scrapedProfiles: any[]
+  emailGenStatus: 'idle' | 'generating' | 'completed'
+  generatedEmails: any[]
+}>>({})
+
 // Contacts Component - Matches main site design
 const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) => {
   const [contacts, setContacts] = useState<any[]>([])
@@ -485,20 +498,55 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
   const [generatedEmails, setGeneratedEmails] = useState<any[]>([])
 
   const [newContact, setNewContact] = useState({ name: '', role: '', email: '' })
+  const prevProjectId = useRef<string | null>(null)
 
-  // Reset state when project changes
-  // Don't load companies from permit - user should click "Find Decision Makers" to find real contacts
+  // Save current project state before switching, restore when switching back
   useEffect(() => {
-    setContacts([])
-    // Reset all states
-    setDmStatus('idle')
-    setEmailFinderStatus('idle')
-    setLinkedinStatus('idle')
-    setEmailGenStatus('idle')
-    setFoundDMs([])
-    setFoundEmails([])
-    setScrapedProfiles([])
-    setGeneratedEmails([])
+    const projectId = selectedProject?.id
+
+    // Save previous project state
+    if (prevProjectId.current && prevProjectId.current !== projectId) {
+      projectContactsCache.current[prevProjectId.current] = {
+        contacts,
+        dmStatus,
+        foundDMs,
+        emailFinderStatus,
+        foundEmails,
+        linkedinStatus,
+        scrapedProfiles,
+        emailGenStatus,
+        generatedEmails
+      }
+    }
+
+    // Load state for new project (or initialize empty)
+    if (projectId) {
+      const cached = projectContactsCache.current[projectId]
+      if (cached) {
+        setContacts(cached.contacts)
+        setDmStatus(cached.dmStatus)
+        setFoundDMs(cached.foundDMs)
+        setEmailFinderStatus(cached.emailFinderStatus)
+        setFoundEmails(cached.foundEmails)
+        setLinkedinStatus(cached.linkedinStatus)
+        setScrapedProfiles(cached.scrapedProfiles)
+        setEmailGenStatus(cached.emailGenStatus)
+        setGeneratedEmails(cached.generatedEmails)
+      } else {
+        // New project - start fresh
+        setContacts([])
+        setDmStatus('idle')
+        setFoundDMs([])
+        setEmailFinderStatus('idle')
+        setFoundEmails([])
+        setLinkedinStatus('idle')
+        setScrapedProfiles([])
+        setEmailGenStatus('idle')
+        setGeneratedEmails([])
+      }
+    }
+
+    prevProjectId.current = projectId
   }, [selectedProject?.id])
 
   // Close menus when clicking outside
