@@ -486,25 +486,10 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
 
   const [newContact, setNewContact] = useState({ name: '', role: '', email: '' })
 
-  // Load contacts from project
+  // Reset state when project changes
+  // Don't load companies from permit - user should click "Find Decision Makers" to find real contacts
   useEffect(() => {
-    if (selectedProject?.contacts) {
-      const projectContacts = selectedProject.contacts.map((contact: any, index: number) => ({
-        id: `${selectedProject.id}-contact-${index}`,
-        name: contact.name || 'Unknown Contact',
-        role: contact.role || 'Contact',
-        email: contact.email || '',
-        phone: contact.phone || '',
-        linkedinUrl: '',
-        linkedinScraped: false,
-        emailFound: !!contact.email,
-        emailConfidence: contact.email ? 0.95 : 0,
-        source: 'Permit Data'
-      }))
-      setContacts(projectContacts)
-    } else {
-      setContacts([])
-    }
+    setContacts([])
     // Reset all states
     setDmStatus('idle')
     setEmailFinderStatus('idle')
