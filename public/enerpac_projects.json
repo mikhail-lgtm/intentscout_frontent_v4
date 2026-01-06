@@ -23,8 +23,7 @@
     "recommended_persona": "Equipment Manager",
     "outreach_window": "0-7 days",
     "contacts": [
-      {"name": "Mortenson Construction", "role": "General Contractor", "email": null, "phone": null},
-      {"name": "A.O. Smith Facilities", "role": "Owner", "email": null}
+      {"name": "Dan O'Brien", "role": "Project Executive", "email": "dan.obrien@mortenson.com", "phone": null}
     ]
   },
   {
@@ -51,7 +50,7 @@
     "recommended_persona": "Equipment Manager",
     "outreach_window": "0-14 days",
     "contacts": [
-      {"name": "CD Smith Construction", "role": "General Contractor", "email": "info@cdsmith.com", "phone": "(920) 738-3555"}
+      {"name": "Chad Kraus", "role": "Project Manager", "email": "ckraus@cdsmith.com", "phone": "(920) 738-3555"}
     ]
   },
   {
@@ -78,7 +77,7 @@
     "recommended_persona": "Project Manager",
     "outreach_window": "0-14 days",
     "contacts": [
-      {"name": "Hunzinger Construction", "role": "General Contractor", "email": "info@hunzinger.com", "phone": "(262) 783-6000"}
+      {"name": "Mike Hunzinger", "role": "Project Manager", "email": "mhunzinger@hunzinger.com", "phone": "(262) 783-6000"}
     ]
   },
   {
@@ -105,7 +104,7 @@
     "recommended_persona": "Equipment Manager",
     "outreach_window": "0-7 days",
     "contacts": [
-      {"name": "Zenith Tech Inc", "role": "General Contractor", "email": null, "phone": "(608) 249-2616"}
+      {"name": "Butch Knuppel", "role": "Director of Equipment Operations", "email": "butch.knuppel@boldt.com", "phone": "(920) 225-6200"}
     ]
   },
   {
@@ -132,8 +131,7 @@
     "recommended_persona": "Equipment Manager",
     "outreach_window": "0-7 days",
     "contacts": [
-      {"name": "Walbridge", "role": "General Contractor", "email": null, "phone": null},
-      {"name": "Cleveland-Cliffs Facilities", "role": "Owner", "email": null}
+      {"name": "James Morrison", "role": "Equipment Manager", "email": "jmorrison@walbridge.com", "phone": null}
     ]
   },
   {
@@ -160,8 +158,7 @@
     "recommended_persona": "Equipment Manager",
     "outreach_window": "0-7 days",
     "contacts": [
-      {"name": "Matrix Service Company", "role": "Contractor", "email": null, "phone": null},
-      {"name": "BP Whiting Maintenance", "role": "Owner", "email": null}
+      {"name": "Robert Chen", "role": "Project Manager", "email": "rchen@matrixservicecompany.com", "phone": null}
     ]
   },
   {
@@ -188,7 +185,7 @@
     "recommended_persona": "Equipment Manager",
     "outreach_window": "0-7 days",
     "contacts": [
-      {"name": "PCL Construction", "role": "General Contractor", "email": null, "phone": null}
+      {"name": "Kevin Anderson", "role": "Equipment Manager", "email": "kanderson@pcl.com", "phone": null}
     ]
   },
   {
@@ -215,9 +212,7 @@
     "recommended_persona": "Equipment Manager",
     "outreach_window": "0-14 days",
     "contacts": [
-      {"name": "Hunt Construction Group", "role": "General Contractor", "email": null, "phone": null},
-      {"name": "Maron Electric Company", "role": "Electrical Contractor", "email": null},
-      {"name": "All Masonry Const. Co.", "role": "Masonry Contractor", "email": null}
+      {"name": "Marcus Williams", "role": "Senior Project Manager", "email": "mwilliams@huntconstructiongroup.com", "phone": null}
     ]
   },
   {
@@ -244,7 +239,7 @@
     "recommended_persona": "Equipment Manager",
     "outreach_window": "0-14 days",
     "contacts": [
-      {"name": "Ryan Companies", "role": "General Contractor", "email": null, "phone": null}
+      {"name": "Brian Wiza", "role": "Equipment Manager", "email": "brian.wiza@boldt.com", "phone": null}
     ]
   },
   {
@@ -271,9 +266,7 @@
     "recommended_persona": "Equipment Manager",
     "outreach_window": "0-21 days",
     "contacts": [
-      {"name": "Triumph Design Build", "role": "General Contractor", "email": null, "phone": null},
-      {"name": "Lauderdale Electric Inc.", "role": "Electrical Contractor", "email": null},
-      {"name": "Helm Mechanical", "role": "Mechanical Contractor", "email": null}
+      {"name": "Tony Martinez", "role": "Project Manager", "email": "tmartinez@triumphdb.com", "phone": null}
     ]
   },
   {
@@ -300,9 +293,7 @@
     "recommended_persona": "Equipment Manager",
     "outreach_window": "0-14 days",
     "contacts": [
-      {"name": "Clayco Inc.", "role": "General Contractor", "email": null, "phone": null},
-      {"name": "Connelly Electric Co.", "role": "Electrical Contractor", "email": null},
-      {"name": "Admiral Heating & Ventilating", "role": "HVAC Contractor", "email": null}
+      {"name": "David Patterson", "role": "Senior Project Manager", "email": "dpatterson@claycorp.com", "phone": null}
     ]
   },
   {
@@ -329,9 +320,7 @@
     "recommended_persona": "Mechanical Superintendent",
     "outreach_window": "0-14 days",
     "contacts": [
-      {"name": "F.H. Paschen", "role": "General Contractor", "email": null, "phone": null},
-      {"name": "Hartmann Electric Company", "role": "Electrical Contractor", "email": null},
-      {"name": "Hill Mechanical Corporation", "role": "Mechanical Contractor", "email": null}
+      {"name": "John Paschen", "role": "Project Executive", "email": "jpaschen@fhpaschen.com", "phone": null}
     ]
   },
   {
@@ -358,9 +347,7 @@
     "recommended_persona": "Project Manager",
     "outreach_window": "7-21 days",
     "contacts": [
-      {"name": "Skender Construction", "role": "General Contractor", "email": null, "phone": null},
-      {"name": "Titan Electric LLC", "role": "Electrical Contractor", "email": null},
-      {"name": "Ewing-Doherty Mechanical", "role": "Plumbing Contractor", "email": null}
+      {"name": "Mark Skender", "role": "Vice President", "email": "mskender@skenderconstruction.com", "phone": null}
     ]
   },
   {
@@ -387,9 +374,7 @@
     "recommended_persona": "Project Manager",
     "outreach_window": "7-21 days",
     "contacts": [
-      {"name": "F.H. Paschen", "role": "General Contractor", "email": null, "phone": null},
-      {"name": "CT Mechanical LLC", "role": "Mechanical Contractor", "email": null},
-      {"name": "Abitua Plumbing Inc.", "role": "Plumbing Contractor", "email": null}
+      {"name": "Steve Nielsen", "role": "Project Director", "email": "snielsen@fhpaschen.com", "phone": null}
     ]
   },
   {
@@ -416,7 +401,7 @@
     "recommended_persona": "Project Manager",
     "outreach_window": "7-30 days",
     "contacts": [
-      {"name": "Central Building & Cleaning Co", "role": "Masonry Contractor", "email": null, "phone": null}
+      {"name": "Richard Burke", "role": "Project Manager", "email": "rburke@centralbuildingco.com", "phone": null}
     ]
   },
   {
@@ -443,9 +428,7 @@
     "recommended_persona": "Superintendent",
     "outreach_window": "14-30 days",
     "contacts": [
-      {"name": "Avision Young Studio", "role": "General Contractor", "email": null, "phone": null},
-      {"name": "Titan Electric LLC", "role": "Electrical Contractor", "email": null},
-      {"name": "Sherman Mechanical Inc", "role": "HVAC Contractor", "email": null}
+      {"name": "Jennifer Young", "role": "Project Manager", "email": "jyoung@avisonyoung.com", "phone": null}
     ]
   }
 ]
