@@ -455,8 +455,8 @@ const LinkedInIcon: React.FC<{ className?: string }> = ({ className = "w-4 h-4" 
   )
 }
 
-// Store contacts per project (persists across signal switches)
-const projectContactsCache = useRef<Record<string, {
+// Store contacts per project (persists across signal switches) - module level cache
+const projectContactsCache: Record<string, {
   contacts: any[]
   dmStatus: 'idle' | 'searching' | 'completed'
   foundDMs: any[]
@@ -466,7 +466,7 @@ const projectContactsCache = useRef<Record<string, {
   scrapedProfiles: any[]
   emailGenStatus: 'idle' | 'generating' | 'completed'
   generatedEmails: any[]
-}>>({})
+}> = {}
 
 // Contacts Component - Matches main site design
 const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) => {
@@ -506,7 +506,7 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
 
     // Save previous project state
     if (prevProjectId.current && prevProjectId.current !== projectId) {
-      projectContactsCache.current[prevProjectId.current] = {
+      projectContactsCache[prevProjectId.current] = {
         contacts,
         dmStatus,
         foundDMs,
@@ -521,7 +521,7 @@ const DemoContactsComponent = ({ selectedProject }: { selectedProject?: any }) =
 
     // Load state for new project (or initialize empty)
     if (projectId) {
-      const cached = projectContactsCache.current[projectId]
+      const cached = projectContactsCache[projectId]
       if (cached) {
         setContacts(cached.contacts)
         setDmStatus(cached.dmStatus)
