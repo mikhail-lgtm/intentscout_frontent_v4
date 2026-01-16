@@ -351,8 +351,8 @@ export const api = {
       apiClient.get(`/signals/intent-scores?date=${params.date}&product_id=${params.product_id}&min_score=${params.min_score}&hide_approved=${params.hide_approved !== false}`),
     getCompanies: (companyIds: string[]) => 
       apiClient.get(`/signals/companies?company_ids=${companyIds.join(',')}`),
-    getJobs: (jobIds: string[]) => 
-      apiClient.get(`/signals/jobs?job_ids=${jobIds.join(',')}`),
+    getJobs: (jobIds: string[]) =>
+      apiClient.get(`/signals/jobs?job_ids=${jobIds.map(id => encodeURIComponent(id)).join(',')}`),
     updateDecision: (signalId: string, action: 'approve' | 'reject' | 'remove') =>
       apiClient.post('/signals/update-decision', { signalId, action }),
     getSignalCounts: (params: { start_date: string; end_date: string; product_id: string; min_score: number; decision_filter?: string }) => {
