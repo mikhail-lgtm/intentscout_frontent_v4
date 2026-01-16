@@ -967,7 +967,7 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
                           )}
                         </button>
                         <a
-                          href={dm.linkedin_url}
+                          href={dm.linkedin_url?.startsWith('http') ? dm.linkedin_url : `https://${dm.linkedin_url}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-1 px-2 py-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors group"
