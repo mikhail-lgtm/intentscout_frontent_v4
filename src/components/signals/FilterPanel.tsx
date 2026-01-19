@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import { X } from 'lucide-react'
-import { api } from '../../lib/apiClient'
 import type { FilterOptions } from './types'
 
 interface Props {
@@ -8,39 +7,14 @@ interface Props {
   onChange: (filters: Partial<FilterOptions>) => void
   isOpen: boolean
   onClose: () => void
+  availableVerticals?: string[]
 }
 
-export const FilterPanel = ({ filters, onChange, isOpen, onClose }: Props) => {
-  const [verticals, setVerticals] = useState<string[]>([])
-  const [loading, setLoading] = useState(true)
+export const FilterPanel = ({ filters, onChange, isOpen, onClose, availableVerticals = [] }: Props) => {
   const panelRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    // Load available verticals from API (if we implement this endpoint)
-    // For now, using static list based on common verticals
-    const loadVerticals = async () => {
-      try {
-        // TODO: Implement /api/signals/verticals endpoint if needed
-        const staticVerticals = [
-          'technology',
-          'healthcare', 
-          'finance',
-          'manufacturing',
-          'retail',
-          'energy',
-          'automotive',
-          'aerospace'
-        ]
-        setVerticals(staticVerticals)
-      } catch (error) {
-        console.error('Failed to load verticals:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadVerticals()
-  }, [])
+  // Use verticals from signals data, or empty if none available
+  const verticals = availableVerticals.filter(v => v && v.trim())
 
   // Handle slider changes with debouncing
   const [sliderValue, setSliderValue] = useState(filters.minScore)
@@ -169,7 +143,7 @@ export const FilterPanel = ({ filters, onChange, isOpen, onClose }: Props) => {
               value={filters.vertical}
               onChange={(e) => onChange({ vertical: e.target.value })}
               className="w-full px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm bg-white"
-              disabled={loading}
+              disabled={verticals.length === 0}
             >
               <option value="">All Verticals</option>
               {verticals.map((vertical) => (
@@ -178,9 +152,9 @@ export const FilterPanel = ({ filters, onChange, isOpen, onClose }: Props) => {
                 </option>
               ))}
             </select>
-            
-            {loading && (
-              <p className="text-xs text-gray-500 mt-2">Loading verticals...</p>
+
+            {verticals.length === 0 && (
+              <p className="text-xs text-gray-500 mt-2">No verticals available in current data</p>
             )}
           </div>
         </div>

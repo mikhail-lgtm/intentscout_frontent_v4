@@ -11,28 +11,8 @@ export const SettingsPage = () => {
   const { members, loading: membersLoading, adminUser } = useOrganizationMembers()
   const { status: hubspotStatus, loading: hubspotLoading, error: hubspotError, connect: connectHubSpot, disconnect: disconnectHubSpot } = useHubSpot()
   
-  // HubSpot configuration state
-  const [senderEmail, setSenderEmail] = useState('')
-  const [configLoading, setConfigLoading] = useState(false)
-  
-  const handleSaveConfig = async () => {
-    if (!senderEmail) {
-      alert('Please enter sender email')
-      return
-    }
-    
-    setConfigLoading(true)
-    try {
-      // TODO: Implement API call to save HubSpot configuration
-      console.log('Saving HubSpot config:', { senderEmail })
-      alert('Configuration saved successfully!')
-    } catch (error) {
-      console.error('Failed to save configuration:', error)
-      alert('Failed to save configuration')
-    } finally {
-      setConfigLoading(false)
-    }
-  }
+  // Note: Sender email is automatically set to current user's email by the backend
+  // No configuration needed - each user sends from their own email address
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-8">
@@ -195,32 +175,29 @@ export const SettingsPage = () => {
           </div>
         </div>
 
-        {/* HubSpot Configuration */}
+        {/* HubSpot Configuration Info */}
         {hubspotStatus?.connected && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">HubSpot Configuration</h3>
 
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Default Sender Email
-                </label>
-                <input
-                  type="email"
-                  placeholder="sender@yourcompany.com"
-                  value={senderEmail}
-                  onChange={(e) => setSenderEmail(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                />
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Sender Email:</strong> Emails are sent from your personal email address ({user?.email || 'your email'}).
+                </p>
+                <p className="text-sm text-blue-700 mt-2">
+                  Each team member sends outreach from their own email when using HubSpot sequences.
+                </p>
               </div>
 
-              <button
-                onClick={handleSaveConfig}
-                disabled={configLoading || !senderEmail}
-                className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {configLoading ? 'Saving...' : 'Save Configuration'}
-              </button>
+              <div className="text-sm text-gray-600">
+                <p className="font-medium mb-2">How it works:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Select a HubSpot sequence when sending contacts</li>
+                  <li>Contacts are imported to your HubSpot CRM</li>
+                  <li>Emails are sent through HubSpot using your connected email</li>
+                </ul>
+              </div>
             </div>
           </div>
         )}

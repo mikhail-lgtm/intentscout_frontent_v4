@@ -8,19 +8,12 @@ import { useSignalDetails } from '../../hooks/useSignalDetails'
 import { SequenceBuilder } from '../sequences/SequenceBuilder'
 import { EmailDrafting } from './EmailDrafting'
 import { HubSpotSending } from './HubSpotSending'
-
-interface FilterOptions {
-  product: string
-  minScore: number
-}
+import { useFilters } from '../../hooks/useFilters'
 
 export const OutreachPage = () => {
-  // State management
-  const [filters, setFilters] = useState<FilterOptions>({
-    product: 'salesforce',
-    minScore: 3
-  })
-  
+  // Shared filters state (persists between pages via localStorage)
+  const { filters, setFilters } = useFilters()
+
   const [selectedSignal, setSelectedSignal] = useState<ApprovedSignal | null>(null)
   const [showSequenceBuilder, setShowSequenceBuilder] = useState(false)
   const [isHubSpotConfigured, setIsHubSpotConfigured] = useState(false)
@@ -34,10 +27,10 @@ export const OutreachPage = () => {
   })
 
   // Handlers
-  const handleFilterChange = useCallback((newFilters: Partial<FilterOptions>) => {
-    setFilters(prev => ({ ...prev, ...newFilters }))
+  const handleFilterChange = useCallback((newFilters: Partial<typeof filters>) => {
+    setFilters(newFilters)
     setSelectedSignal(null) // Clear selection when filters change
-  }, [])
+  }, [setFilters])
 
   const handleSignalSelect = useCallback((signal: ApprovedSignal) => {
     setSelectedSignal(signal)
@@ -66,11 +59,11 @@ export const OutreachPage = () => {
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex gap-6 px-4 sm:px-6 lg:px-8 pb-6 min-h-0">
-        {/* Sidebar */}
-        <div className="w-80 flex-shrink-0 min-h-0">
-          <OutreachSidebar 
+      {/* Main Content Area - Responsive: stack on mobile, side-by-side on large screens */}
+      <div className="flex-1 flex flex-col lg:flex-row gap-4 lg:gap-6 px-4 sm:px-6 lg:px-8 pb-6 min-h-0 overflow-auto lg:overflow-hidden">
+        {/* Sidebar - Full width on mobile, fixed width on large screens */}
+        <div className="w-full lg:w-80 flex-shrink-0 min-h-[300px] lg:min-h-0 lg:h-full">
+          <OutreachSidebar
             productId={filters.product}
             minScore={filters.minScore}
             onSignalSelect={handleSignalSelect}
@@ -80,19 +73,20 @@ export const OutreachPage = () => {
           />
         </div>
 
-        {/* Main Content - 2x2 Grid Layout */}
-        <div className="flex-1 p-4 min-h-0">
-          <div className="grid grid-cols-2 grid-rows-2 gap-4 h-full max-w-6xl mx-auto">
-            {/* Top-left: Intent Signals */}
-            <div className="overflow-y-auto custom-scrollbar bg-white rounded-lg shadow-sm border border-gray-200">
-              <IntentCard 
-                signal={fullSignal} 
+        {/* Main Content - Responsive Grid Layout */}
+        {/* Mobile: 1 column, Tablet: 1 column, Desktop: 2x2 grid */}
+        <div className="flex-1 min-h-0">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 h-full max-w-6xl mx-auto auto-rows-min xl:auto-rows-fr">
+            {/* Intent Signals */}
+            <div className="overflow-y-auto custom-scrollbar bg-white rounded-lg shadow-sm border border-gray-200 min-h-[300px] xl:min-h-0">
+              <IntentCard
+                signal={fullSignal}
                 isLoading={isLoadingSignalDetails}
               />
             </div>
 
-            {/* Top-right: HubSpot Sending */}
-            <div className="overflow-y-auto custom-scrollbar bg-white rounded-lg shadow-sm border border-gray-200">
+            {/* HubSpot Sending */}
+            <div className="overflow-y-auto custom-scrollbar bg-white rounded-lg shadow-sm border border-gray-200 min-h-[300px] xl:min-h-0">
               <HubSpotSending
                 signalId={selectedSignal?.id}
                 companyName={fullSignal?.company?.name || selectedSignal?.companyName}
@@ -100,16 +94,16 @@ export const OutreachPage = () => {
               />
             </div>
 
-            {/* Bottom-left: Contacts */}
-            <div className="overflow-y-auto custom-scrollbar bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <ContactsComponent 
-                signalId={selectedSignal?.id || ''} 
-                companyName={fullSignal?.company?.name || selectedSignal?.companyName || 'Unknown Company'} 
+            {/* Contacts */}
+            <div className="overflow-y-auto custom-scrollbar bg-white rounded-lg shadow-sm border border-gray-200 p-6 min-h-[300px] xl:min-h-0">
+              <ContactsComponent
+                signalId={selectedSignal?.id || ''}
+                companyName={fullSignal?.company?.name || selectedSignal?.companyName || 'Unknown Company'}
               />
             </div>
 
-            {/* Bottom-right: Email Notes */}
-            <div className="overflow-y-auto custom-scrollbar bg-white rounded-lg shadow-sm border border-gray-200">
+            {/* Email Notes */}
+            <div className="overflow-y-auto custom-scrollbar bg-white rounded-lg shadow-sm border border-gray-200 min-h-[300px] xl:min-h-0">
               <EmailDrafting
                 signalId={selectedSignal?.id}
                 companyName={fullSignal?.company?.name || selectedSignal?.companyName}

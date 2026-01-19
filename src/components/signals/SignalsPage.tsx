@@ -7,29 +7,12 @@ import { IntentCard } from './IntentCard'
 import { QueueSidebar } from './QueueSidebar'
 import { useSignals } from '../../hooks/useSignals'
 import { useBlockedCompanies } from '../../hooks/useBlockedCompanies'
-
-interface FilterOptions {
-  product: string
-  minScore: number
-  vertical: string
-  hideApproved?: boolean
-}
+import { useFilters } from '../../hooks/useFilters'
 
 export const SignalsPage = () => {
-  // State management
-  const [selectedDate, setSelectedDate] = useState<string>(() => {
-    const yesterday = new Date()
-    yesterday.setDate(yesterday.getDate() - 1)
-    return yesterday.toISOString().split('T')[0]
-  })
-  
-  const [filters, setFilters] = useState<FilterOptions>({
-    product: 'salesforce',
-    minScore: 3,
-    vertical: '',
-    hideApproved: true
-  })
-  
+  // Shared filters state (persists between pages via localStorage)
+  const { filters, setFilters, selectedDate, setSelectedDate } = useFilters()
+
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showFilters, setShowFilters] = useState(false)
 
@@ -51,16 +34,23 @@ export const SignalsPage = () => {
 
   const currentSignal = signals[currentIndex] || null
 
+  // Extract unique verticals from signals for filter dropdown
+  const availableVerticals = [...new Set(
+    signals
+      .map(s => s.company?.vertical)
+      .filter((v): v is string => Boolean(v))
+  )].sort()
+
   // Handlers
   const handleDateChange = useCallback((date: string) => {
     setSelectedDate(date)
     setCurrentIndex(0)
-  }, [])
+  }, [setSelectedDate])
 
-  const handleFilterChange = useCallback((newFilters: Partial<FilterOptions>) => {
-    setFilters(prev => ({ ...prev, ...newFilters }))
+  const handleFilterChange = useCallback((newFilters: Partial<typeof filters>) => {
+    setFilters(newFilters)
     setCurrentIndex(0)
-  }, [])
+  }, [setFilters])
 
   const handleApprove = useCallback(async () => {
     if (!currentSignal) return
@@ -280,6 +270,7 @@ export const SignalsPage = () => {
         onChange={handleFilterChange}
         isOpen={showFilters}
         onClose={() => setShowFilters(false)}
+        availableVerticals={availableVerticals}
       />
     </div>
   )

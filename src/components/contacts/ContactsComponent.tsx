@@ -88,9 +88,47 @@ export const ContactsComponent: React.FC<ContactsComponentProps> = ({
   
   // Use contacts hook to manage contacts
   const { contacts, isLoading: contactsLoading, error: contactsError, refetch, deleteContact } = useContacts(signalId)
-  
+
   // Determine if we have a valid signal to work with
   const hasSignal = signalId && signalId !== ''
+
+  // Notification state for background task completions
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error' | 'info'
+    message: string
+  } | null>(null)
+
+  // Track previous search status to detect completion
+  const prevSearchStatusRef = React.useRef<string | null>(null)
+
+  // Watch for DM search completion and show notification
+  useEffect(() => {
+    const currentStatus = searchStatus?.status
+    const prevStatus = prevSearchStatusRef.current
+
+    // Detect transition from searching to completed/failed
+    if (prevStatus === 'searching' || prevStatus === 'pending') {
+      if (currentStatus === 'completed' && !showDecisionMakerPopup) {
+        const count = searchStatus?.decision_makers?.length || 0
+        setNotification({
+          type: count > 0 ? 'success' : 'info',
+          message: count > 0
+            ? `Found ${count} decision maker${count > 1 ? 's' : ''} at ${companyName}`
+            : `No decision makers found at ${companyName}`
+        })
+        // Auto-dismiss after 5 seconds
+        setTimeout(() => setNotification(null), 5000)
+      } else if (currentStatus === 'failed' && !showDecisionMakerPopup) {
+        setNotification({
+          type: 'error',
+          message: 'Decision maker search failed. You can try again.'
+        })
+        setTimeout(() => setNotification(null), 5000)
+      }
+    }
+
+    prevSearchStatusRef.current = currentStatus || null
+  }, [searchStatus?.status, searchStatus?.decision_makers?.length, companyName, showDecisionMakerPopup])
 
   // Check for existing emails and LinkedIn profiles when contacts change
   useEffect(() => {
@@ -383,6 +421,31 @@ export const ContactsComponent: React.FC<ContactsComponentProps> = ({
 
   return (
     <div className="h-full flex flex-col">
+      {/* Notification Banner */}
+      {notification && (
+        <div
+          className={`mb-3 p-3 rounded-lg flex items-center justify-between text-sm animate-in slide-in-from-top duration-300 ${
+            notification.type === 'success' ? 'bg-green-50 border border-green-200 text-green-800' :
+            notification.type === 'error' ? 'bg-red-50 border border-red-200 text-red-800' :
+            'bg-blue-50 border border-blue-200 text-blue-800'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {notification.type === 'success' && <CheckCircle className="w-4 h-4" />}
+            {notification.type === 'error' && <AlertCircle className="w-4 h-4" />}
+            {notification.type === 'info' && <Users className="w-4 h-4" />}
+            <span>{notification.message}</span>
+          </div>
+          <button
+            onClick={() => setNotification(null)}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <span className="sr-only">Dismiss</span>
+            x
+          </button>
+        </div>
+      )}
+
       {/* Header with title and buttons */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
