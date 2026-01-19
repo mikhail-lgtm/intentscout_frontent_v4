@@ -1,5 +1,37 @@
 # IntentScout Changelog
 
+## 2026-01-19
+
+### UX Improvements (Frontend)
+
+**HubSpot Settings Page**
+- Changed misleading config form to informational panel
+- Sender email is automatic (user's email) - no config needed
+- File: `src/components/settings/SettingsPage.tsx`
+
+**Verticals Filter**
+- Fixed dropdown to show actual verticals from loaded signals
+- Removed hardcoded static list
+- Files: `src/components/signals/FilterPanel.tsx`, `SignalsPage.tsx`
+
+**DM Search Notification**
+- Added notification banner when DM search completes in background
+- Shows success/error/info with auto-dismiss
+- File: `src/components/contacts/ContactsComponent.tsx`
+
+**Filters Persistence**
+- Created `useFilters` hook with localStorage persistence
+- Filters now persist between Signals and Outreach pages
+- File: `src/hooks/useFilters.ts`
+
+**Responsive Outreach Page**
+- Added responsive design for mobile/tablet
+- Mobile: 1 column layout, stacked cards
+- Desktop (xl): 2x2 grid layout
+- File: `src/components/outreach/OutreachPage.tsx`
+
+---
+
 ## 2026-01-17
 
 ### Signal Quality Improvements (Backend)
