@@ -200,14 +200,27 @@ export const useSignals = (date: string, filters: FilterOptions) => {
       setIsCompaniesLoading(true)
       setIsJobsLoading(true)
 
-      const [companiesResponse, jobsResponse] = await Promise.all([
-        companyIds.length > 0 
+      // Batch job IDs to avoid URL length limits (max ~50 per request)
+      const JOB_BATCH_SIZE = 50
+      const jobBatches: string[][] = []
+      for (let i = 0; i < uniqueJobIds.length; i += JOB_BATCH_SIZE) {
+        jobBatches.push(uniqueJobIds.slice(i, i + JOB_BATCH_SIZE))
+      }
+
+      console.log('[DEBUG useSignals] Fetching jobs in', jobBatches.length, 'batches')
+
+      const [companiesResponse, ...jobBatchResponses] = await Promise.all([
+        companyIds.length > 0
           ? api.signals.getCompanies(companyIds)
           : Promise.resolve({ data: [], error: null }),
-        uniqueJobIds.length > 0
-          ? api.signals.getJobs(uniqueJobIds)
-          : Promise.resolve({ data: [], error: null })
+        ...jobBatches.map(batch => api.signals.getJobs(batch))
       ])
+
+      // Combine all job responses
+      const jobsResponse = {
+        data: jobBatchResponses.flatMap(r => r.data || []),
+        error: jobBatchResponses.find(r => r.error)?.error || null
+      }
 
       setIsCompaniesLoading(false)
       setIsJobsLoading(false)
