@@ -5,19 +5,48 @@ import { Signal } from '../../hooks/useSignals'
 import { api } from '../../lib/apiClient'
 import { ConfirmationModal } from '../ui/ConfirmationModal'
 
-// Non-target countries - jobs from these locations are filtered out
-const NON_TARGET_COUNTRIES = ['india', 'malaysia', 'philippines', 'pakistan', 'bangladesh', 'sri lanka', 'nepal']
+// US state abbreviations and keywords to identify USA locations
+const US_INDICATORS = [
+  // Common patterns
+  'united states', 'usa', 'u.s.a', 'u.s.',
+  // State abbreviations (2-letter codes typically at end of location)
+  ', al', ', ak', ', az', ', ar', ', ca', ', co', ', ct', ', de', ', fl', ', ga',
+  ', hi', ', id', ', il', ', in', ', ia', ', ks', ', ky', ', la', ', me', ', md',
+  ', ma', ', mi', ', mn', ', ms', ', mo', ', mt', ', ne', ', nv', ', nh', ', nj',
+  ', nm', ', ny', ', nc', ', nd', ', oh', ', ok', ', or', ', pa', ', ri', ', sc',
+  ', sd', ', tn', ', tx', ', ut', ', vt', ', va', ', wa', ', wv', ', wi', ', wy', ', dc',
+  // Full state names
+  'alabama', 'alaska', 'arizona', 'arkansas', 'california', 'colorado', 'connecticut',
+  'delaware', 'florida', 'georgia', 'hawaii', 'idaho', 'illinois', 'indiana', 'iowa',
+  'kansas', 'kentucky', 'louisiana', 'maine', 'maryland', 'massachusetts', 'michigan',
+  'minnesota', 'mississippi', 'missouri', 'montana', 'nebraska', 'nevada', 'new hampshire',
+  'new jersey', 'new mexico', 'new york', 'north carolina', 'north dakota', 'ohio',
+  'oklahoma', 'oregon', 'pennsylvania', 'rhode island', 'south carolina', 'south dakota',
+  'tennessee', 'texas', 'utah', 'vermont', 'virginia', 'washington', 'west virginia',
+  'wisconsin', 'wyoming', 'district of columbia',
+  // Major US cities
+  'new york city', 'los angeles', 'chicago', 'houston', 'phoenix', 'philadelphia',
+  'san antonio', 'san diego', 'dallas', 'san jose', 'austin', 'jacksonville',
+  'san francisco', 'seattle', 'denver', 'boston', 'detroit', 'atlanta', 'miami',
+  'minneapolis', 'charlotte', 'portland', 'las vegas', 'baltimore', 'milwaukee',
+  'albuquerque', 'tucson', 'fresno', 'sacramento', 'kansas city', 'mesa',
+  'omaha', 'cleveland', 'virginia beach', 'raleigh', 'oakland', 'pittsburgh'
+]
 
-// Check if a job location is from a non-target country
-const isNonTargetLocation = (location: string): boolean => {
+// Check if a job location is in the USA
+const isUsLocation = (location: string): boolean => {
   if (!location) return false
   const lowerLocation = location.toLowerCase()
-  return NON_TARGET_COUNTRIES.some(country => lowerLocation.includes(country))
+  // Also accept "Remote" jobs as they could be US-based
+  if (lowerLocation === 'remote' || lowerLocation.includes('remote in usa') || lowerLocation.includes('remote - us')) {
+    return true
+  }
+  return US_INDICATORS.some(indicator => lowerLocation.includes(indicator))
 }
 
-// Filter jobs to only show US/target locations
+// Filter jobs to only show US locations
 const filterUsJobs = (jobs: any[]): any[] => {
-  return jobs.filter(job => !isNonTargetLocation(job?.location))
+  return jobs.filter(job => isUsLocation(job?.location))
 }
 
 interface IntentCardProps {
