@@ -176,11 +176,6 @@ export const useSignals = (date: string, filters: FilterOptions) => {
       const intentScores = intentScoresResponse.data as IntentScoreResponse[]
       setIsIntentScoresLoading(false)
 
-      // DEBUG: Log raw API response to check citations field
-      console.log('[DEBUG useSignals] Raw API response:', intentScoresResponse)
-      console.log('[DEBUG useSignals] First intent score:', intentScores[0])
-      console.log('[DEBUG useSignals] First score citations:', intentScores[0]?.citations)
-
       if (intentScores.length === 0) {
         setSignals([])
         return
@@ -190,11 +185,6 @@ export const useSignals = (date: string, filters: FilterOptions) => {
       const companyIds = [...new Set(intentScores.map(score => score.companyId))]
       const allJobIds = intentScores.flatMap(score => score.citations)
       const uniqueJobIds = [...new Set(allJobIds)].filter(id => id)
-
-      // DEBUG: Log job IDs extraction
-      console.log('[DEBUG useSignals] All job IDs count:', allJobIds.length)
-      console.log('[DEBUG useSignals] Unique job IDs count:', uniqueJobIds.length)
-      console.log('[DEBUG useSignals] First 5 job IDs:', uniqueJobIds.slice(0, 5))
 
       // Step 3: Fetch company and job details in parallel
       setIsCompaniesLoading(true)
@@ -206,8 +196,6 @@ export const useSignals = (date: string, filters: FilterOptions) => {
       for (let i = 0; i < uniqueJobIds.length; i += JOB_BATCH_SIZE) {
         jobBatches.push(uniqueJobIds.slice(i, i + JOB_BATCH_SIZE))
       }
-
-      console.log('[DEBUG useSignals] Fetching jobs in', jobBatches.length, 'batches')
 
       const [companiesResponse, ...jobBatchResponses] = await Promise.all([
         companyIds.length > 0
