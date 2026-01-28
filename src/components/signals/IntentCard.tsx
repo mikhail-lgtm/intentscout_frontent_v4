@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
-import { TrendingUp, Building, Calendar, Users, ExternalLink, Linkedin, Briefcase, ChevronDown, ChevronUp, ThumbsUp, ThumbsDown, Minus, Ban, AlertTriangle } from 'lucide-react'
+import { TrendingUp, Building, Calendar, Users, ExternalLink, Linkedin, Briefcase, ChevronDown, ChevronUp, ThumbsUp, ThumbsDown, Minus, Ban } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { Signal } from '../../hooks/useSignals'
 import { api } from '../../lib/apiClient'
 import { ConfirmationModal } from '../ui/ConfirmationModal'
 
-// Non-target countries that should be flagged
+// Non-target countries - jobs from these locations are filtered out
 const NON_TARGET_COUNTRIES = ['india', 'malaysia', 'philippines', 'pakistan', 'bangladesh', 'sri lanka', 'nepal']
 
 // Check if a job location is from a non-target country
@@ -13,6 +13,11 @@ const isNonTargetLocation = (location: string): boolean => {
   if (!location) return false
   const lowerLocation = location.toLowerCase()
   return NON_TARGET_COUNTRIES.some(country => lowerLocation.includes(country))
+}
+
+// Filter jobs to only show US/target locations
+const filterUsJobs = (jobs: any[]): any[] => {
+  return jobs.filter(job => !isNonTargetLocation(job?.location))
 }
 
 interface IntentCardProps {
@@ -121,24 +126,14 @@ const JobCitationCard: React.FC<{ job: any; citationIndex: number; isExpanded: b
 }) => {
   if (!job) return null
 
-  const isNonTarget = isNonTargetLocation(job.location)
-
   return (
     <div
       id={`job-card-${citationIndex}`}
-      className={`bg-white border rounded-lg p-4 transition-all duration-200 hover:shadow-sm ${
-        isNonTarget
-          ? 'border-amber-300 bg-amber-50/50'
-          : 'border-gray-200'
-      }`}
+      className="bg-white border border-gray-200 rounded-lg p-4 transition-all duration-200 hover:shadow-sm"
     >
       <div className="flex items-start gap-3">
         {/* Citation number */}
-        <div className={`w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 text-sm font-medium ${
-          isNonTarget
-            ? 'bg-amber-100 text-amber-700'
-            : 'bg-gray-100 text-gray-700'
-        }`}>
+        <div className="w-8 h-8 bg-gray-100 text-gray-700 rounded-md flex items-center justify-center flex-shrink-0 text-sm font-medium">
           {citationIndex + 1}
         </div>
 
@@ -146,19 +141,11 @@ const JobCitationCard: React.FC<{ job: any; citationIndex: number; isExpanded: b
           {/* Job header */}
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <h5 className="font-medium text-gray-900 text-sm">{job.title}</h5>
-                {isNonTarget && (
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-100 text-amber-700 text-xs rounded font-medium">
-                    <AlertTriangle className="w-3 h-3" />
-                    Non-US
-                  </span>
-                )}
-              </div>
+              <h5 className="font-medium text-gray-900 text-sm mb-1">{job.title}</h5>
               <div className="text-xs text-gray-600 space-x-2">
                 <span>{job.company}</span>
                 <span>-</span>
-                <span className={isNonTarget ? 'text-amber-600 font-medium' : ''}>{job.location}</span>
+                <span>{job.location}</span>
                 <span>-</span>
                 <span>{job.datePosted}</span>
                 {job.isRemote && (
@@ -413,7 +400,7 @@ export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onRej
   const citationIds: string[] = (signal as any)?.citations || []
 
   // Build cited jobs list in the order of citations if provided
-  const citedJobs = citationIds.length
+  const allCitedJobs = citationIds.length
     ? citationIds
         .map((cid) =>
           jobs.find((job: any) =>
@@ -424,6 +411,9 @@ export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onRej
         )
         .filter(Boolean)
     : jobs
+
+  // Filter out non-target country jobs (India, Malaysia, Philippines, etc.)
+  const citedJobs = filterUsJobs(allCitedJobs)
   
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -634,23 +624,9 @@ export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onRej
       {/* Job Citations */}
       {citedJobs.length > 0 && (
         <div className="mb-6">
-          {(() => {
-            const nonUsCount = citedJobs.filter((job: any) => isNonTargetLocation(job?.location)).length
-            const usCount = citedJobs.length - nonUsCount
-            return (
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-medium text-gray-900">
-                  Evidence from Job Postings ({citedJobs.length})
-                </h4>
-                {nonUsCount > 0 && (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-700 text-xs rounded-full font-medium">
-                    <AlertTriangle className="w-3 h-3" />
-                    {nonUsCount} Non-US {nonUsCount === 1 ? 'job' : 'jobs'}
-                  </span>
-                )}
-              </div>
-            )
-          })()}
+          <h4 className="text-sm font-medium text-gray-900 mb-3">
+            Evidence from Job Postings ({citedJobs.length})
+          </h4>
           <div className="space-y-3">
             {citedJobs.map((job, index) => (
               <JobCitationCard

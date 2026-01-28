@@ -59,7 +59,7 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
   companyName,
   onContactAdded
 }) => {
-  const [guidance, setGuidance] = useState('')
+  const [guidance, setGuidance] = useState('Salesforce + director, Salesforce + vp of sales, salesforce + program manager, CTO + Salesforce, CIO + Salesforce, Director/VP CRM, Commercial Excellence, program lead + salesforce, Head of Business Applications, VP Customer Success, CRO + Salesforce, CCO + Salesforce, CRM owner. IGNORE PURELY TECHNICAL ROLES SUCH AS SALESFORCE ARCHITECT/DEVELOPER')
   const [showSuccess, setShowSuccess] = useState(false)
   const [importingIds, setImportingIds] = useState<Set<string>>(new Set())
   const [importingAll, setImportingAll] = useState(false)
