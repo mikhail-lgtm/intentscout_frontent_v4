@@ -1,6 +1,31 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { api } from '../lib/apiClient'
 
+// US location indicators for whitelist filtering
+const US_INDICATORS = [
+  'united states', 'usa', 'u.s.a', 'u.s.',
+  ', al', ', ak', ', az', ', ar', ', ca', ', co', ', ct', ', de', ', fl', ', ga',
+  ', hi', ', id', ', il', ', in', ', ia', ', ks', ', ky', ', la', ', me', ', md',
+  ', ma', ', mi', ', mn', ', ms', ', mo', ', mt', ', ne', ', nv', ', nh', ', nj',
+  ', nm', ', ny', ', nc', ', nd', ', oh', ', ok', ', or', ', pa', ', ri', ', sc',
+  ', sd', ', tn', ', tx', ', ut', ', vt', ', va', ', wa', ', wv', ', wi', ', wy', ', dc',
+  'alabama', 'alaska', 'arizona', 'arkansas', 'california', 'colorado', 'connecticut',
+  'delaware', 'florida', 'georgia', 'hawaii', 'idaho', 'illinois', 'indiana', 'iowa',
+  'kansas', 'kentucky', 'louisiana', 'maine', 'maryland', 'massachusetts', 'michigan',
+  'minnesota', 'mississippi', 'missouri', 'montana', 'nebraska', 'nevada', 'new hampshire',
+  'new jersey', 'new mexico', 'new york', 'north carolina', 'north dakota', 'ohio',
+  'oklahoma', 'oregon', 'pennsylvania', 'rhode island', 'south carolina', 'south dakota',
+  'tennessee', 'texas', 'utah', 'vermont', 'virginia', 'washington', 'west virginia',
+  'wisconsin', 'wyoming', 'district of columbia'
+]
+
+const isUsLocation = (location: string): boolean => {
+  if (!location) return false
+  const lower = location.toLowerCase()
+  if (lower === 'remote' || lower.includes('remote in usa') || lower.includes('remote - us')) return true
+  return US_INDICATORS.some(ind => lower.includes(ind))
+}
+
 // Module-level cache for API calls
 const requestCache = new Map<string, Promise<any>>()
 const resultCache = new Map<string, any>()
@@ -231,9 +256,10 @@ export const useSignals = (date: string, filters: FilterOptions) => {
       // Step 5: Combine data into Signal objects
       const combinedSignals: Signal[] = intentScores.map(intentScore => {
         const company = companyMap.get(intentScore.companyId)
+        // Filter to only US location jobs
         const citedJobs = intentScore.citations
           .map(jobId => jobMap.get(jobId))
-          .filter(job => job !== undefined) as JobResponse[]
+          .filter(job => job !== undefined && isUsLocation(job.location)) as JobResponse[]
 
         return {
           id: intentScore.id,
@@ -286,6 +312,9 @@ export const useSignals = (date: string, filters: FilterOptions) => {
 
       // Hide signals with 0 score
       filteredSignals = filteredSignals.filter(signal => signal.intentScore > 0)
+
+      // Hide signals with no US job postings
+      filteredSignals = filteredSignals.filter(signal => signal.jobs.length > 0)
 
       setSignals(filteredSignals)
 
