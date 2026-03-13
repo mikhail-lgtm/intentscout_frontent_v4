@@ -17,6 +17,7 @@ interface LinkedInScrapingPopupProps {
   signalId: string
   companyName: string
   contacts: Contact[]
+  mode?: 'modal' | 'inline'
 }
 
 const ApplePayCheckmark: React.FC = () => {
@@ -53,7 +54,8 @@ export const LinkedInScrapingPopup: React.FC<LinkedInScrapingPopupProps> = ({
   onClose,
   signalId,
   companyName,
-  contacts
+  contacts,
+  mode = 'modal'
 }) => {
   const [showSuccess, setShowSuccess] = useState(false)
   
@@ -318,14 +320,22 @@ export const LinkedInScrapingPopup: React.FC<LinkedInScrapingPopupProps> = ({
 
   if (!isOpen) return null
 
+  if (mode === 'inline') {
+    return (
+      <div className="animate-tab-fade-in">
+        {renderContent()}
+      </div>
+    )
+  }
+
   return (
     <>
       {/* Backdrop */}
-      <div 
+      <div
         className="fixed inset-0 bg-black bg-opacity-50 z-50"
         onClick={handleClose}
       />
-      
+
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
