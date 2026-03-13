@@ -9,7 +9,6 @@ interface EmailFinderPopupProps {
   signalId: string
   companyName: string
   onEmailsFound?: () => void
-  mode?: 'modal' | 'inline'
 }
 
 const ApplePayCheckmark: React.FC = () => {
@@ -67,8 +66,7 @@ export const EmailFinderPopup: React.FC<EmailFinderPopupProps> = ({
   onClose,
   signalId,
   companyName,
-  onEmailsFound,
-  mode = 'modal'
+  onEmailsFound
 }) => {
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false)
   const [updatedContacts, setUpdatedContacts] = useState<Set<string>>(new Set())
@@ -127,91 +125,6 @@ export const EmailFinderPopup: React.FC<EmailFinderPopupProps> = ({
   }
 
   if (!isOpen) return null
-
-  if (mode === 'inline') {
-    return (
-      <div className="animate-tab-fade-in">
-        {/* Success Animation */}
-        {showSuccessAnimation && (
-          <div className="text-center py-8">
-            <ApplePayCheckmark />
-            <div className="mt-4">
-              <h3 className="text-lg font-semibold text-green-800">Email patterns found!</h3>
-            </div>
-          </div>
-        )}
-
-        {/* Loading State */}
-        {isSearchInProgress && !showSuccessAnimation && (
-          <div className="text-center py-8">
-            <LoadingSpinner />
-          </div>
-        )}
-
-        {/* Idle State - Show start button */}
-        {!isSearchInProgress && !hasResults && !hasFailed && !showSuccessAnimation && (
-          <div className="text-center py-6">
-            <Mail className="w-10 h-10 text-blue-400 mx-auto mb-3" />
-            <h3 className="text-base font-medium text-gray-900 mb-1">Find Email Addresses</h3>
-            <p className="text-sm text-gray-500 mb-4">
-              Discover email patterns and predict email addresses for your contacts at {companyName}
-            </p>
-            <button
-              onClick={handleStartSearch}
-              disabled={isSearchInProgress}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
-            >
-              {isSearchInProgress ? 'Searching...' : 'Start Email Search'}
-            </button>
-          </div>
-        )}
-
-        {/* Results */}
-        {hasResults && searchStatus?.email_results && searchStatus.email_results.length > 0 && !showSuccessAnimation && (
-          <div className="space-y-3">
-            {searchStatus.email_results.map((result, index) => (
-              <div key={index} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-                <div>
-                  <div className="font-medium text-sm text-gray-900">{result.first_name} {result.last_name}</div>
-                  {result.email_address ? (
-                    <div className="text-sm text-green-600">{result.email_address}</div>
-                  ) : (
-                    <div className="text-sm text-gray-400">No email found</div>
-                  )}
-                </div>
-                {result.confidence_score && (
-                  <span className={`text-xs font-medium ${getConfidenceColor(result.confidence_score)}`}>
-                    {formatConfidenceScore(result.confidence_score)}
-                  </span>
-                )}
-              </div>
-            ))}
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
-              <strong>Summary:</strong> Found {searchStatus.email_results.filter(r => r.email_address).length} emails
-              out of {searchStatus.email_results.length} contacts.
-            </div>
-          </div>
-        )}
-
-        {/* Failed State */}
-        {hasFailed && !showSuccessAnimation && (
-          <div className="text-center py-6">
-            <AlertCircle className="w-10 h-10 text-red-400 mx-auto mb-3" />
-            <h3 className="text-base font-medium text-red-900 mb-1">Email search failed</h3>
-            <p className="text-sm text-gray-500 mb-4">
-              {searchStatus?.error_message || 'Something went wrong. Please try again.'}
-            </p>
-            <button
-              onClick={handleRestartSearch}
-              className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
-            >
-              Try Again
-            </button>
-          </div>
-        )}
-      </div>
-    )
-  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">

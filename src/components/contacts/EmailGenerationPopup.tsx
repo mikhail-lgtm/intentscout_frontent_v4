@@ -22,7 +22,6 @@ interface EmailGenerationPopupProps {
   signalId: string
   companyName: string
   contacts: Contact[]
-  mode?: 'modal' | 'inline'
 }
 
 const ApplePayCheckmark: React.FC = () => {
@@ -59,8 +58,7 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
   onClose,
   signalId,
   companyName,
-  contacts,
-  mode = 'modal'
+  contacts
 }) => {
   const [selectedSequence, setSelectedSequence] = useState('')
   const [showSuccess, setShowSuccess] = useState(false)
@@ -785,60 +783,14 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
 
   if (!isOpen) return null
 
-  if (mode === 'inline') {
-    return (
-      <>
-        <div className="animate-tab-fade-in">
-          {renderContent()}
-        </div>
-
-        {/* Regenerate Email Modal - stays as modal */}
-        {showRegenerateModal && regeneratingEmail && (
-          <RegenerateEmailModal
-            isOpen={showRegenerateModal}
-            onClose={() => {
-              setShowRegenerateModal(false)
-              setRegeneratingEmail(null)
-              setRegeneratePrompts({ subject_prompt: '', body_prompt: '', data_sources: [] })
-            }}
-            onRegenerate={handleRegenerateEmail}
-            initialSubjectPrompt={regeneratePrompts.subject_prompt}
-            initialBodyPrompt={regeneratePrompts.body_prompt}
-            initialDataSources={regeneratePrompts.data_sources}
-            contactName={regeneratingEmail.contactName}
-            companyName={companyName}
-            sequenceStep={regeneratingEmail.sequenceStep}
-          />
-        )}
-
-        {/* Bulk Regenerate Email Modal - stays as modal */}
-        {showBulkRegenerateModal && (
-          <BulkRegenerateModal
-            isOpen={showBulkRegenerateModal}
-            onClose={() => {
-              setShowBulkRegenerateModal(false)
-              setBulkRegeneratePrompts({ subject_prompt: '', body_prompt: '', data_sources: [] })
-            }}
-            onRegenerate={handleBulkRegenerateEmail}
-            initialSubjectPrompt={bulkRegeneratePrompts.subject_prompt}
-            initialBodyPrompt={bulkRegeneratePrompts.body_prompt}
-            initialDataSources={bulkRegeneratePrompts.data_sources}
-            companyName={companyName}
-            contactCount={Object.keys(emailsByContact).length}
-          />
-        )}
-      </>
-    )
-  }
-
   return (
     <>
       {/* Backdrop */}
-      <div
+      <div 
         className="fixed inset-0 bg-black bg-opacity-50 z-50"
         onClick={handleClose}
       />
-
+      
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">

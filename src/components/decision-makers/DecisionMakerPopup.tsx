@@ -10,7 +10,6 @@ interface DecisionMakerPopupProps {
   signalId: string
   companyName: string
   onContactAdded?: () => void
-  mode?: 'modal' | 'inline'
 }
 
 const LinkedInIcon: React.FC<{ className?: string }> = ({ className = "w-4 h-4" }) => {
@@ -58,8 +57,7 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
   onClose,
   signalId,
   companyName,
-  onContactAdded,
-  mode = 'modal'
+  onContactAdded
 }) => {
   const [guidance, setGuidance] = useState('Salesforce + director, Salesforce + vp of sales, salesforce + program manager, CTO + Salesforce, CIO + Salesforce, Director/VP CRM, Commercial Excellence, program lead + salesforce, Head of Business Applications, VP Customer Success, CRO + Salesforce, CCO + Salesforce, CRM owner. IGNORE PURELY TECHNICAL ROLES SUCH AS SALESFORCE ARCHITECT/DEVELOPER')
   const [showSuccess, setShowSuccess] = useState(false)
@@ -1248,22 +1246,14 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
 
   if (!isOpen) return null
 
-  if (mode === 'inline') {
-    return (
-      <div className="animate-tab-fade-in">
-        {renderContent()}
-      </div>
-    )
-  }
-
   return (
     <>
       {/* Backdrop */}
-      <div
+      <div 
         className="fixed inset-0 bg-black bg-opacity-50 z-50"
         onClick={handleClose}
       />
-
+      
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden">
