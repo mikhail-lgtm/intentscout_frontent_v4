@@ -1,4 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
+} from 'recharts'
 import { adminApi } from '../../lib/api/admin'
 import type {
   CostSummaryResponse,
@@ -17,8 +21,14 @@ const formatCurrency = (value: number) => {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: 2,
-    maximumFractionDigits: 4,
+    maximumFractionDigits: 2,
   }).format(value)
+}
+
+const formatCurrencyShort = (value: number) => {
+  if (value >= 1000) return `$${(value / 1000).toFixed(1)}k`
+  if (value >= 1) return `$${value.toFixed(2)}`
+  return `$${value.toFixed(4)}`
 }
 
 const formatNumber = (value: number) => {
@@ -30,6 +40,7 @@ const PERIOD_OPTIONS = [
   { value: 14, label: '14 days' },
   { value: 30, label: '30 days' },
   { value: 90, label: '90 days' },
+  { value: 365, label: '1 year' },
 ]
 
 const EXPENSE_CATEGORIES = [
@@ -39,6 +50,19 @@ const EXPENSE_CATEGORIES = [
   'software',
   'other',
 ]
+
+const CHART_COLORS = [
+  '#f97316', '#3b82f6', '#10b981', '#8b5cf6', '#ef4444',
+  '#06b6d4', '#f59e0b', '#ec4899', '#6366f1', '#14b8a6',
+]
+
+const PROVIDER_COLORS: Record<string, string> = {
+  openrouter: '#f97316',
+  openai: '#10b981',
+  fireworks: '#3b82f6',
+  serper: '#8b5cf6',
+  brightdata: '#ef4444',
+}
 
 export const CostsPage = () => {
   const [summary, setSummary] = useState<CostSummaryResponse | null>(null)
@@ -135,16 +159,37 @@ export const CostsPage = () => {
     }
   }
 
-  // Calculate max values for chart bars
-  const maxDailyCost = useMemo(() => {
-    if (!summary?.by_day?.length) return 1
-    return summary.by_day.reduce((acc, day) => Math.max(acc, day.total_cost), 0.01)
+  // Prepare chart data
+  const dailyChartData = useMemo(() => {
+    if (!summary?.by_day?.length) return []
+    return summary.by_day.map((day: CostByDayEntry) => ({
+      date: day._id.slice(5), // MM-DD
+      fullDate: day._id,
+      cost: Number(day.total_cost.toFixed(4)),
+      requests: day.total_requests,
+      tokens: day.total_tokens,
+    }))
   }, [summary])
 
-  const maxProviderCost = useMemo(() => {
-    if (!summary?.by_provider?.length) return 1
-    return summary.by_provider.reduce((acc, p) => Math.max(acc, p.total_cost), 0.01)
+  const providerPieData = useMemo(() => {
+    if (!summary?.by_provider?.length) return []
+    return summary.by_provider.map((p: CostByProviderEntry) => ({
+      name: p._id,
+      value: Number(p.total_cost.toFixed(2)),
+      requests: p.total_requests,
+      color: PROVIDER_COLORS[p._id] || '#94a3b8',
+    }))
   }, [summary])
+
+  const avgDailyCost = useMemo(() => {
+    if (!dailyChartData.length) return 0
+    const total = dailyChartData.reduce((sum, d) => sum + d.cost, 0)
+    return total / dailyChartData.length
+  }, [dailyChartData])
+
+  const projectedMonthlyCost = useMemo(() => {
+    return avgDailyCost * 30
+  }, [avgDailyCost])
 
   if (loading) {
     return (
@@ -174,11 +219,21 @@ export const CostsPage = () => {
 
   return (
     <div className="space-y-8">
-      {/* Period selector */}
+      {/* Header with period selector */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-slate-900">Cost Tracking</h2>
-        <div className="flex items-center gap-2">
-          <label className="text-sm text-slate-500">Period:</label>
+        <div>
+          <h2 className="text-xl font-bold text-slate-900">Cost Tracking</h2>
+          <p className="text-sm text-slate-500 mt-1">
+            Avg {formatCurrency(avgDailyCost)}/day | Projected {formatCurrency(projectedMonthlyCost)}/month
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => void loadData()}
+            className="px-3 py-1.5 text-sm text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50"
+          >
+            Refresh
+          </button>
           <select
             value={days}
             onChange={e => setDays(Number(e.target.value))}
@@ -193,111 +248,165 @@ export const CostsPage = () => {
 
       {/* Summary cards */}
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-sm text-slate-500">Total API Costs</p>
-          <p className="mt-2 text-3xl font-semibold text-slate-900">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">API Costs</p>
+          <p className="mt-2 text-2xl font-bold text-slate-900">
             {formatCurrency(summary?.total_api_cost_usd ?? 0)}
           </p>
-          <p className="mt-3 text-xs text-slate-400">
-            Automatic tracking from all API calls
-          </p>
+          <p className="mt-1 text-xs text-slate-400">{days} days</p>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-sm text-slate-500">Manual Expenses</p>
-          <p className="mt-2 text-3xl font-semibold text-slate-900">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Manual Expenses</p>
+          <p className="mt-2 text-2xl font-bold text-slate-900">
             {formatCurrency(summary?.total_manual_cost_usd ?? 0)}
           </p>
-          <p className="mt-3 text-xs text-slate-400">
-            Infrastructure, proxies, subscriptions
-          </p>
+          <p className="mt-1 text-xs text-slate-400">Infrastructure, proxies</p>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-sm text-slate-500">Total Costs</p>
-          <p className="mt-2 text-3xl font-semibold text-orange-600">
+        <div className="rounded-xl border border-orange-200 bg-orange-50 p-5 shadow-sm">
+          <p className="text-xs font-medium text-orange-600 uppercase tracking-wide">Total Costs</p>
+          <p className="mt-2 text-2xl font-bold text-orange-700">
             {formatCurrency(summary?.total_cost_usd ?? 0)}
           </p>
-          <p className="mt-3 text-xs text-slate-400">
-            Combined total for {days} days
-          </p>
+          <p className="mt-1 text-xs text-orange-500">{days} days combined</p>
         </div>
 
         {openrouterCredits && (
-          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-sm text-slate-500">OpenRouter Balance</p>
-            <p className="mt-2 text-3xl font-semibold text-emerald-600">
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
+            <p className="text-xs font-medium text-emerald-600 uppercase tracking-wide">OpenRouter Balance</p>
+            <p className="mt-2 text-2xl font-bold text-emerald-700">
               {formatCurrency(openrouterCredits.credits_remaining)}
             </p>
-            <p className="mt-3 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-emerald-500">
               Today: {formatCurrency(openrouterCredits.usage_today)}
             </p>
           </div>
         )}
       </section>
 
-      {/* Costs by day chart */}
+      {/* Daily costs chart */}
       <section>
-        <h3 className="text-lg font-semibold text-slate-900">Daily Costs</h3>
-        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          {summary?.by_day?.length ? (
-            <div className="space-y-3">
-              {summary.by_day.slice(0, 14).map((day: CostByDayEntry) => {
-                const width = `${(day.total_cost / maxDailyCost) * 100}%`
-                return (
-                  <div key={day._id} className="flex items-center gap-4">
-                    <div className="w-24 text-sm text-slate-500 shrink-0">{day._id}</div>
-                    <div className="flex-1 h-6 bg-slate-100 rounded-lg overflow-hidden">
-                      <div
-                        className="h-full bg-orange-500 rounded-lg transition-all"
-                        style={{ width }}
-                      />
-                    </div>
-                    <div className="w-24 text-sm text-slate-700 text-right shrink-0">
-                      {formatCurrency(day.total_cost)}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+        <h3 className="text-lg font-semibold text-slate-900 mb-4">Daily Costs</h3>
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          {dailyChartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={dailyChartData}>
+                <defs>
+                  <linearGradient id="costGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 12, fill: '#64748b' }}
+                  tickLine={false}
+                  axisLine={{ stroke: '#e2e8f0' }}
+                />
+                <YAxis
+                  tick={{ fontSize: 12, fill: '#64748b' }}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(v: number) => formatCurrencyShort(v)}
+                />
+                <Tooltip
+                  formatter={(value) => [formatCurrency(Number(value)), 'Cost']}
+                  labelFormatter={(label) => `Date: ${label}`}
+                  contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="cost"
+                  stroke="#f97316"
+                  strokeWidth={2}
+                  fill="url(#costGradient)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           ) : (
-            <p className="text-sm text-slate-500">No cost data for this period</p>
+            <p className="text-sm text-slate-500 text-center py-8">No cost data for this period</p>
           )}
         </div>
       </section>
 
-      {/* Costs by provider */}
+      {/* Provider breakdown - pie chart + bar chart side by side */}
       <section>
-        <h3 className="text-lg font-semibold text-slate-900">Costs by Provider</h3>
-        <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {summary?.by_provider?.map((provider: CostByProviderEntry) => {
-            const width = `${(provider.total_cost / maxProviderCost) * 100}%`
-            return (
-              <div key={provider._id} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <p className="font-semibold text-slate-900 capitalize">{provider._id}</p>
-                  <p className="text-lg font-bold text-slate-700">{formatCurrency(provider.total_cost)}</p>
-                </div>
-                <div className="mt-3 h-3 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-500 rounded-full" style={{ width }} />
-                </div>
-                <div className="mt-3 flex justify-between text-xs text-slate-500">
-                  <span>{formatNumber(provider.total_requests)} requests</span>
-                  <span>{formatNumber(provider.total_tokens)} tokens</span>
-                </div>
-              </div>
-            )
-          })}
-          {!summary?.by_provider?.length && (
-            <p className="text-sm text-slate-500 col-span-full">No provider data</p>
-          )}
+        <h3 className="text-lg font-semibold text-slate-900 mb-4">Costs by Provider</h3>
+        <div className="grid gap-4 lg:grid-cols-2">
+          {/* Pie chart */}
+          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            {providerPieData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Pie
+                    data={providerPieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={3}
+                    dataKey="value"
+                    label={({ name, percent }) =>
+                      `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
+                    }
+                    labelLine={{ stroke: '#94a3b8' }}
+                  >
+                    {providerPieData.map((entry, index) => (
+                      <Cell key={entry.name} fill={entry.color || CHART_COLORS[index % CHART_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value) => formatCurrency(Number(value))}
+                    contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-sm text-slate-500 text-center py-8">No provider data</p>
+            )}
+          </div>
+
+          {/* Bar chart */}
+          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            {providerPieData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={providerPieData} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
+                  <XAxis
+                    type="number"
+                    tick={{ fontSize: 12, fill: '#64748b' }}
+                    tickFormatter={(v: number) => formatCurrencyShort(v)}
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    tick={{ fontSize: 12, fill: '#64748b' }}
+                    width={90}
+                  />
+                  <Tooltip
+                    formatter={(value) => [formatCurrency(Number(value)), 'Cost']}
+                    contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                  />
+                  <Bar dataKey="value" radius={[0, 6, 6, 0]}>
+                    {providerPieData.map((entry, index) => (
+                      <Cell key={entry.name} fill={entry.color || CHART_COLORS[index % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-sm text-slate-500 text-center py-8">No provider data</p>
+            )}
+          </div>
         </div>
       </section>
 
       {/* Costs by service */}
       <section>
-        <h3 className="text-lg font-semibold text-slate-900">Costs by Service</h3>
-        <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <h3 className="text-lg font-semibold text-slate-900 mb-4">Costs by Service</h3>
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
               <tr>
@@ -311,17 +420,17 @@ export const CostsPage = () => {
             <tbody className="divide-y divide-slate-100">
               {summary?.by_service?.length ? (
                 summary.by_service.map((svc: CostByServiceEntry) => (
-                  <tr key={`${svc._id.service}-${svc._id.operation}`}>
-                    <td className="px-4 py-3 text-sm text-slate-700">{svc._id.service}</td>
+                  <tr key={`${svc._id.service}-${svc._id.operation}`} className="hover:bg-slate-50">
+                    <td className="px-4 py-3 text-sm text-slate-700 font-medium">{svc._id.service}</td>
                     <td className="px-4 py-3 text-sm text-slate-500">{svc._id.operation}</td>
                     <td className="px-4 py-3 text-sm text-slate-600 text-right">{formatNumber(svc.total_requests)}</td>
                     <td className="px-4 py-3 text-sm text-slate-600 text-right">{formatNumber(svc.avg_tokens)}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-slate-900 text-right">{formatCurrency(svc.total_cost)}</td>
+                    <td className="px-4 py-3 text-sm font-semibold text-slate-900 text-right">{formatCurrency(svc.total_cost)}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="px-4 py-4 text-sm text-slate-500">No service data</td>
+                  <td colSpan={5} className="px-4 py-4 text-sm text-slate-500 text-center">No service data</td>
                 </tr>
               )}
             </tbody>
@@ -331,8 +440,8 @@ export const CostsPage = () => {
 
       {/* Costs by model */}
       <section>
-        <h3 className="text-lg font-semibold text-slate-900">Costs by Model</h3>
-        <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <h3 className="text-lg font-semibold text-slate-900 mb-4">Costs by Model</h3>
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
               <tr>
@@ -346,17 +455,17 @@ export const CostsPage = () => {
             <tbody className="divide-y divide-slate-100">
               {summary?.by_model?.length ? (
                 summary.by_model.map((model: CostByModelEntry) => (
-                  <tr key={model._id}>
+                  <tr key={model._id} className="hover:bg-slate-50">
                     <td className="px-4 py-3 text-sm text-slate-700 font-mono">{model._id}</td>
                     <td className="px-4 py-3 text-sm text-slate-600 text-right">{formatNumber(model.total_requests)}</td>
                     <td className="px-4 py-3 text-sm text-slate-600 text-right">{formatNumber(model.total_tokens)}</td>
                     <td className="px-4 py-3 text-sm text-slate-600 text-right">{formatNumber(model.avg_tokens_per_request)}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-slate-900 text-right">{formatCurrency(model.total_cost)}</td>
+                    <td className="px-4 py-3 text-sm font-semibold text-slate-900 text-right">{formatCurrency(model.total_cost)}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="px-4 py-4 text-sm text-slate-500">No model data</td>
+                  <td colSpan={5} className="px-4 py-4 text-sm text-slate-500 text-center">No model data</td>
                 </tr>
               )}
             </tbody>
@@ -366,7 +475,7 @@ export const CostsPage = () => {
 
       {/* Manual expenses */}
       <section>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-slate-900">Manual Expenses</h3>
           <button
             onClick={() => setShowExpenseForm(!showExpenseForm)}
@@ -378,7 +487,7 @@ export const CostsPage = () => {
 
         {/* Add expense form */}
         {showExpenseForm && (
-          <div className="mt-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mb-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Date</label>
@@ -407,7 +516,7 @@ export const CostsPage = () => {
                   type="text"
                   value={expenseForm.provider}
                   onChange={e => setExpenseForm({ ...expenseForm, provider: e.target.value })}
-                  placeholder="e.g. AWS, DigitalOcean"
+                  placeholder="e.g. Azure, BrightData"
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:border-orange-500 focus:outline-none"
                 />
               </div>
@@ -468,7 +577,7 @@ export const CostsPage = () => {
         )}
 
         {/* Expenses list */}
-        <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
               <tr>
@@ -483,7 +592,7 @@ export const CostsPage = () => {
             <tbody className="divide-y divide-slate-100">
               {manualExpenses.length ? (
                 manualExpenses.map(expense => (
-                  <tr key={expense._id}>
+                  <tr key={expense._id} className="hover:bg-slate-50">
                     <td className="px-4 py-3 text-sm text-slate-600">{new Date(expense.date).toLocaleDateString()}</td>
                     <td className="px-4 py-3 text-sm text-slate-500 capitalize">{expense.category}</td>
                     <td className="px-4 py-3 text-sm text-slate-700">{expense.provider}</td>
@@ -499,7 +608,7 @@ export const CostsPage = () => {
                     <td className="px-4 py-3 text-center">
                       <button
                         onClick={() => void handleDeleteExpense(expense._id)}
-                        className="text-red-600 hover:text-red-800 text-sm"
+                        className="text-red-500 hover:text-red-700 text-sm font-medium"
                       >
                         Delete
                       </button>
@@ -508,7 +617,7 @@ export const CostsPage = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-4 py-4 text-sm text-slate-500">No manual expenses recorded</td>
+                  <td colSpan={6} className="px-4 py-4 text-sm text-slate-500 text-center">No manual expenses recorded</td>
                 </tr>
               )}
             </tbody>
@@ -518,38 +627,48 @@ export const CostsPage = () => {
 
       {/* Recent usage logs */}
       <section>
-        <h3 className="text-lg font-semibold text-slate-900">Recent API Usage</h3>
-        <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Timestamp</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Provider</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Service</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Model</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Tokens</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Cost</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {usageLogs.length ? (
-                usageLogs.slice(0, 20).map(log => (
-                  <tr key={log._id}>
-                    <td className="px-4 py-3 text-sm text-slate-600">{new Date(log.timestamp).toLocaleString()}</td>
-                    <td className="px-4 py-3 text-sm text-slate-700 capitalize">{log.provider}</td>
-                    <td className="px-4 py-3 text-sm text-slate-500">{log.service}/{log.operation}</td>
-                    <td className="px-4 py-3 text-sm text-slate-500 font-mono text-xs">{log.model ?? '-'}</td>
-                    <td className="px-4 py-3 text-sm text-slate-600 text-right">{formatNumber(log.tokens?.total_tokens ?? 0)}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-slate-900 text-right">{formatCurrency(log.cost.calculated_usd)}</td>
-                  </tr>
-                ))
-              ) : (
+        <h3 className="text-lg font-semibold text-slate-900 mb-4">Recent API Usage</h3>
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-200">
+              <thead className="bg-slate-50">
                 <tr>
-                  <td colSpan={6} className="px-4 py-4 text-sm text-slate-500">No usage logs recorded</td>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Time</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Provider</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Service</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Model</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Tokens</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Cost</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {usageLogs.length ? (
+                  usageLogs.slice(0, 30).map(log => (
+                    <tr key={log._id} className="hover:bg-slate-50">
+                      <td className="px-4 py-2.5 text-xs text-slate-500 whitespace-nowrap">
+                        {new Date(log.timestamp).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-2.5 text-sm text-slate-700 capitalize">
+                        <span
+                          className="inline-block w-2 h-2 rounded-full mr-2"
+                          style={{ backgroundColor: PROVIDER_COLORS[log.provider] || '#94a3b8' }}
+                        />
+                        {log.provider}
+                      </td>
+                      <td className="px-4 py-2.5 text-xs text-slate-500">{log.service}/{log.operation}</td>
+                      <td className="px-4 py-2.5 text-xs text-slate-500 font-mono">{log.model ?? '-'}</td>
+                      <td className="px-4 py-2.5 text-xs text-slate-600 text-right">{formatNumber(log.tokens?.total_tokens ?? 0)}</td>
+                      <td className="px-4 py-2.5 text-sm font-medium text-slate-900 text-right">{formatCurrency(log.cost.calculated_usd)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-4 text-sm text-slate-500 text-center">No usage logs recorded</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
     </div>
