@@ -25,7 +25,12 @@ export const Header = ({ activeTab, setActiveTab }: HeaderProps) => {
     <header className="bg-white border-b border-gray-200 py-4 px-6 flex items-center justify-between sticky top-0 z-30 shadow-sm">
       <div className="flex items-center">
         <div className="flex items-center mr-4 flex-col">
-          <img src="/IntentScoutFull.png" alt="IntentScout Logo" className="h-auto w-auto max-h-10 max-w-full mb-1" />
+          <div className="flex items-center gap-2">
+            <img src="/IntentScoutFull.png" alt="IntentScout Logo" className="h-auto w-auto max-h-10 max-w-full" />
+            {import.meta.env.MODE === 'staging' && (
+              <span className="text-[10px] font-bold text-yellow-700 bg-yellow-100 px-1.5 py-0.5 rounded uppercase tracking-wider">Testing</span>
+            )}
+          </div>
           <p className="text-xs text-gray-500 leading-tight">AI-Powered Sales Intelligence</p>
         </div>
       </div>

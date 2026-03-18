@@ -1,18 +1,45 @@
-import { Crown, CheckCircle, AlertCircle, ExternalLink } from 'lucide-react'
-import { useState } from 'react'
+import { Crown, CheckCircle, AlertCircle, ExternalLink, Zap } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import { useOrganizationMembers } from '../../hooks/useOrganizationMembers'
 import { useHubSpot } from '../../hooks/useHubSpot'
 import { OrganizationSelector } from './OrganizationSelector'
 import { BlockedCompaniesSection } from './BlockedCompaniesSection'
 
+const SETTINGS_KEY = 'intentscout_features'
+
+const getFeatureSettings = () => {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY)
+    return raw ? JSON.parse(raw) : {}
+  } catch {
+    return {}
+  }
+}
+
+const saveFeatureSettings = (settings: Record<string, boolean>) => {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
+}
+
 export const SettingsPage = () => {
   const { user, organization } = useAuth()
   const { members, loading: membersLoading, adminUser } = useOrganizationMembers()
   const { status: hubspotStatus, loading: hubspotLoading, error: hubspotError, connect: connectHubSpot, disconnect: disconnectHubSpot } = useHubSpot()
-  
-  // Note: Sender email is automatically set to current user's email by the backend
-  // No configuration needed - each user sends from their own email address
+
+  const [autoWorkspaceEnabled, setAutoWorkspaceEnabled] = useState(false)
+
+  useEffect(() => {
+    const settings = getFeatureSettings()
+    setAutoWorkspaceEnabled(!!settings.autoWorkspace)
+  }, [])
+
+  const handleAutoWorkspaceToggle = () => {
+    const newValue = !autoWorkspaceEnabled
+    setAutoWorkspaceEnabled(newValue)
+    const settings = getFeatureSettings()
+    settings.autoWorkspace = newValue
+    saveFeatureSettings(settings)
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-8">
@@ -81,6 +108,38 @@ export const SettingsPage = () => {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Features Section */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Features</h3>
+
+          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                <Zap className="w-4 h-4 text-orange-600" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="font-medium text-gray-900">Auto Workspace Mode</h4>
+                  <span className="text-[10px] font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">beta</span>
+                </div>
+                <p className="text-sm text-gray-600">Automatically find decision makers and import contacts when a signal is selected</p>
+              </div>
+            </div>
+            <button
+              onClick={handleAutoWorkspaceToggle}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                autoWorkspaceEnabled ? 'bg-orange-500' : 'bg-gray-300'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
+                  autoWorkspaceEnabled ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
           </div>
         </div>
 

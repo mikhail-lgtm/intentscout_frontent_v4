@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import { Header } from './Header'
 import { SignalsPage } from '../signals/SignalsPage'
 import { OutreachPage } from '../outreach/OutreachPage'
+import { OutreachPageV2 } from '../outreach/OutreachPageV2'
 import { SettingsPage } from '../settings'
 import type { TabKey } from '../../types'
 import { USGDemoContainer } from '../usg/USGDemoContainer'
@@ -41,7 +42,7 @@ export const Dashboard = () => {
         <Routes>
           <Route path="/" element={<SignalsPage />} />
           <Route path="/signals" element={<SignalsPage />} />
-          <Route path="/outreach" element={<OutreachPage />} />
+          <Route path="/outreach" element={<OutreachPageV2 />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </main>

@@ -287,13 +287,27 @@ export const IntentCard: React.FC<IntentCardProps> = ({ signal, onApprove, onRej
 
   const executeApprove = async () => {
     if (!signal?.id || isUpdating) return
-    
+
     setIsUpdating(true)
     try {
       const response = await api.signals.updateDecision(signal.id, 'approve')
       if (response.error) {
         throw new Error(response.error)
       }
+
+      // Auto-trigger DM search on approval so results are ready when user views outreach
+      try {
+        const dmGuidance = 'director, vp of sales, program manager, CTO, CIO, Director/VP CRM, Commercial Excellence, program lead, Head of Business Applications, VP Customer Success, CRO, CCO, CRM owner. IGNORE PURELY TECHNICAL ROLES SUCH AS ARCHITECT/DEVELOPER'
+        await api.decisionMakers.startSearch({
+          signal_id: signal.id,
+          custom_guidance: dmGuidance
+        })
+        console.log('Auto-DM: triggered on signal approval for', signal.id)
+      } catch (dmErr) {
+        // Non-blocking - DM search failure should not affect approval
+        console.log('Auto-DM: skipped (may already exist)', dmErr)
+      }
+
       onApprove?.()
     } catch (err) {
       console.error('Failed to approve signal:', err)

@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react'
-import { Search, Loader2, CheckCircle, Users, Plus, ExternalLink, Trash2, Edit, Mail, MailCheck, Linkedin, UserCheck, MoreHorizontal, Clock, AlertCircle } from 'lucide-react'
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { Search, Loader2, CheckCircle, Users, Plus, ExternalLink, Trash2, Edit, Mail, MailCheck, Linkedin, UserCheck, MoreHorizontal, AlertCircle, Lightbulb, X, RotateCcw } from 'lucide-react'
 import { api } from '../../lib/apiClient'
 import { useDecisionMakers } from '../../hooks/useDecisionMakers'
 import { useEmailGeneration } from '../../hooks/useEmailGeneration'
@@ -14,6 +14,9 @@ import { EmailFinderPopup } from './EmailFinderPopup'
 import { AddContactPopup } from './AddContactPopup'
 import { ContactsListSkeleton } from './ContactSkeleton'
 import { ConfirmationModal } from '../ui/ConfirmationModal'
+import { ValuePropGenerationPopup } from '../outreach/ValuePropGenerationPopup'
+import { HubSpotSending } from '../outreach/HubSpotSending'
+import { SegmentControl, SegmentTab } from './SegmentControl'
 
 interface ContactsComponentProps {
   signalId: string
@@ -32,10 +35,20 @@ export const ContactsComponent: React.FC<ContactsComponentProps> = ({
   signalId,
   companyName
 }) => {
-  const [showDecisionMakerPopup, setShowDecisionMakerPopup] = useState(false)
-  const [showEmailGenerationPopup, setShowEmailGenerationPopup] = useState(false)
-  const [showLinkedInScrapingPopup, setShowLinkedInScrapingPopup] = useState(false)
-  const [showEmailFinderPopup, setShowEmailFinderPopup] = useState(false)
+  // Read auto workspace feature flag from settings
+  const autoFeatureEnabled = useMemo(() => {
+    try {
+      const raw = localStorage.getItem('intentscout_features')
+      if (raw) {
+        const settings = JSON.parse(raw)
+        return !!settings.autoWorkspace
+      }
+    } catch {}
+    return false
+  }, [])
+
+  const [workspaceMode, setWorkspaceMode] = useState<'auto' | 'manual'>(autoFeatureEnabled ? 'auto' : 'manual')
+  const [activeTab, setActiveTab] = useState('contacts')
   const [showAddContactPopup, setShowAddContactPopup] = useState(false)
   const [showIndividualEmailPopup, setShowIndividualEmailPopup] = useState(false)
   const [selectedContactForEmail, setSelectedContactForEmail] = useState<any>(null)
@@ -55,15 +68,36 @@ export const ContactsComponent: React.FC<ContactsComponentProps> = ({
     contactId: '',
     contactName: ''
   })
+
+  // Value prop state
+  const [valueProp, setValueProp] = useState('')
+  const [isLoadingNotes, setIsLoadingNotes] = useState(false)
+  const [isSavingNotes, setIsSavingNotes] = useState(false)
+  const [notesSaved, setNotesSaved] = useState(false)
+  const [showValuePropPopup, setShowValuePropPopup] = useState(false)
+  const valuePropRef = useRef<HTMLTextAreaElement>(null)
+
+  // Value prop popup (AI generation - stays as modal)
+
   
   // Use decision makers hook to track search status
-  const { 
-    searchStatus, 
-    isSearchInProgress, 
-    hasResults, 
+  const {
+    searchStatus,
+    isLoading: dmLoading,
+    isSearchInProgress,
+    hasResults,
     hasFailed,
-    refreshStatus 
+    startSearch,
+    refreshStatus
   } = useDecisionMakers(signalId)
+
+  // Auto-trigger DM search ref to prevent double-triggering
+  const autoSearchTriggeredRef = useRef<string | null>(null)
+
+  // Auto-import state for pipeline step 2
+  const autoImportTriggeredRef = useRef<string | null>(null)
+  const [autoImportStatus, setAutoImportStatus] = useState<'idle' | 'importing' | 'completed' | 'failed'>('idle')
+  const [autoImportCount, setAutoImportCount] = useState(0)
   
   // Use email generation hook to track generation status
   const { isGenerationInProgress, hasResults: hasEmailResults, hasFailed: hasEmailFailed } = useEmailGeneration(signalId)
@@ -108,7 +142,7 @@ export const ContactsComponent: React.FC<ContactsComponentProps> = ({
 
     // Detect transition from searching to completed/failed
     if (prevStatus === 'searching' || prevStatus === 'pending') {
-      if (currentStatus === 'completed' && !showDecisionMakerPopup) {
+      if (currentStatus === 'completed' && activeTab !== 'find-people') {
         const count = searchStatus?.decision_makers?.length || 0
         setNotification({
           type: count > 0 ? 'success' : 'info',
@@ -118,7 +152,7 @@ export const ContactsComponent: React.FC<ContactsComponentProps> = ({
         })
         // Auto-dismiss after 5 seconds
         setTimeout(() => setNotification(null), 5000)
-      } else if (currentStatus === 'failed' && !showDecisionMakerPopup) {
+      } else if (currentStatus === 'failed' && activeTab !== 'find-people') {
         setNotification({
           type: 'error',
           message: 'Decision maker search failed. You can try again.'
@@ -128,7 +162,138 @@ export const ContactsComponent: React.FC<ContactsComponentProps> = ({
     }
 
     prevSearchStatusRef.current = currentStatus || null
-  }, [searchStatus?.status, searchStatus?.decision_makers?.length, companyName, showDecisionMakerPopup])
+  }, [searchStatus?.status, searchStatus?.decision_makers?.length, companyName, activeTab])
+
+  // Default guidance for auto DM search
+  const AUTO_DM_GUIDANCE = 'director, vp of sales, program manager, CTO, CIO, Director/VP CRM, Commercial Excellence, program lead, Head of Business Applications, VP Customer Success, CRO, CCO, CRM owner. IGNORE PURELY TECHNICAL ROLES SUCH AS ARCHITECT/DEVELOPER'
+
+  // Auto-trigger DM search when a signal is selected and no search exists (auto mode)
+  useEffect(() => {
+    if (
+      workspaceMode === 'auto' &&
+      hasSignal &&
+      !dmLoading &&
+      searchStatus === null &&
+      !hasFailed &&
+      autoSearchTriggeredRef.current !== signalId
+    ) {
+      autoSearchTriggeredRef.current = signalId
+      console.log('Auto-DM: triggering search for signal', signalId)
+      startSearch(AUTO_DM_GUIDANCE)
+    }
+  }, [workspaceMode, hasSignal, dmLoading, searchStatus, hasFailed, signalId, startSearch])
+
+  // Reset auto-search and auto-import refs when signal changes
+  useEffect(() => {
+    autoSearchTriggeredRef.current = null
+    autoImportTriggeredRef.current = null
+    setAutoImportStatus('idle')
+    setAutoImportCount(0)
+  }, [signalId])
+
+  // Auto-import: when search completes with DMs, auto-import all as contacts (auto mode)
+  useEffect(() => {
+    if (
+      workspaceMode !== 'auto' ||
+      !hasSignal ||
+      !searchStatus ||
+      searchStatus.status !== 'completed' ||
+      !searchStatus.decision_makers ||
+      searchStatus.decision_makers.length === 0 ||
+      autoImportTriggeredRef.current === signalId
+    ) return
+
+    // Check if contacts already exist (signal was previously processed)
+    if (contacts.length > 0) {
+      setAutoImportStatus('completed')
+      setAutoImportCount(contacts.length)
+      autoImportTriggeredRef.current = signalId
+      return
+    }
+
+    autoImportTriggeredRef.current = signalId
+    setAutoImportStatus('importing')
+
+    const doImport = async () => {
+      try {
+        const dms = searchStatus.decision_makers
+        const response = await api.contacts.bulkImportDecisionMakers({
+          signal_id: signalId,
+          decision_makers: dms.map(dm => ({
+            signal_id: signalId,
+            decision_maker_id: dm.id,
+            first_name: dm.first_name,
+            last_name: dm.last_name,
+            job_title: dm.job_title,
+            linkedin_url: dm.linkedin_url,
+            why_reach_out: dm.why_reach_out
+          }))
+        })
+
+        if (response.error) {
+          throw new Error(response.error)
+        }
+
+        const importedCount = (response.data as any)?.imported_count || dms.length
+        setAutoImportCount(importedCount)
+        setAutoImportStatus('completed')
+        refetch()
+      } catch (err) {
+        console.error('Auto-import failed:', err)
+        setAutoImportStatus('failed')
+      }
+    }
+
+    doImport()
+  }, [workspaceMode, hasSignal, searchStatus, signalId, contacts.length])
+
+  // Load value prop when signal changes
+  useEffect(() => {
+    if (hasSignal) {
+      loadValueProp()
+    } else {
+      setValueProp('')
+    }
+  }, [signalId, hasSignal])
+
+  const loadValueProp = async () => {
+    if (!signalId) return
+    try {
+      setIsLoadingNotes(true)
+      const response = await api.signalNotes.get(signalId)
+      if (response.data && typeof response.data === 'object') {
+        const data = response.data as any
+        setValueProp(data.value_prop || '')
+      }
+    } catch (err) {
+      console.error('Failed to load signal notes:', err)
+    } finally {
+      setIsLoadingNotes(false)
+    }
+  }
+
+  const saveValueProp = async (text?: string) => {
+    if (!signalId) return
+    const valueToSave = text !== undefined ? text : valueProp
+    try {
+      setIsSavingNotes(true)
+      await api.signalNotes.save({
+        signal_id: signalId,
+        value_prop: valueToSave
+      })
+      setNotesSaved(true)
+      setTimeout(() => setNotesSaved(false), 2000)
+    } catch (err) {
+      console.error('Failed to save value prop:', err)
+    } finally {
+      setIsSavingNotes(false)
+    }
+  }
+
+  const handleValuePropGenerated = (generated: string) => {
+    setValueProp(generated)
+    saveValueProp(generated)
+  }
 
   // Check for existing emails and LinkedIn profiles when contacts change
   useEffect(() => {
@@ -222,141 +387,42 @@ export const ContactsComponent: React.FC<ContactsComponentProps> = ({
     }
   }
 
-  const getDecisionMakerButtonContent = () => {
-    if (isSearchInProgress) {
-      const status = searchStatus?.status || 'searching'
-      const statusText = status === 'pending' ? 'Starting search...' : 'Finding decision makers...'
-      return {
-        icon: <Loader2 className="w-3 h-3 animate-spin" />,
-        text: statusText,
-        className: "bg-orange-500 hover:bg-orange-600 text-white"
-      }
-    }
-    
-    if (hasResults) {
-      const dmCount = searchStatus?.decision_makers?.length || 0
-      return {
-        icon: <CheckCircle className="w-3 h-3" />,
-        text: `Found ${dmCount} DMs`,
-        className: "bg-green-500 hover:bg-green-600 text-white"
-      }
-    }
-    
-    if (hasFailed) {
-      return {
-        icon: <AlertCircle className="w-3 h-3" />,
-        text: "DM Search Failed",
-        className: "bg-red-500 hover:bg-red-600 text-white"
-      }
-    }
-    
-    return {
-      icon: <Search className="w-3 h-3" />,
-      text: "Find Decision Makers",
-      className: "bg-orange-500 hover:bg-orange-600 text-white"
-    }
-  }
-
-  const getEmailButtonContent = () => {
-    if (isGenerationInProgress) {
-      return {
-        icon: <Loader2 className="w-3 h-3 animate-spin" />,
-        text: "Generating...",
-        className: "bg-blue-500 hover:bg-blue-600 text-white"
-      }
-    }
-    
-    if (hasEmailResults) {
-      return {
-        icon: <CheckCircle className="w-3 h-3" />,
-        text: "Email Results",
-        className: "bg-green-500 hover:bg-green-600 text-white"
-      }
-    }
-    
-    if (hasEmailFailed) {
-      return {
-        icon: <Mail className="w-3 h-3" />,
-        text: "Email Retry",
-        className: "bg-red-500 hover:bg-red-600 text-white"
-      }
-    }
-    
-    return {
-      icon: <Mail className="w-3 h-3" />,
-      text: "Generate Emails",
-      className: "bg-blue-500 hover:bg-blue-600 text-white"
-    }
-  }
-
-  const getLinkedInButtonContent = () => {
-    if (isScrapingInProgress) {
-      const processed = linkedInStatus?.contacts_processed || 0
-      const total = linkedInStatus?.total_contacts || 0
-      const statusText = total > 0 ? `Scraping (${processed}/${total})` : 'Starting scrape...'
-      return {
-        icon: <Loader2 className="w-3 h-3 animate-spin" />,
-        text: statusText,
-        className: "bg-blue-500 hover:bg-blue-600 text-white"
-      }
-    }
-    
-    if (hasLinkedInResults) {
-      const profileCount = linkedInStatus?.scraped_profiles?.length || 0
-      return {
-        icon: <CheckCircle className="w-3 h-3" />,
-        text: `Found ${profileCount} Profiles`,
-        className: "bg-green-500 hover:bg-green-600 text-white"
-      }
-    }
-    
-    if (hasLinkedInFailed) {
-      return {
-        icon: <AlertCircle className="w-3 h-3" />,
-        text: "LinkedIn Scraping Failed",
-        className: "bg-red-500 hover:bg-red-600 text-white"
-      }
-    }
-    
-    return {
-      icon: <Linkedin className="w-3 h-3" />,
-      text: "Scrape LinkedIn Profiles",
-      className: "bg-blue-500 hover:bg-blue-600 text-white"
-    }
-  }
-
-  const getEmailFinderButtonContent = () => {
-    if (isEmailFinderInProgress) {
-      return {
-        icon: <Loader2 className="w-3 h-3 animate-spin" />,
-        text: "Finding Emails...",
-        className: "bg-blue-500 hover:bg-blue-600 text-white"
-      }
-    }
-    
-    if (hasEmailFinderResults) {
-      const emailCount = emailFinderStatus?.email_results?.filter(r => r.email_address).length || 0
-      return {
-        icon: <CheckCircle className="w-3 h-3" />,
-        text: `Found ${emailCount} Emails`,
-        className: "bg-green-500 hover:bg-green-600 text-white"
-      }
-    }
-    
-    if (hasEmailFinderFailed) {
-      return {
-        icon: <AlertCircle className="w-3 h-3" />,
-        text: "Email Finding Failed",
-        className: "bg-red-500 hover:bg-red-600 text-white"
-      }
-    }
-    
-    return {
-      icon: <MailCheck className="w-3 h-3" />,
-      text: "Find Email Addresses",
-      className: "bg-purple-500 hover:bg-purple-600 text-white"
-    }
-  }
+  // Build segment control tabs with status indicators (manual mode)
+  const segmentTabs: SegmentTab[] = useMemo(() => [
+    {
+      id: 'contacts',
+      label: 'Contacts',
+      badge: contacts.length > 0 ? contacts.length : undefined,
+    },
+    {
+      id: 'find-people',
+      label: 'DM Finder',
+      status: isSearchInProgress ? 'in-progress' : hasResults ? 'completed' : hasFailed ? 'failed' : 'idle',
+    },
+    {
+      id: 'find-emails',
+      label: 'Find Emails',
+      status: isEmailFinderInProgress ? 'in-progress' : hasEmailFinderResults ? 'completed' : hasEmailFinderFailed ? 'failed' : 'idle',
+    },
+    {
+      id: 'enrich-linkedin',
+      label: 'Enrich LinkedIn',
+      status: isScrapingInProgress ? 'in-progress' : hasLinkedInResults ? 'completed' : hasLinkedInFailed ? 'failed' : 'idle',
+    },
+    {
+      id: 'write-emails',
+      label: 'Emails',
+      status: isGenerationInProgress ? 'in-progress' : hasEmailResults ? 'completed' : hasEmailFailed ? 'failed' : valueProp.trim() ? 'completed' : 'idle',
+    },
+    {
+      id: 'hubspot',
+      label: 'HubSpot',
+    },
+    {
+      id: 'add-contact',
+      label: '+ Add',
+    },
+  ], [contacts.length, isSearchInProgress, hasResults, hasFailed, isEmailFinderInProgress, hasEmailFinderResults, hasEmailFinderFailed, isScrapingInProgress, hasLinkedInResults, hasLinkedInFailed, isGenerationInProgress, hasEmailResults, hasEmailFailed, valueProp])
 
   const handleDeleteContact = (contactId: string, contactName: string) => {
     setDeleteConfirmation({
@@ -414,10 +480,6 @@ export const ContactsComponent: React.FC<ContactsComponentProps> = ({
     }
   }, [openMenuContactId, showHeaderMenu])
 
-  const decisionMakerButtonContent = getDecisionMakerButtonContent()
-  const emailButtonContent = getEmailButtonContent()
-  const linkedInButtonContent = getLinkedInButtonContent()
-  const emailFinderButtonContent = getEmailFinderButtonContent()
 
   return (
     <div className="h-full flex flex-col">
@@ -446,547 +508,616 @@ export const ContactsComponent: React.FC<ContactsComponentProps> = ({
         </div>
       )}
 
-      {/* Header with title and buttons */}
-      <div className="flex items-center justify-between mb-4">
+      {/* Header with title + Auto/Manual toggle */}
+      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <h3 className="text-lg font-semibold text-gray-900">Contacts</h3>
+          <h3 className="text-base font-semibold text-gray-900">Workspace</h3>
           {hasSignal && !contactsLoading && (
-            <span className="text-sm text-gray-500">({contacts.length})</span>
+            <span className="text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">{contacts.length}</span>
           )}
         </div>
-        <div className="relative">
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              toggleHeaderMenu()
-            }}
-            disabled={!hasSignal}
-            className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md transition-colors bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <MoreHorizontal className="w-3 h-3" />
-            Actions
-            {isSearchInProgress && (
-              <Loader2 className="w-3 h-3 animate-spin ml-1" />
-            )}
-            {hasResults && !isSearchInProgress && (
-              <div className="relative ml-1 group">
-                <Users className="w-3 h-3 text-green-300" />
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                  {searchStatus?.decision_makers?.length || 0} Decision Makers Found
-                </div>
-              </div>
-            )}
-            {hasLinkedInResults && !isScrapingInProgress && (
-              <div className="relative ml-1 group">
-                <Linkedin className="w-3 h-3 text-blue-300" />
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                  {linkedInStatus?.scraped_profiles?.length || 0} LinkedIn Profiles Scraped
-                </div>
-              </div>
-            )}
-          </button>
-
-          {/* Header Dropdown Menu */}
-          {showHeaderMenu && hasSignal && (
-            <div 
-              className="absolute right-0 top-8 mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Add Contact */}
+        {hasSignal && autoFeatureEnabled && (
+          <div className="flex flex-col items-end gap-0.5">
+            <span className="text-[9px] font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider leading-none">beta</span>
+            <div className="flex items-center bg-gray-100 rounded-md p-0.5">
               <button
-                onClick={() => {
-                  setShowAddContactPopup(true)
-                  closeHeaderMenu()
-                }}
-                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors flex items-center gap-3"
+                onClick={() => setWorkspaceMode('auto')}
+                className={`px-2.5 py-1 text-xs font-medium rounded transition-all ${
+                  workspaceMode === 'auto'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
               >
-                <Plus className="w-4 h-4 text-orange-500" />
-                <span className="text-gray-700">Add Contact</span>
+                Auto
               </button>
-
-              {/* Divider */}
-              <div className="border-t border-gray-100 my-1"></div>
-
-              {/* Email Generation */}
               <button
-                onClick={() => {
-                  setShowEmailGenerationPopup(true)
-                  closeHeaderMenu()
-                }}
-                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors flex items-center gap-3"
+                onClick={() => setWorkspaceMode('manual')}
+                className={`px-2.5 py-1 text-xs font-medium rounded transition-all ${
+                  workspaceMode === 'manual'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
               >
-                {emailButtonContent.icon}
-                <div className="flex flex-col">
-                  <span className={`${
-                    hasEmailResults ? 'text-green-700' : hasEmailFailed ? 'text-red-700' : 'text-gray-700'
-                  }`}>
-                    {emailButtonContent.text}
-                  </span>
-                  <span className="text-xs text-gray-500">Generate emails for all contacts</span>
-                </div>
-              </button>
-
-              {/* LinkedIn Scraping */}
-              <button
-                onClick={() => {
-                  setShowLinkedInScrapingPopup(true)
-                  closeHeaderMenu()
-                }}
-                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors flex items-center gap-3"
-              >
-                {linkedInButtonContent.icon}
-                <div className="flex flex-col">
-                  <span className={`${
-                    hasLinkedInResults ? 'text-green-700' : hasLinkedInFailed ? 'text-red-700' : 'text-gray-700'
-                  }`}>
-                    {linkedInButtonContent.text}
-                  </span>
-                  <span className="text-xs text-gray-500">Scrape LinkedIn profiles</span>
-                </div>
-              </button>
-
-              {/* Email Finder */}
-              <button
-                onClick={() => {
-                  setShowEmailFinderPopup(true)
-                  closeHeaderMenu()
-                }}
-                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors flex items-center gap-3"
-              >
-                {emailFinderButtonContent.icon}
-                <div className="flex flex-col">
-                  <span className={`${
-                    hasEmailFinderResults ? 'text-green-700' : hasEmailFinderFailed ? 'text-red-700' : 'text-gray-700'
-                  }`}>
-                    {emailFinderButtonContent.text}
-                  </span>
-                  <span className="text-xs text-gray-500">Find email addresses for contacts</span>
-                </div>
-              </button>
-
-              {/* Decision Makers */}
-              <button
-                onClick={() => {
-                  setShowDecisionMakerPopup(true)
-                  closeHeaderMenu()
-                }}
-                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors flex items-center gap-3"
-              >
-                {decisionMakerButtonContent.icon}
-                <div className="flex flex-col">
-                  <span className={`${
-                    hasResults ? 'text-green-700' : hasFailed ? 'text-red-700' : 'text-gray-700'
-                  }`}>
-                    {decisionMakerButtonContent.text}
-                  </span>
-                  <span className="text-xs text-gray-500">Find decision makers</span>
-                </div>
+                Manual
               </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
-      {/* Content area */}
-      <div className="flex-1 overflow-y-auto">
-        {/* Decision Makers Search Status Banner */}
-        {isSearchInProgress && (
-          <div className="mb-4 bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-lg p-4">
-            <div className="flex items-center gap-3">
-              <Loader2 className="w-5 h-5 text-orange-600 animate-spin flex-shrink-0" />
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-orange-900">Finding Decision Makers</h4>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-orange-700 bg-orange-100 px-2 py-1 rounded-full">
-                      {searchStatus?.status === 'pending' ? 'Initializing...' : 
-                       searchStatus?.status === 'searching' ? 'AI Analyzing...' : 'Processing...'}
-                    </span>
-                    {searchStatus?.started_at && (
-                      <span className="text-xs text-orange-600">
-                        {Math.round((Date.now() - new Date(searchStatus.started_at).getTime()) / 1000)}s
-                      </span>
-                    )}
-                    <button
-                      onClick={refreshStatus}
-                      className="text-orange-600 hover:text-orange-800 transition-colors"
-                      title="Refresh status"
-                    >
-                      <Search className="w-4 h-4" />
-                    </button>
-                  </div>
+      {/* AUTO MODE: Pipeline + Contacts */}
+      {workspaceMode === 'auto' && hasSignal && (
+        <div className="flex-1 overflow-y-auto">
+          {/* Progress Pipeline */}
+          <div className="mb-4 px-2">
+            <div className="flex items-center">
+              {/* Step 1: Find People */}
+              <div className="flex flex-col items-center flex-shrink-0">
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center border-2 transition-all ${
+                  isSearchInProgress
+                    ? 'border-blue-400 bg-blue-50'
+                    : hasResults
+                    ? 'border-green-500 bg-green-500'
+                    : hasFailed
+                    ? 'border-red-500 bg-red-500'
+                    : 'border-gray-300 bg-white'
+                }`}>
+                  {isSearchInProgress ? (
+                    <Loader2 className="w-3.5 h-3.5 text-blue-500 animate-spin" />
+                  ) : hasResults ? (
+                    <CheckCircle className="w-3.5 h-3.5 text-white" />
+                  ) : hasFailed ? (
+                    <X className="w-3.5 h-3.5 text-white" />
+                  ) : (
+                    <span className="text-xs font-medium text-gray-400">1</span>
+                  )}
                 </div>
-                <p className="text-sm text-orange-800 mt-1">
-                  {searchStatus?.status === 'pending' ? 
-                    'Preparing to search for decision makers and key contacts...' :
-                    'AI is analyzing job postings, LinkedIn profiles, and company data to identify decision makers. This usually takes 1-3 minutes.'
-                  }
-                </p>
-                {searchStatus?.status === 'searching' && (
-                  <div className="mt-2">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-orange-200 rounded-full h-2">
-                        <div className="bg-orange-500 h-2 rounded-full animate-pulse" style={{width: '60%'}}></div>
-                      </div>
-                      <span className="text-xs text-orange-700">Analyzing...</span>
-                    </div>
-                  </div>
+                <span className={`text-[10px] mt-1 font-medium whitespace-nowrap ${
+                  isSearchInProgress ? 'text-blue-600' : hasResults ? 'text-green-600' : hasFailed ? 'text-red-600' : 'text-gray-400'
+                }`}>
+                  {isSearchInProgress
+                    ? 'Finding...'
+                    : hasResults
+                    ? `Found ${searchStatus?.decision_makers?.length || 0}`
+                    : hasFailed
+                    ? 'Failed'
+                    : 'Find People'}
+                </span>
+                {hasFailed && (
+                  <button
+                    onClick={() => { autoSearchTriggeredRef.current = null; startSearch() }}
+                    className="text-[10px] text-red-500 hover:text-red-700 flex items-center gap-0.5 mt-0.5"
+                  >
+                    <RotateCcw className="w-2.5 h-2.5" />
+                    Retry
+                  </button>
+                )}
+              </div>
+
+              {/* Connecting line */}
+              <div className={`flex-1 h-0.5 mx-2 mt-[-16px] transition-colors ${
+                hasResults || autoImportStatus !== 'idle' ? 'bg-green-400' : isSearchInProgress ? 'bg-blue-200' : 'bg-gray-200'
+              }`} />
+
+              {/* Step 2: Import Contacts */}
+              <div className="flex flex-col items-center flex-shrink-0">
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center border-2 transition-all ${
+                  autoImportStatus === 'importing'
+                    ? 'border-blue-400 bg-blue-50'
+                    : autoImportStatus === 'completed'
+                    ? 'border-green-500 bg-green-500'
+                    : autoImportStatus === 'failed'
+                    ? 'border-red-500 bg-red-500'
+                    : 'border-gray-300 bg-white'
+                }`}>
+                  {autoImportStatus === 'importing' ? (
+                    <Loader2 className="w-3.5 h-3.5 text-blue-500 animate-spin" />
+                  ) : autoImportStatus === 'completed' ? (
+                    <CheckCircle className="w-3.5 h-3.5 text-white" />
+                  ) : autoImportStatus === 'failed' ? (
+                    <X className="w-3.5 h-3.5 text-white" />
+                  ) : (
+                    <span className="text-xs font-medium text-gray-400">2</span>
+                  )}
+                </div>
+                <span className={`text-[10px] mt-1 font-medium whitespace-nowrap ${
+                  autoImportStatus === 'importing' ? 'text-blue-600' : autoImportStatus === 'completed' ? 'text-green-600' : autoImportStatus === 'failed' ? 'text-red-600' : 'text-gray-400'
+                }`}>
+                  {autoImportStatus === 'importing'
+                    ? 'Importing...'
+                    : autoImportStatus === 'completed'
+                    ? `Imported ${autoImportCount}`
+                    : autoImportStatus === 'failed'
+                    ? 'Failed'
+                    : 'Import Contacts'}
+                </span>
+                {autoImportStatus === 'failed' && (
+                  <button
+                    onClick={() => { autoImportTriggeredRef.current = null; setAutoImportStatus('idle') }}
+                    className="text-[10px] text-red-500 hover:text-red-700 flex items-center gap-0.5 mt-0.5"
+                  >
+                    <RotateCcw className="w-2.5 h-2.5" />
+                    Retry
+                  </button>
                 )}
               </div>
             </div>
           </div>
-        )}
 
-        {/* Decision Makers Completed Status Banner */}
-        {hasResults && !isSearchInProgress && searchStatus?.decision_makers && searchStatus.decision_makers.length > 0 && (
-          <div className="mb-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-green-900">Decision Makers Found</h4>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-green-700 bg-green-100 px-2 py-1 rounded-full">
-                      {searchStatus.decision_makers.length} Decision Makers
-                    </span>
-                    <button
-                      onClick={() => setShowDecisionMakerPopup(true)}
-                      className="text-green-600 hover:text-green-800 transition-colors"
-                      title="View decision makers"
-                    >
-                      <Users className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-                <p className="text-sm text-green-800 mt-1">
-                  Found {searchStatus.decision_makers.length} key decision makers at {companyName}. Click to view and import them as contacts.
-                </p>
-              </div>
+          {/* Contacts List (auto mode) */}
+          {contactsLoading ? (
+            <ContactsListSkeleton count={4} />
+          ) : contactsError ? (
+            <div className="text-center text-red-600 p-4">
+              <p className="text-sm">{contactsError}</p>
             </div>
-          </div>
-        )}
-
-        {/* Decision Makers Failed Status Banner */}
-        {hasFailed && (
-          <div className="mb-4 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-lg p-4">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-red-900">Decision Makers Search Failed</h4>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-red-700 bg-red-100 px-2 py-1 rounded-full">
-                      Error
-                    </span>
-                    <button
-                      onClick={() => setShowDecisionMakerPopup(true)}
-                      className="text-red-600 hover:text-red-800 transition-colors"
-                      title="Try again"
-                    >
-                      <Search className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-                <p className="text-sm text-red-800 mt-1">
-                  {searchStatus?.error_message || 'Unable to find decision makers. You can try again or add contacts manually.'}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* LinkedIn Scraping Status Banner */}
-        {isScrapingInProgress && (
-          <div className="mb-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-center gap-3">
-              <Loader2 className="w-5 h-5 text-blue-600 animate-spin flex-shrink-0" />
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-blue-900">Scraping LinkedIn Profiles</h4>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-blue-700 bg-blue-100 px-2 py-1 rounded-full">
-                      {linkedInStatus?.contacts_processed || 0} / {linkedInStatus?.total_contacts || 0} completed
-                    </span>
-                    <button
-                      onClick={refreshLinkedInStatus}
-                      className="text-blue-600 hover:text-blue-800 transition-colors"
-                      title="Refresh status"
-                    >
-                      <Search className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-                <p className="text-sm text-blue-800 mt-1">
-                  Gathering detailed profile information from LinkedIn. Each profile takes 30-60 seconds to scrape.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {contactsLoading ? (
-          <ContactsListSkeleton count={4} />
-        ) : !hasSignal ? (
-          <div className="h-full">
-            {/* Header skeleton */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="h-6 bg-gray-200 rounded w-24 animate-pulse"></div>
-              <div className="h-8 bg-gray-200 rounded w-8 animate-pulse"></div>
-            </div>
-            
-            {/* Content skeleton */}
+          ) : contacts.length === 0 && !isSearchInProgress && autoImportStatus !== 'importing' ? (
             <div className="text-center text-gray-400 flex items-center justify-center h-32">
               <div>
-                <div className="text-2xl mb-2">📋</div>
-                <div className="text-sm">Select a signal to view contacts</div>
+                <div className="text-sm">No contacts yet</div>
+                <div className="text-xs mt-1">Auto-search will find decision makers</div>
               </div>
             </div>
-          </div>
-        ) : contactsError ? (
-          <div className="text-center text-red-600 p-4">
-            <p className="text-sm">{contactsError}</p>
-          </div>
-        ) : contacts.length === 0 ? (
-          <div className="text-center text-gray-400 flex items-center justify-center h-32">
-            <div>
-              <div className="text-2xl mb-2">👥</div>
-              <div className="text-sm">No contacts yet</div>
-              <div className="text-xs mt-1">Add a contact or find decision makers</div>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {contacts.map((contact) => (
-              <div key={contact.id} className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-medium text-gray-900 text-sm">
-                        {contact.first_name} {contact.last_name}
-                      </h4>
-                      
-                      {/* Status Icons */}
-                      <div className="flex items-center gap-1">
-                        {/* Email Status Icon */}
-                        {existingEmails[contact.id] ? (
-                          <div className="relative group">
-                            <MailCheck className="w-3 h-3 text-green-500" />
-                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                              Emails Generated
-                            </div>
-                          </div>
-                        ) : (isGenerationInProgress || individualEmailLoading.has(contact.id)) ? (
-                          <div className="relative group">
-                            <Loader2 className="w-3 h-3 text-blue-500 animate-spin" />
-                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                              Generating Emails...
-                            </div>
-                          </div>
-                        ) : null}
-
-                        {/* LinkedIn Status Icon */}
-                        {contact.linkedin_contact && contact.linkedin_contact.includes('linkedin.com/in/') && (
-                          <>
-                            {existingLinkedInProfiles[contact.id] ? (
-                              <div className="relative group">
-                                <UserCheck className="w-3 h-3 text-green-500" />
-                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                                  LinkedIn Profile Scraped
-                                </div>
-                              </div>
-                            ) : (isScrapingInProgress || individualLinkedInLoading.has(contact.id)) ? (
-                              <div className="relative group">
-                                <Loader2 className="w-3 h-3 text-blue-500 animate-spin" />
-                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                                  Scraping LinkedIn...
-                                </div>
-                              </div>
-                            ) : null}
-                          </>
+          ) : contacts.length === 0 ? (
+            <ContactsListSkeleton count={3} />
+          ) : (
+            <div className="space-y-2">
+              {contacts.map((contact) => (
+                <div key={contact.id} className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors animate-in fade-in duration-300">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-medium text-gray-900 text-sm">
+                          {contact.first_name} {contact.last_name}
+                        </h4>
+                        {contact.source === 'decision_maker_finder' && (
+                          <span className="text-xs bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded">DM</span>
                         )}
                       </div>
+                      <p className="text-gray-600 text-xs mt-0.5">{contact.job_title}</p>
+                      {contact.email_address && (
+                        <p className="text-gray-500 text-xs mt-1">{contact.email_address}</p>
+                      )}
                     </div>
-                    <p className="text-gray-600 text-xs mt-0.5">{contact.job_title}</p>
-                    {contact.email_address && (
-                      <p className="text-gray-500 text-xs mt-1">{contact.email_address}</p>
-                    )}
-                    {contact.notes && (
-                      <p className="text-gray-500 text-xs mt-1 line-clamp-2">{contact.notes}</p>
-                    )}
-                  </div>
-                  
-                  {/* Right Side - LinkedIn Link, DM Badge, Actions Menu */}
-                  <div className="flex items-center gap-2 ml-3">
-                    {/* LinkedIn link */}
-                    {contact.linkedin_contact && (
-                      <a
-                        href={contact.linkedin_contact}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded px-1 py-0.5 transition-colors group"
-                        title="View LinkedIn Profile"
-                      >
-                        <LinkedInIcon className="w-3 h-3" />
-                        <ExternalLink className="w-2 h-2 opacity-70 group-hover:opacity-100 transition-opacity" />
-                      </a>
-                    )}
-                    
-                    {/* Decision Maker Badge */}
-                    {contact.source === 'decision_maker_finder' && (
-                      <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded">
-                        DM
-                      </span>
-                    )}
-
-                    {/* Actions Menu */}
-                    <div className="relative">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          toggleContactMenu(contact.id)
-                        }}
-                        className="flex items-center justify-center w-7 h-7 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
-                        title="Contact actions"
-                      >
-                        <MoreHorizontal className="w-4 h-4" />
-                      </button>
-
-                      {/* Dropdown Menu */}
-                      {openMenuContactId === contact.id && (
-                      <div 
-                        className="absolute right-0 top-8 mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {/* Email Action */}
-                        <button
-                          onClick={() => {
-                            handleIndividualEmail(contact)
-                            closeContactMenu()
-                          }}
-                          disabled={individualEmailLoading.has(contact.id)}
-                          className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3"
+                    <div className="flex items-center gap-2 ml-3">
+                      {contact.linkedin_contact && (
+                        <a
+                          href={contact.linkedin_contact}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded px-1 py-0.5 transition-colors group"
+                          title="View LinkedIn Profile"
                         >
-                          {individualEmailLoading.has(contact.id) ? (
-                            <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
-                          ) : existingEmails[contact.id] ? (
-                            <MailCheck className="w-4 h-4 text-green-500" />
-                          ) : (
-                            <Mail className="w-4 h-4 text-gray-400" />
-                          )}
-                          <span className={existingEmails[contact.id] ? 'text-green-700' : 'text-gray-700'}>
-                            {existingEmails[contact.id] ? 'View Generated Email' : 'Generate Email'}
-                          </span>
-                        </button>
-
-                        {/* LinkedIn Action - only show if contact has LinkedIn URL */}
-                        {contact.linkedin_contact && contact.linkedin_contact.includes('linkedin.com/in/') && (
-                          <button
-                            onClick={() => {
-                              handleIndividualLinkedInScraping(contact)
-                              closeContactMenu()
-                            }}
-                            disabled={individualLinkedInLoading.has(contact.id)}
-                            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3"
-                          >
-                            {individualLinkedInLoading.has(contact.id) ? (
-                              <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
-                            ) : existingLinkedInProfiles[contact.id] ? (
-                              <UserCheck className="w-4 h-4 text-green-500" />
-                            ) : (
-                              <Linkedin className="w-4 h-4 text-blue-600" />
-                            )}
-                            <span className={existingLinkedInProfiles[contact.id] ? 'text-green-700' : 'text-gray-700'}>
-                              {existingLinkedInProfiles[contact.id] ? 'LinkedIn Profile Scraped' : 'Scrape LinkedIn Profile'}
-                            </span>
-                          </button>
-                        )}
-
-                        {/* Divider */}
-                        <div className="border-t border-gray-100 my-1"></div>
-
-                        {/* Edit Action */}
-                        <button
-                          onClick={() => {
-                            handleEditContact(contact)
-                            closeContactMenu()
-                          }}
-                          className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors flex items-center gap-3"
-                        >
-                          <Edit className="w-4 h-4 text-orange-500" />
-                          <span className="text-gray-700">Edit Contact</span>
-                        </button>
-
-                        {/* Delete Action */}
-                        <button
-                          onClick={() => {
-                            handleDeleteContact(contact.id, `${contact.first_name} ${contact.last_name}`)
-                            closeContactMenu()
-                          }}
-                          className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 transition-colors flex items-center gap-3"
-                        >
-                          <Trash2 className="w-4 h-4 text-red-500" />
-                          <span className="text-red-700">Delete Contact</span>
-                        </button>
-                      </div>
+                          <LinkedInIcon className="w-3 h-3" />
+                          <ExternalLink className="w-2 h-2 opacity-70 group-hover:opacity-100 transition-opacity" />
+                        </a>
                       )}
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* MANUAL MODE: Segment Control + Tab Content */}
+      {workspaceMode === 'manual' && hasSignal && (
+        <>
+          <div className="mb-3">
+            <SegmentControl
+              tabs={segmentTabs}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+            />
           </div>
-        )}
-      </div>
 
-      {/* Add/Edit Contact Popup */}
-      <AddContactPopup
-        isOpen={showAddContactPopup}
-        onClose={handleCloseEditPopup}
-        onContactAdded={refetch}
-        signalId={signalId}
-        companyName={companyName}
-        editingContact={editingContact}
-      />
+          <div className="flex-1 overflow-y-auto" key={activeTab}>
+            {activeTab === 'contacts' && (
+              <>
+                {/* Decision Makers Search Status Banner */}
+                {isSearchInProgress && (
+                  <div className="mb-4 bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-lg p-4">
+                    <div className="flex items-center gap-3">
+                      <Loader2 className="w-5 h-5 text-orange-600 animate-spin flex-shrink-0" />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-orange-900">Finding Decision Makers</h4>
+                          <span className="text-xs text-orange-700 bg-orange-100 px-2 py-1 rounded-full">
+                            {searchStatus?.status === 'pending' ? 'Initializing...' :
+                             searchStatus?.status === 'searching' ? 'AI Analyzing...' : 'Processing...'}
+                          </span>
+                        </div>
+                        <p className="text-sm text-orange-800 mt-1">
+                          AI is analyzing company data to identify decision makers...
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-      {/* Email Generation Popup - FIXED: Only mount when needed */}
-      {showEmailGenerationPopup && (
-        <EmailGenerationPopup
-          isOpen={showEmailGenerationPopup}
-          onClose={() => setShowEmailGenerationPopup(false)}
+                {/* Decision Makers Completed Status Banner */}
+                {hasResults && !isSearchInProgress && searchStatus?.decision_makers && searchStatus.decision_makers.length > 0 && (
+                  <div className="mb-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-green-900">Decision Makers Found</h4>
+                          <button
+                            onClick={() => setActiveTab('find-people')}
+                            className="text-xs text-green-700 bg-green-100 px-2 py-1 rounded-full hover:bg-green-200 transition-colors"
+                          >
+                            {searchStatus.decision_makers.length} found - View
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Decision Makers Failed Status Banner */}
+                {hasFailed && (
+                  <div className="mb-4 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-lg p-4">
+                    <div className="flex items-center gap-3">
+                      <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-red-900">DM Search Failed</h4>
+                          <button
+                            onClick={() => setActiveTab('find-people')}
+                            className="text-xs text-red-700 bg-red-100 px-2 py-1 rounded-full hover:bg-red-200 transition-colors"
+                          >
+                            Try Again
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* LinkedIn Scraping Status Banner */}
+                {isScrapingInProgress && (
+                  <div className="mb-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-center gap-3">
+                      <Loader2 className="w-5 h-5 text-blue-600 animate-spin flex-shrink-0" />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-blue-900">Scraping LinkedIn Profiles</h4>
+                          <span className="text-xs text-blue-700 bg-blue-100 px-2 py-1 rounded-full">
+                            {linkedInStatus?.contacts_processed || 0} / {linkedInStatus?.total_contacts || 0}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Contacts List */}
+                {contactsLoading ? (
+                  <ContactsListSkeleton count={4} />
+                ) : !hasSignal ? (
+                  <div className="text-center text-gray-400 flex items-center justify-center h-32">
+                    <div>
+                      <div className="text-sm">Select a signal to view contacts</div>
+                    </div>
+                  </div>
+                ) : contactsError ? (
+                  <div className="text-center text-red-600 p-4">
+                    <p className="text-sm">{contactsError}</p>
+                  </div>
+                ) : contacts.length === 0 ? (
+                  <div className="text-center text-gray-400 flex items-center justify-center h-32">
+                    <div>
+                      <div className="text-sm">No contacts yet</div>
+                      <div className="text-xs mt-1">Add a contact or find decision makers</div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {contacts.map((contact) => (
+                      <div key={contact.id} className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-medium text-gray-900 text-sm">
+                                {contact.first_name} {contact.last_name}
+                              </h4>
+
+                              {/* Status Icons */}
+                              <div className="flex items-center gap-1">
+                                {existingEmails[contact.id] ? (
+                                  <div className="relative group">
+                                    <MailCheck className="w-3 h-3 text-green-500" />
+                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                                      Emails Generated
+                                    </div>
+                                  </div>
+                                ) : (isGenerationInProgress || individualEmailLoading.has(contact.id)) ? (
+                                  <div className="relative group">
+                                    <Loader2 className="w-3 h-3 text-blue-500 animate-spin" />
+                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                                      Generating Emails...
+                                    </div>
+                                  </div>
+                                ) : null}
+
+                                {contact.linkedin_contact && contact.linkedin_contact.includes('linkedin.com/in/') && (
+                                  <>
+                                    {existingLinkedInProfiles[contact.id] ? (
+                                      <div className="relative group">
+                                        <UserCheck className="w-3 h-3 text-green-500" />
+                                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                                          LinkedIn Profile Scraped
+                                        </div>
+                                      </div>
+                                    ) : (isScrapingInProgress || individualLinkedInLoading.has(contact.id)) ? (
+                                      <div className="relative group">
+                                        <Loader2 className="w-3 h-3 text-blue-500 animate-spin" />
+                                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                                          Scraping LinkedIn...
+                                        </div>
+                                      </div>
+                                    ) : null}
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                            <p className="text-gray-600 text-xs mt-0.5">{contact.job_title}</p>
+                            {contact.email_address && (
+                              <p className="text-gray-500 text-xs mt-1">{contact.email_address}</p>
+                            )}
+                            {contact.notes && (
+                              <p className="text-gray-500 text-xs mt-1 line-clamp-2">{contact.notes}</p>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2 ml-3">
+                            {contact.linkedin_contact && (
+                              <a
+                                href={contact.linkedin_contact}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded px-1 py-0.5 transition-colors group"
+                                title="View LinkedIn Profile"
+                              >
+                                <LinkedInIcon className="w-3 h-3" />
+                                <ExternalLink className="w-2 h-2 opacity-70 group-hover:opacity-100 transition-opacity" />
+                              </a>
+                            )}
+
+                            {contact.source === 'decision_maker_finder' && (
+                              <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded">
+                                DM
+                              </span>
+                            )}
+
+                            <div className="relative">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  toggleContactMenu(contact.id)
+                                }}
+                                className="flex items-center justify-center w-7 h-7 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                                title="Contact actions"
+                              >
+                                <MoreHorizontal className="w-4 h-4" />
+                              </button>
+
+                              {openMenuContactId === contact.id && (
+                              <div
+                                className="absolute right-0 top-8 mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <button
+                                  onClick={() => {
+                                    handleIndividualEmail(contact)
+                                    closeContactMenu()
+                                  }}
+                                  disabled={individualEmailLoading.has(contact.id)}
+                                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3"
+                                >
+                                  {individualEmailLoading.has(contact.id) ? (
+                                    <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                                  ) : existingEmails[contact.id] ? (
+                                    <MailCheck className="w-4 h-4 text-green-500" />
+                                  ) : (
+                                    <Mail className="w-4 h-4 text-gray-400" />
+                                  )}
+                                  <span className={existingEmails[contact.id] ? 'text-green-700' : 'text-gray-700'}>
+                                    {existingEmails[contact.id] ? 'View Generated Email' : 'Generate Email'}
+                                  </span>
+                                </button>
+
+                                {contact.linkedin_contact && contact.linkedin_contact.includes('linkedin.com/in/') && (
+                                  <button
+                                    onClick={() => {
+                                      handleIndividualLinkedInScraping(contact)
+                                      closeContactMenu()
+                                    }}
+                                    disabled={individualLinkedInLoading.has(contact.id)}
+                                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3"
+                                  >
+                                    {individualLinkedInLoading.has(contact.id) ? (
+                                      <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                                    ) : existingLinkedInProfiles[contact.id] ? (
+                                      <UserCheck className="w-4 h-4 text-green-500" />
+                                    ) : (
+                                      <Linkedin className="w-4 h-4 text-blue-600" />
+                                    )}
+                                    <span className={existingLinkedInProfiles[contact.id] ? 'text-green-700' : 'text-gray-700'}>
+                                      {existingLinkedInProfiles[contact.id] ? 'LinkedIn Profile Scraped' : 'Scrape LinkedIn Profile'}
+                                    </span>
+                                  </button>
+                                )}
+
+                                <div className="border-t border-gray-100 my-1"></div>
+
+                                <button
+                                  onClick={() => {
+                                    handleEditContact(contact)
+                                    closeContactMenu()
+                                  }}
+                                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors flex items-center gap-3"
+                                >
+                                  <Edit className="w-4 h-4 text-orange-500" />
+                                  <span className="text-gray-700">Edit Contact</span>
+                                </button>
+
+                                <button
+                                  onClick={() => {
+                                    handleDeleteContact(contact.id, `${contact.first_name} ${contact.last_name}`)
+                                    closeContactMenu()
+                                  }}
+                                  className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 transition-colors flex items-center gap-3"
+                                >
+                                  <Trash2 className="w-4 h-4 text-red-500" />
+                                  <span className="text-red-700">Delete Contact</span>
+                                </button>
+                              </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+
+            {activeTab === 'add-contact' && (
+              <AddContactPopup
+                isOpen={true}
+                onClose={() => {
+                  setActiveTab('contacts')
+                }}
+                onContactAdded={() => {
+                  refetch()
+                  setActiveTab('contacts')
+                }}
+                signalId={signalId}
+                companyName={companyName}
+                mode="inline"
+              />
+            )}
+
+            {activeTab === 'find-people' && (
+              <DecisionMakerPopup
+                isOpen={true}
+                onClose={() => {
+                  setActiveTab('contacts')
+                  refreshStatus()
+                }}
+                signalId={signalId}
+                companyName={companyName}
+                onContactAdded={() => {
+                  refetch()
+                  refreshStatus()
+                }}
+                mode="inline"
+              />
+            )}
+
+            {activeTab === 'find-emails' && (
+              <EmailFinderPopup
+                isOpen={true}
+                onClose={() => setActiveTab('contacts')}
+                signalId={signalId}
+                companyName={companyName}
+                onEmailsFound={() => refetch()}
+                mode="inline"
+              />
+            )}
+
+            {activeTab === 'enrich-linkedin' && (
+              <LinkedInScrapingPopup
+                isOpen={true}
+                onClose={() => setActiveTab('contacts')}
+                signalId={signalId}
+                companyName={companyName}
+                contacts={contacts}
+                mode="inline"
+              />
+            )}
+
+            {activeTab === 'write-emails' && (
+              <div className="space-y-4 animate-tab-fade-in">
+                {/* Value Proposition */}
+                <div className="border border-orange-200 rounded-lg p-4 bg-orange-50/50">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <label className="text-xs font-medium text-gray-600">Value Proposition</label>
+                      {isSavingNotes && <span className="text-xs text-gray-400">Saving...</span>}
+                      {notesSaved && <span className="text-xs text-green-500">Saved</span>}
+                    </div>
+                    <button
+                      onClick={() => setShowValuePropPopup(true)}
+                      className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-orange-500 hover:bg-orange-600 text-white rounded-md transition-colors"
+                    >
+                      <Lightbulb className="w-3 h-3" />
+                      AI Generate
+                    </button>
+                  </div>
+                  <textarea
+                    ref={valuePropRef}
+                    value={valueProp}
+                    onChange={(e) => setValueProp(e.target.value)}
+                    onBlur={() => saveValueProp()}
+                    placeholder={isLoadingNotes ? 'Loading...' : 'Describe your value proposition for this company...'}
+                    disabled={isLoadingNotes}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-y disabled:bg-gray-100 bg-white"
+                  />
+                </div>
+
+                {/* Email Generation */}
+                <EmailGenerationPopup
+                  isOpen={true}
+                  onClose={() => setActiveTab('contacts')}
+                  signalId={signalId}
+                  companyName={companyName}
+                  contacts={contacts}
+                  mode="inline"
+                />
+              </div>
+            )}
+
+            {activeTab === 'hubspot' && (
+              <div className="animate-tab-fade-in">
+                <HubSpotSending
+                  signalId={signalId}
+                  companyName={companyName}
+                />
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* No signal selected */}
+      {!hasSignal && (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center text-gray-400">
+            <div className="text-sm">Select a signal to view contacts</div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Contact Popup (modal only - for editing from contact menu) */}
+      {showAddContactPopup && editingContact && (
+        <AddContactPopup
+          isOpen={showAddContactPopup}
+          onClose={handleCloseEditPopup}
+          onContactAdded={refetch}
           signalId={signalId}
           companyName={companyName}
-          contacts={contacts}
+          editingContact={editingContact}
+          mode="modal"
         />
       )}
 
-      {/* LinkedIn Scraping Popup - FIXED: Only mount when needed */}
-      {showLinkedInScrapingPopup && (
-        <LinkedInScrapingPopup
-          isOpen={showLinkedInScrapingPopup}
-          onClose={() => setShowLinkedInScrapingPopup(false)}
-          signalId={signalId}
-          companyName={companyName}
-          contacts={contacts}
-        />
-      )}
-
-      {/* Email Finder Popup - FIXED: Only mount when needed */}
-      {showEmailFinderPopup && (
-        <EmailFinderPopup
-          isOpen={showEmailFinderPopup}
-          onClose={() => setShowEmailFinderPopup(false)}
-          signalId={signalId}
-          companyName={companyName}
-          onEmailsFound={() => {
-            // Refresh contacts to show updated emails
-            refetch()
-          }}
-        />
-      )}
-
-      {/* Individual Email Popup - FIXED: Only mount when needed */}
+      {/* Individual Email Popup (stays as modal) */}
       {showIndividualEmailPopup && (
         <IndividualEmailPopup
           isOpen={showIndividualEmailPopup}
@@ -1007,27 +1138,22 @@ export const ContactsComponent: React.FC<ContactsComponentProps> = ({
             setIndividualEmailLoading(newLoading)
           }}
           onEmailGenerated={() => {
-            // Refresh email status when new emails are generated
             checkExistingEmails()
           }}
         />
       )}
 
-      {/* Decision Maker Popup */}
-      <DecisionMakerPopup
-        isOpen={showDecisionMakerPopup}
-        onClose={() => {
-          setShowDecisionMakerPopup(false)
-          // Refresh decision makers status when popup closes
-          refreshStatus()
-        }}
-        signalId={signalId}
-        companyName={companyName}
-        onContactAdded={() => {
-          refetch() // Refresh contacts
-          refreshStatus() // Refresh decision makers status
-        }}
-      />
+      {/* Value Prop Generation Popup (stays as modal) */}
+      {showValuePropPopup && (
+        <ValuePropGenerationPopup
+          isOpen={showValuePropPopup}
+          onClose={() => setShowValuePropPopup(false)}
+          signalId={signalId}
+          companyName={companyName}
+          onValuePropGenerated={handleValuePropGenerated}
+          hasExistingContent={!!valueProp.trim()}
+        />
+      )}
 
       {/* Delete Confirmation Modal */}
       <ConfirmationModal

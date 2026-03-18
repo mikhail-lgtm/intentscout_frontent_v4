@@ -191,38 +191,41 @@ export const OutreachSidebar: React.FC<OutreachSidebarProps> = ({
   }
 
   return (
-    <div className="w-full bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col h-full">
+    <div className="w-full bg-white rounded-lg shadow-sm border border-gray-200 p-3 flex flex-col h-full">
       {/* Header */}
-      <div className="mb-4">
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-lg font-semibold text-gray-900">
+      <div className="mb-3">
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="text-sm font-semibold text-gray-900">
             Outreach Queue
           </h3>
-          <span className="text-sm text-gray-500">
-            {totalLoaded > 0 ? `${totalLoaded} signals` : "Empty"}
+          <span className="text-xs text-gray-500">
+            {totalLoaded > 0 ? `${totalLoaded}` : "0"}
           </span>
         </div>
         
-        {/* Controls Row */}
+        {/* Controls */}
         {onFilterChange && filters && (
           <div className="flex items-center gap-2 mb-3">
-            {isLoading && !searchTerm && !dateFilter ? (
-              <div className="h-8 bg-gray-200 rounded w-32 animate-pulse"></div>
-            ) : (
-              <ProductSelector
-                value={filters.product}
-                onChange={(product) => onFilterChange({ product })}
+            <div className="flex-1 min-w-0">
+              {isLoading && !searchTerm && !dateFilter ? (
+                <div className="h-8 bg-gray-200 rounded w-full animate-pulse"></div>
+              ) : (
+                <ProductSelector
+                  value={filters.product}
+                  onChange={(product) => onFilterChange({ product })}
+                />
+              )}
+            </div>
+            <div className="flex-shrink-0 overflow-hidden">
+              <DateSelector
+                selectedDate={dateFilter || new Date().toISOString().split('T')[0]}
+                onChange={setDateFilter}
+                productId={filters.product}
+                minScore={filters.minScore}
+                decisionFilter="approve"
+                showNavButtons={false}
               />
-            )}
-            
-            <DateSelector
-              selectedDate={dateFilter || new Date().toISOString().split('T')[0]}
-              onChange={setDateFilter}
-              productId={filters.product}
-              minScore={filters.minScore}
-              decisionFilter="approve"
-              showNavButtons={false}
-            />
+            </div>
           </div>
         )}
       </div>
