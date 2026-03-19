@@ -53,7 +53,7 @@ export const OutreachPageV2 = () => {
   const reasoning = fullSignal?.reasoning
   const jobs = fullSignal?.jobs || []
   // Signal is approved since it's in the outreach queue
-  const currentDecision = 'approve'
+  const currentDecision: string = 'approve'
 
   return (
     <div className="h-full bg-gray-50 overflow-hidden flex flex-col">
