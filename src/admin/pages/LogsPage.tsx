@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { AdminActivityLog } from '../../types/admin'
 import { LogsViewer } from '../components/LogsViewer'
 import { useEventSource } from '../../hooks/useEventSource'
@@ -13,6 +13,14 @@ const TABS = [
 ]
 
 type TabId = typeof TABS[number]['id']
+
+const mapItemFn = (value: unknown): AdminActivityLog | null => {
+  return value ? (value as AdminActivityLog) : null
+}
+
+const mapSnapshotFn = (value: unknown): AdminActivityLog[] => {
+  return Array.isArray(value) ? (value as AdminActivityLog[]) : []
+}
 
 export const LogsPage = () => {
   const [activeTab, setActiveTab] = useState<TabId>('api')
@@ -45,14 +53,14 @@ export const LogsPage = () => {
 
   const apiStream = useEventSource<AdminActivityLog>({
     endpoint: token ? `${API_STREAM_ENDPOINT}?token=${encodeURIComponent(token)}` : null,
-    mapItem: (value) => (value ? (value as AdminActivityLog) : null),
-    mapSnapshot: (value) => Array.isArray(value) ? (value as AdminActivityLog[]) : [],
+    mapItem: mapItemFn,
+    mapSnapshot: mapSnapshotFn,
   })
 
   const intentspyStream = useEventSource<AdminActivityLog>({
     endpoint: token ? `${INTENTSPY_STREAM_ENDPOINT}?token=${encodeURIComponent(token)}` : null,
-    mapItem: (value) => (value ? (value as AdminActivityLog) : null),
-    mapSnapshot: (value) => Array.isArray(value) ? (value as AdminActivityLog[]) : [],
+    mapItem: mapItemFn,
+    mapSnapshot: mapSnapshotFn,
     autoReconnect: true,
   })
 
@@ -91,14 +99,15 @@ export const LogsPage = () => {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-center justify-between gap-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-slate-900">Real-time logs</h2>
-          <p className="text-sm text-slate-500">
-            Stream of product activity and IntentSpy pipeline logs. Auto-scroll can be toggled per viewer.
+          <h2 className="text-xl font-bold text-slate-900">Real-time Logs</h2>
+          <p className="text-sm text-slate-500 mt-1">
+            Stream of product activity and IntentSpy pipeline logs.
           </p>
         </div>
-      </header>
+      </div>
 
       <div className="flex items-center gap-2">
         {TABS.map(tab => (

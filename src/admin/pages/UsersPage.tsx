@@ -12,17 +12,17 @@ import type {
 const UNASSIGNED_KEY = '__unassigned__'
 
 const TIMEFRAME_OPTIONS = [
-  { id: 'day', label: 'За день', days: 1 },
-  { id: 'week', label: 'За неделю', days: 7 },
-  { id: 'month', label: 'За месяц', days: 30 },
+  { id: 'day', label: 'Day', days: 1 },
+  { id: 'week', label: 'Week', days: 7 },
+  { id: 'month', label: 'Month', days: 30 },
 ] as const
 
 type TimeframeId = typeof TIMEFRAME_OPTIONS[number]['id']
 
-const formatNumber = (value: number) => new Intl.NumberFormat('ru-RU').format(value)
+const formatNumber = (value: number) => new Intl.NumberFormat('en-US').format(value)
 
 const formatDate = (value?: string | null) => {
-  if (!value) return '—'
+  if (!value) return '--'
   try {
     return new Date(value).toLocaleString()
   } catch {
@@ -80,23 +80,27 @@ export const UsersPage = () => {
     setLoading(true)
     setError(null)
 
-    const [usersRes, orgRes] = await Promise.all([
-      adminApi.users.list(1, 100),
-      adminApi.organizations.list(1, 100),
-    ])
+    try {
+      const [usersRes, orgRes] = await Promise.all([
+        adminApi.users.list(1, 100),
+        adminApi.organizations.list(1, 100),
+      ])
 
-    if (!usersRes.data) {
-      setError(usersRes.error ?? 'Failed to load users')
-      setUsers([])
-    } else {
-      setUsers(usersRes.data.users)
+      if (!usersRes.data) {
+        setError(usersRes.error ?? 'Failed to load users')
+        setUsers([])
+      } else {
+        setUsers(usersRes.data.users)
+      }
+
+      if (orgRes.data) {
+        setOrganizations(orgRes.data.organizations)
+      }
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : 'Failed to load users data')
+    } finally {
+      setLoading(false)
     }
-
-    if (orgRes.data) {
-      setOrganizations(orgRes.data.organizations)
-    }
-
-    setLoading(false)
   }, [])
 
   useEffect(() => {
@@ -203,7 +207,7 @@ export const UsersPage = () => {
   }, [timeframeDays, expanded, usersByOrg, fetchGlobalUsage, fetchOrgUsage])
 
   const resolveGlobalLabel = useCallback((userId?: string | null) => {
-    if (!userId) return '—'
+    if (!userId) return '--'
     const user = users.find(u => u.id === userId)
     return user?.email ?? userId
   }, [users])
@@ -212,8 +216,8 @@ export const UsersPage = () => {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm text-slate-500">Loading users…</p>
+          <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm text-slate-500">Loading users...</p>
         </div>
       </div>
     )
@@ -221,17 +225,14 @@ export const UsersPage = () => {
 
   if (error) {
     return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-700 space-y-4">
-        <div>
-          <p className="font-semibold">Failed to load users</p>
-          <p className="text-sm mt-1">{error}</p>
-        </div>
+      <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-700">
+        <p className="font-semibold">Failed to load users</p>
+        <p className="text-sm mt-2">{error}</p>
         <button
-          type="button"
-          onClick={() => { void load() }}
-          className="inline-flex items-center rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 transition-colors"
+          onClick={() => void load()}
+          className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700"
         >
-          Try again
+          Retry
         </button>
       </div>
     )
@@ -252,7 +253,7 @@ export const UsersPage = () => {
             <div key={`${entry.user_id}-${entry.organization_id}`} className="space-y-1">
               <div className="flex items-center justify-between text-xs text-slate-500">
                 <span className="font-medium text-slate-700">{resolveLabel(entry.user_id)}</span>
-                <span>{formatNumber(entry.total_api_calls)} запросов</span>
+                <span>{formatNumber(entry.total_api_calls)} requests</span>
               </div>
               <div className="h-2 rounded-full bg-slate-200">
                 <div className="h-full rounded-full bg-orange-500" style={{ width }} />
@@ -280,7 +281,7 @@ export const UsersPage = () => {
     const maxCalls = usageEntries.reduce((acc, entry) => Math.max(acc, entry.total_api_calls), 0)
 
     const resolveLabel = (userId?: string | null) => {
-      if (!userId) return '—'
+      if (!userId) return '--'
       const user = users.find(u => u.id === userId)
       return user?.email ?? userId
     }
@@ -295,9 +296,9 @@ export const UsersPage = () => {
           <div className="flex items-center gap-4">
             <OrganizationAvatar logoUrl={org.logoUrl} name={org.name} />
             <div>
-              <p className="text-base font-semibold text-slate-900">{org.name ?? 'Без названия'}</p>
+              <p className="text-base font-semibold text-slate-900">{org.name ?? 'Unnamed'}</p>
               <p className="text-sm text-slate-500">
-                {formatNumber(orgUsers.length)} {orgUsers.length === 1 ? 'user' : 'users'} · {formatNumber(org.user_count)} всего
+                {formatNumber(orgUsers.length)} {orgUsers.length === 1 ? 'user' : 'users'} -- {formatNumber(org.user_count)} total
               </p>
             </div>
           </div>
@@ -327,19 +328,19 @@ export const UsersPage = () => {
             {orgId !== UNASSIGNED_KEY && usageState?.loading && (
               <div className="flex items-center gap-3 text-sm text-slate-500">
                 <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
-                Загрузка usage…
+                Loading usage...
               </div>
             )}
 
             {orgId !== UNASSIGNED_KEY && !usageState?.loading && usageEntries.length > 0 && (
               <div>
-                <p className="text-sm font-semibold text-slate-700 mb-2">Распределение пользователей</p>
+                <p className="text-sm font-semibold text-slate-700 mb-2">User distribution</p>
                 {renderUsageBars(usageEntries, resolveLabel)}
               </div>
             )}
 
             {orgUsers.length === 0 ? (
-              <p className="text-sm text-slate-500">Пока нет пользователей в этой компании.</p>
+              <p className="text-sm text-slate-500">No users in this organization yet.</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200">
@@ -374,7 +375,7 @@ export const UsersPage = () => {
                               to={`/admin/users/${user.id}`}
                               className="text-orange-600 hover:text-orange-700"
                             >
-                              {user.email ?? '—'}
+                              {user.email ?? '--'}
                             </Link>
                           </td>
                           <td className="px-4 py-3 text-sm text-slate-500">{user.is_admin ? 'Admin' : 'User'}</td>
@@ -415,7 +416,7 @@ export const UsersPage = () => {
       return (
         <div className="flex items-center gap-3 text-sm text-slate-500">
           <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
-          Загрузка usage…
+          Loading usage...
         </div>
       )
     }
@@ -425,7 +426,7 @@ export const UsersPage = () => {
     }
 
     if (!globalUsage.data.length) {
-      return <p className="text-sm text-slate-500">Пока нет активности за выбранный период.</p>
+      return <p className="text-sm text-slate-500">No activity for the selected period.</p>
     }
 
     return renderUsageBars(globalUsage.data, resolveGlobalLabel)
@@ -433,17 +434,17 @@ export const UsersPage = () => {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-slate-900">Пользовательская активность</h3>
-          <p className="text-sm text-slate-500">
-            {formatNumber(users.length)} пользователей · {formatNumber(sortedOrganizations.length)} организаций
+          <h2 className="text-xl font-bold text-slate-900">Users</h2>
+          <p className="text-sm text-slate-500 mt-1">
+            {formatNumber(users.length)} users -- {formatNumber(sortedOrganizations.length)} organizations
           </p>
         </div>
         <button
-          type="button"
-          onClick={() => { void load() }}
-          className="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors"
+          onClick={() => void load()}
+          className="px-3 py-1.5 text-sm text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50"
         >
           Refresh
         </button>
@@ -451,7 +452,7 @@ export const UsersPage = () => {
 
       <section className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h4 className="text-base font-semibold text-slate-900">Топ пользователей по активности</h4>
+          <h4 className="text-base font-semibold text-slate-900">Top users by activity</h4>
           <div className="inline-flex items-center gap-2">
             {TIMEFRAME_OPTIONS.map(option => (
               <button
@@ -481,7 +482,7 @@ export const UsersPage = () => {
           renderOrganization(
             {
               id: UNASSIGNED_KEY,
-              name: 'Без организации',
+              name: 'No organization',
               state: null,
               primary_user_id: null,
               user_count: usersByOrg[UNASSIGNED_KEY].length,
@@ -495,7 +496,7 @@ export const UsersPage = () => {
 
         {sortedOrganizations.length === 0 && !usersByOrg[UNASSIGNED_KEY]?.length && (
           <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500">
-            Пользователи пока не найдены.
+            No users found yet.
           </div>
         )}
       </div>

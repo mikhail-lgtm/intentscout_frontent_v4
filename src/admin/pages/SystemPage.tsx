@@ -17,14 +17,20 @@ export const SystemPage = () => {
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
-    const response = await adminApi.system.health()
-    if (!response.data) {
-      setError(response.error ?? 'Failed to load system health')
+    try {
+      const response = await adminApi.system.health()
+      if (!response.data) {
+        setError(response.error ?? 'Failed to load system health')
+        setHealth(null)
+      } else {
+        setHealth(response.data)
+      }
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : 'Failed to load system health')
       setHealth(null)
-    } else {
-      setHealth(response.data)
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }, [])
 
   useEffect(() => {
@@ -35,8 +41,8 @@ export const SystemPage = () => {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm text-slate-500">Checking system health…</p>
+          <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm text-slate-500">Checking system health...</p>
         </div>
       </div>
     )
@@ -44,17 +50,14 @@ export const SystemPage = () => {
 
   if (error) {
     return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-700 space-y-4">
-        <div>
-          <p className="font-semibold">Failed to load system status</p>
-          <p className="text-sm mt-1">{error}</p>
-        </div>
+      <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-700">
+        <p className="font-semibold">Failed to load system status</p>
+        <p className="text-sm mt-2">{error}</p>
         <button
-          type="button"
-          onClick={() => { void load() }}
-          className="inline-flex items-center rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 transition-colors"
+          onClick={() => void load()}
+          className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700"
         >
-          Try again
+          Retry
         </button>
       </div>
     )
@@ -86,15 +89,15 @@ export const SystemPage = () => {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-slate-900">System status</h3>
-          <p className="text-sm text-slate-500">Realtime connectivity checks for critical services.</p>
+          <h2 className="text-xl font-bold text-slate-900">System Health</h2>
+          <p className="text-sm text-slate-500 mt-1">Realtime connectivity checks for critical services.</p>
         </div>
         <button
-          type="button"
-          onClick={() => { void load() }}
-          className="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors"
+          onClick={() => void load()}
+          className="px-3 py-1.5 text-sm text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50"
         >
           Refresh
         </button>
@@ -103,8 +106,8 @@ export const SystemPage = () => {
       <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="text-sm text-slate-500">Last checked</p>
-            <p className="text-lg font-semibold text-slate-900">{new Date(health.timestamp).toLocaleString()}</p>
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Last checked</p>
+            <p className="mt-1 text-lg font-bold text-slate-900">{new Date(health.timestamp).toLocaleString()}</p>
           </div>
           <div className="flex gap-3">
             <div className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 uppercase tracking-wide">

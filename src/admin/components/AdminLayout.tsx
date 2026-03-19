@@ -59,11 +59,7 @@ export const AdminLayout = () => {
       </aside>
 
       <div className="flex-1 flex flex-col bg-slate-50 text-slate-900">
-        <header className="flex items-center justify-between border-b border-slate-200 bg-white/80 backdrop-blur px-8 py-5">
-          <div>
-            <h2 className="text-xl font-semibold text-slate-900">Overview</h2>
-            <p className="text-sm text-slate-500">Monitor platform health, usage, and services.</p>
-          </div>
+        <header className="flex items-center justify-end border-b border-slate-200 bg-white/80 backdrop-blur px-8 py-5">
           <div className="text-right">
             <p className="text-sm font-medium text-slate-700">{profile?.email ?? 'Admin user'}</p>
             <p className="text-xs text-slate-400 uppercase tracking-wide">

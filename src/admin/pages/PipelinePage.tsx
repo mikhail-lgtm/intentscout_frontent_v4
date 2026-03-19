@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { adminApi } from '../../lib/api/admin'
 
 interface PipelineStatus {
@@ -39,6 +39,7 @@ export const PipelinePage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
+  const mountedRef = useRef(true)
 
   // Form state
   const [organization, setOrganization] = useState<'all' | 'customertimes' | 'intentscout'>('all')
@@ -60,6 +61,8 @@ export const PipelinePage = () => {
         adminApi.pipeline.runs(),
       ])
 
+      if (!mountedRef.current) return
+
       if (statusRes.data) {
         setStatus(statusRes.data as PipelineStatus)
       }
@@ -67,22 +70,34 @@ export const PipelinePage = () => {
         setRuns(runsRes.data as PipelineRun[])
       }
     } catch (e) {
+      if (!mountedRef.current) return
       setError(e instanceof Error ? e.message : 'Failed to load pipeline data')
     } finally {
-      setLoading(false)
+      if (mountedRef.current) {
+        setLoading(false)
+      }
     }
   }, [])
 
   useEffect(() => {
+    mountedRef.current = true
     void loadData()
-    // Auto-refresh every 5 seconds
+
     const interval = setInterval(() => {
-      void loadData()
+      if (document.visibilityState === 'visible') {
+        void loadData()
+      }
     }, 5000)
-    return () => clearInterval(interval)
+
+    return () => {
+      mountedRef.current = false
+      clearInterval(interval)
+    }
   }, [loadData])
 
   const handleStart = async () => {
+    if (!confirm('Are you sure you want to start the pipeline?')) return
+
     setActionLoading(true)
     setError(null)
     try {
@@ -106,6 +121,8 @@ export const PipelinePage = () => {
   }
 
   const handleStop = async () => {
+    if (!confirm('Are you sure you want to stop the pipeline?')) return
+
     setActionLoading(true)
     setError(null)
     try {
@@ -137,11 +154,18 @@ export const PipelinePage = () => {
     }
   }
 
+  const handleModalKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setSelectedRunId(null)
+      setRunLogs([])
+    }
+  }, [])
+
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
+          <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
           <p className="text-sm text-slate-500">Loading pipeline status...</p>
         </div>
       </div>
@@ -150,15 +174,15 @@ export const PipelinePage = () => {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-slate-900">IntentSpy Pipeline</h3>
-          <p className="text-sm text-slate-500">Control the data processing pipeline.</p>
+          <h2 className="text-xl font-bold text-slate-900">Pipeline</h2>
+          <p className="text-sm text-slate-500 mt-1">Control the IntentSpy data processing pipeline.</p>
         </div>
         <button
-          type="button"
-          onClick={() => { void loadData() }}
-          className="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors"
+          onClick={() => void loadData()}
+          className="px-3 py-1.5 text-sm text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50"
         >
           Refresh
         </button>
@@ -175,7 +199,7 @@ export const PipelinePage = () => {
       <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-slate-500">Pipeline Status</p>
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Pipeline Status</p>
             <div className="flex items-center gap-3 mt-2">
               <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${statusColors[status?.status || 'idle']}`}>
                 {status?.status || 'unknown'}
@@ -188,8 +212,8 @@ export const PipelinePage = () => {
           <div className="text-right">
             {status?.started_at && (
               <>
-                <p className="text-sm text-slate-500">Started</p>
-                <p className="text-sm font-medium">{new Date(status.started_at).toLocaleString()}</p>
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Started</p>
+                <p className="text-sm font-medium mt-1">{new Date(status.started_at).toLocaleString()}</p>
               </>
             )}
             {status?.uptime_seconds && (
@@ -202,7 +226,7 @@ export const PipelinePage = () => {
 
         {status?.current_step && (
           <div className="mt-4 pt-4 border-t border-slate-100">
-            <p className="text-sm text-slate-500">Current Step</p>
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Current Step</p>
             <p className="text-sm font-medium mt-1">{status.current_step}</p>
           </div>
         )}
@@ -375,7 +399,10 @@ export const PipelinePage = () => {
 
       {/* Logs Modal */}
       {selectedRunId && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onKeyDown={handleModalKeyDown}
+        >
           <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[80vh] flex flex-col">
             <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
               <div>
@@ -386,8 +413,9 @@ export const PipelinePage = () => {
                 type="button"
                 onClick={() => { setSelectedRunId(null); setRunLogs([]) }}
                 className="text-slate-400 hover:text-slate-600 text-xl font-bold"
+                aria-label="Close"
               >
-                x
+                &times;
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 bg-slate-900">
