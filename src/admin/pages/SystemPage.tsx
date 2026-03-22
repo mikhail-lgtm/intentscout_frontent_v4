@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Database, Cloud, Radar } from 'lucide-react'
 import { adminApi } from '../../lib/api/admin'
 import type { SystemHealthResponse } from '../../types/admin'
 
@@ -7,6 +8,25 @@ const badgeClasses = (status: string) => {
   if (normalized === 'healthy') return 'bg-emerald-100 text-emerald-700'
   if (normalized === 'unknown') return 'bg-slate-200 text-slate-600'
   return 'bg-red-100 text-red-700'
+}
+
+const latencyBarColor = (ms: number | undefined) => {
+  if (ms === undefined) return 'bg-slate-300'
+  if (ms < 50) return 'bg-emerald-500'
+  if (ms < 200) return 'bg-amber-500'
+  return 'bg-red-500'
+}
+
+const iconBgClasses = (status: string) => {
+  const normalized = status.toLowerCase()
+  if (normalized === 'healthy') return 'bg-emerald-100 text-emerald-600'
+  return 'bg-red-100 text-red-600'
+}
+
+const SERVICE_ICONS: Record<string, typeof Database> = {
+  MongoDB: Database,
+  Supabase: Cloud,
+  IntentSpy: Radar,
 }
 
 export const SystemPage = () => {
@@ -83,9 +103,16 @@ export const SystemPage = () => {
     {
       name: 'IntentSpy',
       status: health.intentspy.status,
+      latency: undefined as number | undefined,
       detail: health.intentspy.detail ?? 'Real-time integration not yet connected.',
     },
   ]
+
+  const allHealthy = services.every(s => s.status.toLowerCase() === 'healthy')
+  const overallBorderColor = allHealthy ? 'border-emerald-300' : 'border-red-300'
+  const overallBgColor = allHealthy ? 'bg-emerald-50' : 'bg-red-50'
+  const overallTextColor = allHealthy ? 'text-emerald-700' : 'text-red-700'
+  const overallLabel = allHealthy ? 'All Systems Healthy' : 'Service Issues Detected'
 
   return (
     <div className="space-y-6">
@@ -103,40 +130,86 @@ export const SystemPage = () => {
         </button>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      {/* Overall status card */}
+      <div className={`rounded-xl border ${overallBorderColor} ${overallBgColor} p-6 shadow-sm`}>
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Last checked</p>
-            <p className="mt-1 text-lg font-bold text-slate-900">{new Date(health.timestamp).toLocaleString()}</p>
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Overall Status</p>
+            <p className={`mt-1 text-lg font-bold ${overallTextColor}`}>{overallLabel}</p>
           </div>
           <div className="flex gap-3">
             <div className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 uppercase tracking-wide">
               API {health.api.status}
             </div>
             <div className="rounded-full bg-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 uppercase tracking-wide">
-              Auto-refresh disabled
+              {new Date(health.timestamp).toLocaleString()}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {services.map(service => (
-          <div key={service.name} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-slate-700">{service.name}</p>
-              <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${badgeClasses(service.status)}`}>
-                {service.status}
-              </span>
+      {/* Service cards */}
+      <div className="grid gap-4 md:grid-cols-3">
+        {services.map(service => {
+          const Icon = SERVICE_ICONS[service.name] ?? Database
+          const latencyPct = typeof service.latency === 'number'
+            ? Math.min((service.latency / 500) * 100, 100)
+            : 0
+
+          return (
+            <div key={service.name} className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+              {/* Icon + name + badge */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${iconBgClasses(service.status)}`}>
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <p className="text-sm font-medium text-slate-700">{service.name}</p>
+                </div>
+                <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${badgeClasses(service.status)}`}>
+                  {service.status}
+                </span>
+              </div>
+
+              {/* Latency section */}
+              <div className="mt-4 space-y-2">
+                {typeof service.latency === 'number' ? (
+                  <>
+                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Latency</p>
+                    <p className="text-lg font-bold text-slate-900">{service.latency.toFixed(2)} ms</p>
+                    <div className="h-2 rounded-full bg-slate-200">
+                      <div
+                        className={`h-full rounded-full transition-all ${latencyBarColor(service.latency)}`}
+                        style={{ width: `${latencyPct}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[10px] text-slate-400">
+                      <span>0ms</span>
+                      <span>Fast &lt;50ms</span>
+                      <span>500ms+</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Latency</p>
+                    <p className="text-lg font-bold text-slate-900">--</p>
+                    <div className="h-2 rounded-full bg-slate-200">
+                      <div className="h-full rounded-full bg-slate-300" style={{ width: '0%' }} />
+                    </div>
+                    <div className="flex justify-between text-[10px] text-slate-400">
+                      <span>0ms</span>
+                      <span>Fast &lt;50ms</span>
+                      <span>500ms+</span>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Detail */}
+              <p className="mt-3 text-sm text-slate-500">{service.detail ?? 'No issues detected.'}</p>
             </div>
-            <div className="mt-3 space-y-2">
-              {typeof service.latency === 'number' && (
-                <p className="text-sm text-slate-500">Latency: {service.latency.toFixed(2)} ms</p>
-              )}
-              <p className="text-sm text-slate-500">{service.detail ?? 'No issues detected.'}</p>
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )

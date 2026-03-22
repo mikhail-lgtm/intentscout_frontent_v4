@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronDown, ChevronRight } from 'lucide-react'
+import { ChevronDown, ChevronRight, Search } from 'lucide-react'
 
 import { adminApi } from '../../lib/api/admin'
 import type {
@@ -68,6 +68,7 @@ export const UsersPage = () => {
   const [globalUsage, setGlobalUsage] = useState<GlobalUsageState>({ loading: true, data: [] })
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [timeframe, setTimeframe] = useState<TimeframeId>('week')
+  const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -155,9 +156,15 @@ export const UsersPage = () => {
     }
   }, [])
 
+  const filteredUsers = useMemo(() => {
+    if (!searchQuery.trim()) return users
+    const q = searchQuery.toLowerCase()
+    return users.filter(u => u.email?.toLowerCase().includes(q) || u.id.includes(q))
+  }, [users, searchQuery])
+
   const usersByOrg = useMemo(() => {
     const map: Record<string, AdminUserSummary[]> = {}
-    users.forEach(user => {
+    filteredUsers.forEach(user => {
       const orgs = user.organizations?.length ? user.organizations : []
       if (orgs.length === 0) {
         if (!map[UNASSIGNED_KEY]) map[UNASSIGNED_KEY] = []
@@ -170,7 +177,7 @@ export const UsersPage = () => {
       })
     })
     return map
-  }, [users])
+  }, [filteredUsers])
 
   const sortedOrganizations = useMemo(() => {
     return [...organizations].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
@@ -256,7 +263,7 @@ export const UsersPage = () => {
                 <span>{formatNumber(entry.total_api_calls)} requests</span>
               </div>
               <div className="h-2 rounded-full bg-slate-200">
-                <div className="h-full rounded-full bg-orange-500" style={{ width }} />
+                <div className="h-full rounded-full bg-gradient-to-r from-orange-400 to-orange-500" style={{ width }} />
               </div>
             </div>
           )
@@ -387,7 +394,7 @@ export const UsersPage = () => {
                           <td className="px-4 py-3 text-sm text-slate-500 text-right">{formatNumber(sequences)}</td>
                           <td className="px-4 py-3">
                             <div className="h-2 rounded-full bg-slate-200">
-                              <div className="h-full rounded-full bg-orange-500" style={{ width }} />
+                              <div className="h-full rounded-full bg-gradient-to-r from-orange-400 to-orange-500" style={{ width }} />
                             </div>
                           </td>
                           <td className="px-4 py-3 text-right text-sm">
@@ -442,14 +449,46 @@ export const UsersPage = () => {
             {formatNumber(users.length)} users -- {formatNumber(sortedOrganizations.length)} organizations
           </p>
         </div>
-        <button
-          onClick={() => void load()}
-          className="px-3 py-1.5 text-sm text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50"
-        >
-          Refresh
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search users..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="pl-9 pr-3 py-1.5 w-64 rounded-lg border border-slate-300 text-sm focus:border-orange-500 focus:outline-none"
+            />
+          </div>
+          <button
+            onClick={() => void load()}
+            className="px-3 py-1.5 text-sm text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50"
+          >
+            Refresh
+          </button>
+        </div>
       </div>
 
+      {/* KPI Cards */}
+      <section className="grid gap-4 sm:grid-cols-3">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Total Users</p>
+          <p className="mt-2 text-2xl font-bold text-slate-900">{formatNumber(users.length)}</p>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Organizations</p>
+          <p className="mt-2 text-2xl font-bold text-slate-900">{formatNumber(sortedOrganizations.length)}</p>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Active Today</p>
+          <p className="mt-2 text-2xl font-bold text-slate-900">
+            {formatNumber(globalUsage.data.filter(e => e.total_api_calls > 0).length)}
+          </p>
+          <p className="mt-1 text-xs text-slate-400">Users with API calls today</p>
+        </div>
+      </section>
+
+      {/* Global usage */}
       <section className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h4 className="text-base font-semibold text-slate-900">Top users by activity</h4>
@@ -475,6 +514,7 @@ export const UsersPage = () => {
         </div>
       </section>
 
+      {/* Organizations */}
       <div className="space-y-4">
         {sortedOrganizations.map(org => renderOrganization(org, org.id))}
 

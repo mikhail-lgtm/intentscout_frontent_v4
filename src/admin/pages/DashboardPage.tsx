@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+} from 'recharts'
 import { adminApi } from '../../lib/api/admin'
 import type {
   AdminActivityLog,
@@ -7,16 +10,10 @@ import type {
   AdminUsageLeaderboardEntry,
   AdminUserSummary,
   SystemHealthResponse,
+  CostByDayEntry,
 } from '../../types/admin'
 
 const formatNumber = (value: number) => new Intl.NumberFormat('en-US').format(value)
-
-const statusColor = (status: string) => {
-  const normalized = status.toLowerCase()
-  if (normalized === 'healthy') return 'bg-emerald-100 text-emerald-700'
-  if (normalized === 'unknown') return 'bg-slate-200 text-slate-700'
-  return 'bg-red-100 text-red-700'
-}
 
 export const DashboardPage = () => {
   const [overview, setOverview] = useState<AdminAnalyticsOverview | null>(null)
@@ -26,6 +23,7 @@ export const DashboardPage = () => {
   const [organizations, setOrganizations] = useState<AdminOrganizationSummary[]>([])
   const [selectedOrganization, setSelectedOrganization] = useState<string>('all')
   const [userLookup, setUserLookup] = useState<Record<string, AdminUserSummary>>({})
+  const [dailyActivity, setDailyActivity] = useState<CostByDayEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -42,12 +40,13 @@ export const DashboardPage = () => {
     setError(null)
 
     try {
-      const [overviewRes, usersRes, orgRes, healthRes, activityRes] = await Promise.all([
+      const [overviewRes, usersRes, orgRes, healthRes, activityRes, dailyRes] = await Promise.all([
         adminApi.analytics.overview(),
         adminApi.users.list(1, 100),
         adminApi.organizations.list(1, 25),
         adminApi.system.health(),
-        adminApi.users.activityRecent(8),
+        adminApi.users.activityRecent(6),
+        adminApi.costs.byDay(30),
       ])
 
       if (!overviewRes.data) {
@@ -71,6 +70,7 @@ export const DashboardPage = () => {
       setHealth(healthRes.data)
       setRecentActivity(activityRes.data ?? [])
       setOrganizations(orgRes.data.organizations)
+      setDailyActivity(dailyRes.data ?? [])
       const map: Record<string, AdminUserSummary> = {}
       usersRes.data.users.forEach(user => {
         map[user.id] = user
@@ -108,28 +108,21 @@ export const DashboardPage = () => {
   const healthItems = useMemo(() => {
     if (!health) return []
     return [
-      {
-        key: 'API',
-        status: health.api.status,
-        detail: 'FastAPI service is running',
-      },
-      {
-        key: 'MongoDB',
-        status: health.mongodb.status,
-        detail: health.mongodb.detail ?? `Latency: ${health.mongodb.latency_ms ?? 0} ms`,
-      },
-      {
-        key: 'Supabase',
-        status: health.supabase.status,
-        detail: health.supabase.detail ?? `Latency: ${health.supabase.latency_ms ?? 0} ms`,
-      },
-      {
-        key: 'IntentSpy',
-        status: health.intentspy.status,
-        detail: health.intentspy.detail ?? 'Integration coming soon',
-      },
+      { key: 'API', status: health.api.status, latency: null },
+      { key: 'MongoDB', status: health.mongodb.status, latency: health.mongodb.latency_ms?.toFixed(0) },
+      { key: 'Supabase', status: health.supabase.status, latency: health.supabase.latency_ms?.toFixed(0) },
+      { key: 'IntentSpy', status: health.intentspy.status, latency: null },
     ]
   }, [health])
+
+  const activityChartData = useMemo(() => {
+    if (!dailyActivity.length) return []
+    return dailyActivity.map(day => ({
+      date: day._id.slice(5),
+      fullDate: day._id,
+      requests: day.total_requests,
+    }))
+  }, [dailyActivity])
 
   if (loading) {
     return (
@@ -175,87 +168,110 @@ export const DashboardPage = () => {
         </button>
       </div>
 
+      {/* KPI Cards */}
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Total Users</p>
+          <p className="mt-2 text-2xl font-bold text-slate-900">
+            {overview?.total_users != null ? formatNumber(overview.total_users) : '--'}
+          </p>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Organizations</p>
+          <p className="mt-2 text-2xl font-bold text-slate-900">
+            {overview?.total_organizations != null ? formatNumber(overview.total_organizations) : '--'}
+          </p>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Active Users</p>
+          <p className="mt-2 text-2xl font-bold text-slate-900">
+            {formatNumber(overview?.dau ?? 0)}
+          </p>
+          <p className="mt-1 text-xs text-slate-400">
+            WAU: {formatNumber(overview?.wau ?? 0)} | MAU: {formatNumber(overview?.mau ?? 0)}
+          </p>
+        </div>
+        <div className="rounded-xl border border-orange-200 bg-orange-50 p-5 shadow-sm">
+          <p className="text-xs font-medium text-orange-600 uppercase tracking-wide">Total API Calls</p>
+          <p className="mt-2 text-2xl font-bold text-orange-700">
+            {formatNumber(overview?.total_api_calls ?? 0)}
+          </p>
+        </div>
+      </section>
+
+      {/* Activity Chart */}
       <section>
-        <h3 className="text-lg font-semibold text-slate-900">Usage Overview</h3>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Total users</p>
-            <p className="mt-2 text-2xl font-bold text-slate-900">
-              {overview?.total_users != null ? formatNumber(overview.total_users) : '--'}
-            </p>
-            <p className="mt-1 text-xs text-slate-400">
-              Users registered across all organizations
-            </p>
-          </div>
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Organizations</p>
-            <p className="mt-2 text-2xl font-bold text-slate-900">
-              {overview?.total_organizations != null ? formatNumber(overview.total_organizations) : '--'}
-            </p>
-            <p className="mt-1 text-xs text-slate-400">
-              Active customer organizations in MongoDB
-            </p>
-          </div>
-          {health && (
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Last health check</p>
-              <p className="mt-2 text-lg font-bold text-slate-900">
-                {new Date(health.timestamp).toLocaleString()}
-              </p>
-              <p className="mt-1 text-xs text-slate-400">
-                Live status pulled directly from the API
-              </p>
-            </div>
+        <h3 className="text-lg font-semibold text-slate-900 mb-4">Platform Activity (30 days)</h3>
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          {activityChartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={activityChartData}>
+                <defs>
+                  <linearGradient id="activityGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 12, fill: '#64748b' }}
+                  tickLine={false}
+                  axisLine={{ stroke: '#e2e8f0' }}
+                />
+                <YAxis
+                  tick={{ fontSize: 12, fill: '#64748b' }}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <Tooltip
+                  formatter={(value) => [formatNumber(Number(value)), 'Requests']}
+                  labelFormatter={(label) => `Date: ${label}`}
+                  contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="requests"
+                  stroke="#f97316"
+                  strokeWidth={2}
+                  fill="url(#activityGradient)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="text-sm text-slate-500 text-center py-8">No activity data for this period</p>
           )}
         </div>
       </section>
 
+      {/* System Health */}
       <section>
-        <h3 className="text-lg font-semibold text-slate-900">Active Users</h3>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Daily (DAU)</p>
-            <p className="mt-2 text-2xl font-bold text-slate-900">{formatNumber(overview?.dau ?? 0)}</p>
-            <p className="mt-1 text-xs text-slate-400">Unique users in the last 24 hours</p>
-          </div>
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Weekly (WAU)</p>
-            <p className="mt-2 text-2xl font-bold text-slate-900">{formatNumber(overview?.wau ?? 0)}</p>
-            <p className="mt-1 text-xs text-slate-400">Active users over 7 days</p>
-          </div>
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Monthly (MAU)</p>
-            <p className="mt-2 text-2xl font-bold text-slate-900">{formatNumber(overview?.mau ?? 0)}</p>
-            <p className="mt-1 text-xs text-slate-400">Active users over 30 days</p>
-          </div>
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">API calls</p>
-            <p className="mt-2 text-2xl font-bold text-slate-900">{formatNumber(overview?.total_api_calls ?? 0)}</p>
-            <p className="mt-1 text-xs text-slate-400">All recorded requests</p>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <h3 className="text-lg font-semibold text-slate-900">System Health</h3>
-        <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {healthItems.map(item => (
-            <div key={item.key} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-slate-700">{item.key}</p>
-                <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${statusColor(item.status)}`}>
-                  {item.status}
-                </span>
+        <h3 className="text-lg font-semibold text-slate-900 mb-4">System Health</h3>
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex flex-wrap items-center gap-6">
+            {healthItems.map(item => (
+              <div key={item.key} className="flex items-center gap-2">
+                <span className={`h-2.5 w-2.5 rounded-full ${
+                  item.status === 'healthy' ? 'bg-emerald-500' :
+                  item.status === 'unknown' ? 'bg-slate-400' : 'bg-red-500'
+                }`} />
+                <span className="text-sm font-medium text-slate-700">{item.key}</span>
+                {item.latency && (
+                  <span className="text-xs text-slate-400">{item.latency}ms</span>
+                )}
               </div>
-              <p className="mt-3 text-sm text-slate-500">{item.detail}</p>
-            </div>
-          ))}
+            ))}
+          </div>
+          <p className="mt-3 text-xs text-slate-400">
+            Last checked: {health ? new Date(health.timestamp).toLocaleString() : '--'}
+          </p>
         </div>
       </section>
 
+      {/* Recent Activity */}
       <section>
-        <h3 className="text-lg font-semibold text-slate-900">Recent Activity</h3>
-        <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <h3 className="text-lg font-semibold text-slate-900 mb-4">Recent Activity</h3>
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
               <tr>
@@ -271,8 +287,8 @@ export const DashboardPage = () => {
                   <td colSpan={4} className="px-4 py-4 text-sm text-slate-500 text-center">No activity recorded yet.</td>
                 </tr>
               ) : (
-                recentActivity.map(event => (
-                  <tr key={event.id ?? `${event.timestamp}-${event.endpoint}`}>
+                recentActivity.slice(0, 6).map(event => (
+                  <tr key={event.id ?? `${event.timestamp}-${event.endpoint}`} className="hover:bg-slate-50">
                     <td className="px-4 py-3 text-sm text-slate-600">{new Date(event.timestamp).toLocaleString()}</td>
                     <td className="px-4 py-3 text-sm text-slate-500">{resolveUserLabel(event.user_id)}</td>
                     <td className="px-4 py-3 text-sm text-slate-700 break-all">{event.method} {event.endpoint}</td>
@@ -285,6 +301,7 @@ export const DashboardPage = () => {
         </div>
       </section>
 
+      {/* Leaderboard */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-slate-900">Top Users by Activity</h3>
@@ -319,7 +336,7 @@ export const DashboardPage = () => {
                     <p className="text-xs text-slate-500">{formatNumber(entry.total_api_calls)} calls</p>
                   </div>
                   <div className="h-3 rounded-full bg-slate-200">
-                    <div className="h-full rounded-full bg-orange-500" style={{ width }} />
+                    <div className="h-full rounded-full bg-gradient-to-r from-orange-400 to-orange-500" style={{ width }} />
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-slate-500">
                     <span>Signals: {formatNumber(entry.signals_reviewed)}</span>
