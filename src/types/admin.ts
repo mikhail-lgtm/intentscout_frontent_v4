@@ -145,7 +145,7 @@ export interface SystemHealthResponse {
   api: { status: string }
   mongodb: SystemHealthStatus
   supabase: SystemHealthStatus
-  intentspy: { status: string; detail?: string }
+  intentspy: { status: string; detail?: string; run_id?: string | null; pid?: number | null }
 }
 
 // Cost Tracking Types

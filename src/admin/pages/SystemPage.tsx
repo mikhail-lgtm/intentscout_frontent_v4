@@ -100,15 +100,13 @@ export const SystemPage = () => {
       latency: health.supabase.latency_ms,
       detail: health.supabase.detail,
     },
-    {
-      name: 'IntentSpy',
-      status: health.intentspy.status,
-      latency: undefined as number | undefined,
-      detail: health.intentspy.detail ?? 'Real-time integration not yet connected.',
-    },
   ]
 
+  const intentspy = health.intentspy
+  const intentspyStatus = intentspy.status?.toLowerCase() ?? 'unknown'
+
   const allHealthy = services.every(s => s.status.toLowerCase() === 'healthy')
+    && (intentspyStatus === 'idle' || intentspyStatus === 'running' || intentspyStatus === 'completed')
   const overallBorderColor = allHealthy ? 'border-emerald-300' : 'border-red-300'
   const overallBgColor = allHealthy ? 'bg-emerald-50' : 'bg-red-50'
   const overallTextColor = allHealthy ? 'text-emerald-700' : 'text-red-700'
@@ -149,7 +147,7 @@ export const SystemPage = () => {
       </div>
 
       {/* Service cards */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         {services.map(service => {
           const Icon = SERVICE_ICONS[service.name] ?? Database
           const latencyPct = typeof service.latency === 'number'
@@ -210,6 +208,53 @@ export const SystemPage = () => {
             </div>
           )
         })}
+      </div>
+
+      {/* IntentSpy Pipeline card */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
+              intentspyStatus === 'running' ? 'bg-orange-100 text-orange-600' :
+              intentspyStatus === 'completed' ? 'bg-emerald-100 text-emerald-600' :
+              intentspyStatus === 'failed' ? 'bg-red-100 text-red-600' :
+              'bg-slate-100 text-slate-500'
+            }`}>
+              <Radar className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-slate-700">IntentSpy Pipeline</p>
+              <p className="text-xs text-slate-400">Data processing pipeline</p>
+            </div>
+          </div>
+          <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${
+            intentspyStatus === 'running' ? 'bg-orange-100 text-orange-700' :
+            intentspyStatus === 'completed' ? 'bg-emerald-100 text-emerald-700' :
+            intentspyStatus === 'failed' ? 'bg-red-100 text-red-700' :
+            'bg-slate-200 text-slate-600'
+          }`}>
+            {intentspy.status ?? 'unknown'}
+          </span>
+        </div>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <div>
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Status</p>
+            <p className="mt-1 text-sm font-medium text-slate-900">{intentspy.status ?? '--'}</p>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Run ID</p>
+            <p className="mt-1 text-sm font-mono text-slate-700">{intentspy.run_id ?? '--'}</p>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">PID</p>
+            <p className="mt-1 text-sm font-mono text-slate-700">{intentspy.pid ?? '--'}</p>
+          </div>
+        </div>
+
+        {intentspy.detail && (
+          <p className="mt-3 text-sm text-slate-500">{intentspy.detail}</p>
+        )}
       </div>
     </div>
   )
