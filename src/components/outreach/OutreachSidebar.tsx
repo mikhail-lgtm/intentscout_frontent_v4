@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Search, ArrowUp } from 'lucide-react'
+import { Search, ArrowUp, User } from 'lucide-react'
 import { useApprovedSignals, ApprovedSignal } from '../../hooks/useApprovedSignals'
 import { useDebounce } from '../../hooks/useDebounce'
 import { ProductSelector } from '../signals/ProductSelector'
 import { DateSelector } from '../signals/DateSelector'
+import { api } from '../../lib/apiClient'
 
 interface FilterOptions {
   product: string
   minScore: number
+  sdrOwner?: string
 }
 
 interface OutreachSidebarProps {
@@ -129,8 +131,21 @@ export const OutreachSidebar: React.FC<OutreachSidebarProps> = ({
     productId,
     minScore,
     search: debouncedSearch,
-    dateFilter
+    dateFilter,
+    sdrOwner: filters?.sdrOwner || undefined
   })
+
+  // Distinct SDR owners for the dropdown
+  const [sdrOwners, setSdrOwners] = useState<string[]>([])
+  useEffect(() => {
+    let cancelled = false
+    api.signals.getSdrOwners()
+      .then((resp) => {
+        if (!cancelled && Array.isArray(resp.data)) setSdrOwners(resp.data as string[])
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [])
 
   // Auto-select the most recent signal when signals are loaded and no signal is selected
   useEffect(() => {
@@ -205,28 +220,44 @@ export const OutreachSidebar: React.FC<OutreachSidebarProps> = ({
         
         {/* Controls */}
         {onFilterChange && filters && (
-          <div className="flex items-center gap-2 mb-3">
-            <div className="flex-1 min-w-0">
-              {isLoading && !searchTerm && !dateFilter ? (
-                <div className="h-8 bg-gray-200 rounded w-full animate-pulse"></div>
-              ) : (
-                <ProductSelector
-                  value={filters.product}
-                  onChange={(product) => onFilterChange({ product })}
+          <>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex-1 min-w-0">
+                {isLoading && !searchTerm && !dateFilter ? (
+                  <div className="h-8 bg-gray-200 rounded w-full animate-pulse"></div>
+                ) : (
+                  <ProductSelector
+                    value={filters.product}
+                    onChange={(product) => onFilterChange({ product })}
+                  />
+                )}
+              </div>
+              <div className="flex-shrink-0 overflow-hidden">
+                <DateSelector
+                  selectedDate={dateFilter || new Date().toISOString().split('T')[0]}
+                  onChange={setDateFilter}
+                  productId={filters.product}
+                  minScore={filters.minScore}
+                  decisionFilter="approve"
+                  showNavButtons={false}
                 />
-              )}
+              </div>
             </div>
-            <div className="flex-shrink-0 overflow-hidden">
-              <DateSelector
-                selectedDate={dateFilter || new Date().toISOString().split('T')[0]}
-                onChange={setDateFilter}
-                productId={filters.product}
-                minScore={filters.minScore}
-                decisionFilter="approve"
-                showNavButtons={false}
-              />
+            <div className="relative mb-3">
+              <User className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+              <select
+                value={filters.sdrOwner || ''}
+                onChange={(e) => onFilterChange({ sdrOwner: e.target.value })}
+                className="w-full pl-7 pr-7 py-1.5 text-xs border border-gray-300 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 appearance-none"
+              >
+                <option value="">All SDRs</option>
+                <option value="unassigned">Unassigned</option>
+                {sdrOwners.map((owner) => (
+                  <option key={owner} value={owner}>{owner}</option>
+                ))}
+              </select>
             </div>
-          </div>
+          </>
         )}
       </div>
 
@@ -369,11 +400,11 @@ export const OutreachSidebar: React.FC<OutreachSidebarProps> = ({
           </div>
         )}
 
-        {/* Scroll to top button */}
+        {/* Scroll to top button (sticky inside sidebar, not floating over whole page) */}
         {showScrollTop && (
           <button
             onClick={scrollToTop}
-            className="fixed bottom-4 right-4 p-2 bg-orange-500 text-white rounded-full shadow-lg hover:bg-orange-600 transition-colors"
+            className="sticky bottom-2 ml-auto p-2 bg-orange-500 text-white rounded-full shadow-lg hover:bg-orange-600 transition-colors"
             title="Scroll to top"
           >
             <ArrowUp className="w-4 h-4" />

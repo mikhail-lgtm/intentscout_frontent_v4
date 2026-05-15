@@ -1,0 +1,715 @@
+import { useState, useRef, useCallback, useEffect } from 'react'
+import { Upload, Loader2, CheckCircle, AlertCircle, Download, FileSpreadsheet, Sparkles, ArrowRight, Clock } from 'lucide-react'
+import { supabase } from '../../lib/supabase'
+import { buildApiUrl } from '../../lib/config'
+import { SendToHubSpotModal } from './SendToHubSpotModal'
+
+interface CsvCleanerPopupProps {
+  isOpen: boolean
+  onClose: () => void
+}
+
+interface CleanStats {
+  rows_in: number
+  rows_out: number
+  duplicates_removed: number
+  names_cleaned: number
+  full_names_cleaned: number
+  companies_cleaned: number
+  companies_merged: number
+  titles_normalized: number
+  decision_makers: number
+  emails_guessed: number
+  emails_from_apollo: number
+  columns_dropped_count: number
+}
+
+interface PreviewResponse {
+  stats: CleanStats
+  detected_columns: Record<string, string>
+  columns_dropped: string[]
+  standout_companies: string[]
+  domain_patterns: Record<string, string>
+  issues: string[]
+  preview_rows: Record<string, string>[]
+  cleaned_csv_base64: string
+  instruction_summary: string
+  resolved_options: Record<string, boolean | string>
+}
+
+interface CleanOptions {
+  clean_first_names: boolean
+  clean_full_names: boolean
+  clean_companies: boolean
+  dedup_emails: boolean
+  dedup_linkedin: boolean
+  drop_extra_columns: boolean
+  flag_standout: boolean
+  standout_threshold: number
+  preserve_accents: boolean
+  normalize_titles: boolean
+  guess_emails: boolean
+  enrich_via_apollo: boolean
+  use_llm: boolean
+  output_template: 'dima' | 'preserve'
+}
+
+const DEFAULT_OPTIONS: CleanOptions = {
+  clean_first_names: true,
+  clean_full_names: true,
+  clean_companies: true,
+  dedup_emails: true,
+  dedup_linkedin: true,
+  drop_extra_columns: true,
+  flag_standout: true,
+  standout_threshold: 3,
+  preserve_accents: true,
+  normalize_titles: true,
+  guess_emails: true,
+  enrich_via_apollo: true,
+  use_llm: false,
+  output_template: 'dima',
+}
+
+// Module-level cache survives component unmount so switching tabs
+// does NOT reset the Clean List state (file, options, results).
+// Cleared explicitly via reset() / Clean another file.
+type CleanerCache = {
+  file: File | null
+  options: CleanOptions
+  instructions: string
+  result: PreviewResponse | null
+  advancedOpen: boolean
+}
+const cleanerCache: CleanerCache = {
+  file: null,
+  options: DEFAULT_OPTIONS,
+  instructions: '',
+  result: null,
+  advancedOpen: false,
+}
+
+type ProcessingStage = {
+  id: string
+  label: string
+  estimatedSeconds: number
+}
+
+const PROCESSING_STAGES: ProcessingStage[] = [
+  { id: 'parse', label: 'Parsing file', estimatedSeconds: 3 },
+  { id: 'names', label: 'Cleaning names', estimatedSeconds: 4 },
+  { id: 'companies', label: 'Cleaning companies and detecting variants', estimatedSeconds: 5 },
+  { id: 'titles', label: 'Normalizing job titles', estimatedSeconds: 3 },
+  { id: 'patterns', label: 'Detecting per-company email patterns', estimatedSeconds: 4 },
+  { id: 'apollo', label: 'Enriching missing emails via Apollo', estimatedSeconds: 60 },
+  { id: 'dedup', label: 'Deduplicating and finalizing', estimatedSeconds: 2 },
+]
+
+export const CsvCleanerPopup: React.FC<CsvCleanerPopupProps> = ({ isOpen }) => {
+  // Init from module-level cache so state survives tab switches
+  const [file, setFile] = useState<File | null>(cleanerCache.file)
+  const [options, setOptions] = useState<CleanOptions>(cleanerCache.options)
+  const [instructions, setInstructions] = useState<string>(cleanerCache.instructions)
+  const [advancedOpen, setAdvancedOpen] = useState(cleanerCache.advancedOpen)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [result, setResult] = useState<PreviewResponse | null>(cleanerCache.result)
+  const [error, setError] = useState<string | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [showHubSpotModal, setShowHubSpotModal] = useState(false)
+  const [processingElapsed, setProcessingElapsed] = useState(0)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const processingStartRef = useRef<number | null>(null)
+
+  // Persist state to module-level cache on every change
+  useEffect(() => {
+    cleanerCache.file = file
+    cleanerCache.options = options
+    cleanerCache.instructions = instructions
+    cleanerCache.result = result
+    cleanerCache.advancedOpen = advancedOpen
+  }, [file, options, instructions, result, advancedOpen])
+
+  // Tick elapsed-time counter while processing
+  useEffect(() => {
+    if (!isProcessing) {
+      setProcessingElapsed(0)
+      processingStartRef.current = null
+      return
+    }
+    processingStartRef.current = Date.now()
+    const interval = setInterval(() => {
+      if (processingStartRef.current) {
+        setProcessingElapsed(Math.floor((Date.now() - processingStartRef.current) / 1000))
+      }
+    }, 500)
+    return () => clearInterval(interval)
+  }, [isProcessing])
+
+  const reset = () => {
+    setFile(null)
+    setResult(null)
+    setError(null)
+    setOptions(DEFAULT_OPTIONS)
+    setInstructions('')
+    setAdvancedOpen(false)
+    cleanerCache.file = null
+    cleanerCache.result = null
+    cleanerCache.options = DEFAULT_OPTIONS
+    cleanerCache.instructions = ''
+    cleanerCache.advancedOpen = false
+  }
+
+  const handleFileSelect = (selected: File | null | undefined) => {
+    if (!selected) return
+    const name = selected.name.toLowerCase()
+    if (!name.endsWith('.csv') && !name.endsWith('.xlsx') && !name.endsWith('.xls')) {
+      setError('Only CSV and Excel files (.csv, .xlsx, .xls) are supported')
+      return
+    }
+    if (selected.size > 25 * 1024 * 1024) {
+      setError('File too large (max 25 MB)')
+      return
+    }
+    setError(null)
+    setResult(null)
+    setFile(selected)
+  }
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    handleFileSelect(e.dataTransfer.files?.[0])
+  }, [])
+
+  const buildFormData = (): FormData => {
+    const formData = new FormData()
+    formData.append('file', file as File)
+    formData.append('clean_first_names', String(options.clean_first_names))
+    formData.append('clean_companies', String(options.clean_companies))
+    formData.append('dedup_emails', String(options.dedup_emails))
+    formData.append('dedup_linkedin', String(options.dedup_linkedin))
+    formData.append('drop_extra_columns', String(options.drop_extra_columns))
+    formData.append('flag_standout', String(options.flag_standout))
+    formData.append('standout_threshold', String(options.standout_threshold))
+    formData.append('preserve_accents', String(options.preserve_accents))
+    formData.append('normalize_titles', String(options.normalize_titles))
+    formData.append('guess_emails', String(options.guess_emails))
+    formData.append('use_llm', String(options.use_llm))
+    formData.append('output_template', options.output_template)
+    formData.append('clean_full_names', String(options.clean_full_names))
+    formData.append('enrich_via_apollo', String(options.enrich_via_apollo))
+    formData.append('instructions', instructions)
+    return formData
+  }
+
+  const requestHeaders = async (): Promise<Record<string, string>> => {
+    const { data } = await supabase.auth.getSession()
+    const token = data.session?.access_token
+    const headers: Record<string, string> = {}
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    const orgId = localStorage.getItem('currentOrganizationId')
+    if (orgId) headers['X-Organization-Id'] = orgId
+    return headers
+  }
+
+  const handlePreview = async () => {
+    if (!file) return
+    setIsProcessing(true)
+    setError(null)
+    setResult(null)
+    try {
+      const headers = await requestHeaders()
+      const response = await fetch(buildApiUrl('/csv-cleaner/preview'), {
+        method: 'POST',
+        headers,
+        body: buildFormData(),
+      })
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.detail || `HTTP ${response.status}`)
+      }
+      const data: PreviewResponse = await response.json()
+      setResult(data)
+    } catch (err: any) {
+      setError(err.message || 'Cleaning failed')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleDownload = () => {
+    if (!result || !file) return
+    const csv = atob(result.cleaned_csv_base64)
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    const baseName = file.name.replace(/\.[^.]+$/, '')
+    link.download = `${baseName} - cleaned.csv`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  if (!isOpen) return null
+
+  const previewColumns = result?.preview_rows[0] ? Object.keys(result.preview_rows[0]) : []
+
+  return (
+    <div className="animate-tab-fade-in flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto pr-1">
+        {!result && (
+          <div className="space-y-4">
+            <div className="text-center pb-2">
+              <Sparkles className="w-10 h-10 text-orange-400 mx-auto mb-2" />
+              <h3 className="text-base font-semibold text-gray-900">Clean & Enrich a Lead List</h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Upload a CSV or Excel file, normalize names and companies, dedup, recover missing emails, and tag decision-makers.
+              </p>
+            </div>
+
+            {/* File upload section */}
+            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Upload File
+              </label>
+              <div
+                onDrop={handleDrop}
+                onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+                onDragLeave={() => setIsDragging(false)}
+                onClick={() => fileInputRef.current?.click()}
+                className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                  isDragging
+                    ? 'border-orange-400 bg-orange-50'
+                    : 'border-gray-300 hover:border-orange-400 hover:bg-orange-50'
+                }`}
+              >
+                {file ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <FileSpreadsheet className="w-8 h-8 text-green-600" />
+                    <p className="text-sm text-gray-900 font-medium">{file.name}</p>
+                    <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(1)} KB · click to change file</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-2">
+                    <Upload className="w-8 h-8 text-gray-400" />
+                    <p className="text-sm text-gray-600">Drop CSV or Excel file here, or click to browse</p>
+                    <p className="text-xs text-gray-500">Supports .csv, .xlsx, .xls (max 25 MB, multi-sheet OK)</p>
+                  </div>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv,.xlsx,.xls"
+                  className="hidden"
+                  onChange={(e) => handleFileSelect(e.target.files?.[0])}
+                />
+              </div>
+            </div>
+
+            {/* Instructions section */}
+            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Cleaning Instructions <span className="font-normal text-gray-500">(optional)</span>
+              </label>
+              <textarea
+                value={instructions}
+                onChange={(e) => setInstructions(e.target.value)}
+                placeholder='Describe how to clean the list, e.g. "clean names and dedup, but don&apos;t touch companies" or "only fix emails and reduce columns"'
+                rows={2}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm resize-none"
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Leave blank to use sensible defaults. Advanced options below let you override individual rules.
+              </p>
+            </div>
+
+            {/* Advanced options section */}
+            <details
+              className="border border-gray-200 rounded-lg bg-gray-50 group"
+              open={advancedOpen}
+              onToggle={(e) => setAdvancedOpen((e.target as HTMLDetailsElement).open)}
+            >
+              <summary className="cursor-pointer p-4 text-sm font-medium text-gray-700 hover:text-gray-900 select-none flex items-center justify-between">
+                <span>Advanced Options</span>
+                <span className="text-xs text-gray-500">{advancedOpen ? 'Hide' : 'Show'}</span>
+              </summary>
+              <div className="px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm border-t border-gray-200 pt-3">
+                <CheckOption
+                  checked={options.clean_first_names}
+                  onChange={(v) => setOptions({ ...options, clean_first_names: v })}
+                  label="Clean first names"
+                />
+                <CheckOption
+                  checked={options.clean_full_names}
+                  onChange={(v) => setOptions({ ...options, clean_full_names: v })}
+                  label="Clean full names"
+                />
+                <CheckOption
+                  checked={options.clean_companies}
+                  onChange={(v) => setOptions({ ...options, clean_companies: v })}
+                  label="Clean company names"
+                />
+                <CheckOption
+                  checked={options.normalize_titles}
+                  onChange={(v) => setOptions({ ...options, normalize_titles: v })}
+                  label="Normalize job titles"
+                />
+                <CheckOption
+                  checked={options.guess_emails}
+                  onChange={(v) => setOptions({ ...options, guess_emails: v })}
+                  label="Guess missing emails"
+                />
+                <CheckOption
+                  checked={options.dedup_emails}
+                  onChange={(v) => setOptions({ ...options, dedup_emails: v })}
+                  label="Dedup by email"
+                />
+                <CheckOption
+                  checked={options.dedup_linkedin}
+                  onChange={(v) => setOptions({ ...options, dedup_linkedin: v })}
+                  label="Dedup by LinkedIn"
+                />
+                <CheckOption
+                  checked={options.drop_extra_columns}
+                  onChange={(v) => setOptions({ ...options, drop_extra_columns: v })}
+                  label="Reduce columns to HubSpot template"
+                />
+                <CheckOption
+                  checked={options.flag_standout}
+                  onChange={(v) => setOptions({ ...options, flag_standout: v })}
+                  label="Flag stand-out companies"
+                />
+                <CheckOption
+                  checked={options.preserve_accents}
+                  onChange={(v) => setOptions({ ...options, preserve_accents: v })}
+                  label="Preserve European characters"
+                />
+                <CheckOption
+                  checked={options.use_llm}
+                  onChange={(v) => setOptions({ ...options, use_llm: v })}
+                  label="Use AI for ambiguous names"
+                />
+                <CheckOption
+                  className="sm:col-span-2"
+                  checked={options.enrich_via_apollo}
+                  onChange={(v) => setOptions({ ...options, enrich_via_apollo: v })}
+                  label="Enrich missing emails via Apollo"
+                />
+              </div>
+            </details>
+          </div>
+        )}
+
+        {isProcessing && (
+          <ProcessingPanel
+            elapsedSeconds={processingElapsed}
+            apolloEnabled={options.enrich_via_apollo}
+            fileSizeKb={file ? Math.round(file.size / 1024) : 0}
+          />
+        )}
+
+        {error && (
+          <div className="mt-4 flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+            <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {result && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-green-800 bg-green-50 border border-green-200 rounded-lg p-3">
+              <CheckCircle className="w-5 h-5 flex-shrink-0" />
+              <span className="text-sm font-medium">List cleaned successfully</span>
+            </div>
+
+            {result.instruction_summary && (
+              <div className="border border-gray-200 rounded-lg p-3 text-sm bg-gray-50">
+                <div className="text-xs uppercase tracking-wide text-gray-500 font-medium mb-1">Interpretation</div>
+                <div className="text-gray-700">{result.instruction_summary}</div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <Stat label="Rows in" value={result.stats.rows_in} />
+              <Stat label="Rows out" value={result.stats.rows_out} highlight />
+              <Stat label="Duplicates removed" value={result.stats.duplicates_removed} />
+              <Stat label="Decision makers" value={result.stats.decision_makers} highlight />
+              <Stat label="Emails guessed" value={result.stats.emails_guessed} highlight />
+              {result.stats.emails_from_apollo > 0 && (
+                <Stat label="Emails from Apollo" value={result.stats.emails_from_apollo} highlight />
+              )}
+              <Stat label="Titles normalized" value={result.stats.titles_normalized} />
+              <Stat label="First names cleaned" value={result.stats.names_cleaned} />
+              <Stat label="Full names cleaned" value={result.stats.full_names_cleaned} />
+              <Stat label="Companies cleaned" value={result.stats.companies_cleaned} />
+            </div>
+
+            {result.issues.length > 0 && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm">
+                <div className="font-medium text-yellow-900 mb-1">Notes</div>
+                <ul className="list-disc ml-5 text-gray-700 space-y-0.5">
+                  {result.issues.map((iss, i) => <li key={i}>{iss}</li>)}
+                </ul>
+              </div>
+            )}
+
+            {result.standout_companies.length > 0 && (
+              <details className="border border-gray-200 rounded-lg bg-gray-50 text-sm">
+                <summary className="cursor-pointer p-3 font-medium text-gray-700 hover:text-gray-900">
+                  Stand-out companies ({result.standout_companies.length})
+                  <span className="font-normal text-gray-500"> — appear fewer than {options.standout_threshold} times</span>
+                </summary>
+                <div className="px-3 pb-3 text-gray-700 max-h-32 overflow-y-auto border-t border-gray-200 pt-2">
+                  {result.standout_companies.join(', ')}
+                </div>
+              </details>
+            )}
+
+            {result.domain_patterns && Object.keys(result.domain_patterns).length > 0 && (
+              <details className="border border-gray-200 rounded-lg bg-gray-50 text-sm">
+                <summary className="cursor-pointer p-3 font-medium text-gray-700 hover:text-gray-900">
+                  Email patterns detected
+                  <span className="font-normal text-gray-500"> ({Object.keys(result.domain_patterns).length} domains)</span>
+                </summary>
+                <div className="px-3 pb-3 max-h-40 overflow-y-auto font-mono text-xs text-gray-700 border-t border-gray-200 pt-2 space-y-0.5">
+                  {Object.entries(result.domain_patterns).slice(0, 50).map(([d, p]) => (
+                    <div key={d}><span className="text-gray-500">{d}</span> {'->'} {p}</div>
+                  ))}
+                </div>
+              </details>
+            )}
+
+            {result.columns_dropped.length > 0 && (
+              <details className="border border-gray-200 rounded-lg bg-gray-50 text-sm">
+                <summary className="cursor-pointer p-3 font-medium text-gray-700 hover:text-gray-900">
+                  Columns dropped
+                  <span className="font-normal text-gray-500"> ({result.columns_dropped.length})</span>
+                </summary>
+                <div className="px-3 pb-3 text-gray-700 break-words border-t border-gray-200 pt-2">
+                  {result.columns_dropped.join(', ')}
+                </div>
+              </details>
+            )}
+
+            <div>
+              <h4 className="font-medium text-sm text-gray-700 mb-2">Preview <span className="font-normal text-gray-500">(first 20 rows)</span></h4>
+              <div className="border border-gray-200 rounded-lg overflow-auto max-h-64 text-xs bg-white">
+                <table className="w-full">
+                  <thead className="bg-gray-50 sticky top-0">
+                    <tr>
+                      {previewColumns.map((c) => (
+                        <th key={c} className="text-left px-3 py-2 font-medium text-gray-700 whitespace-nowrap">{c}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {result.preview_rows.map((row, i) => (
+                      <tr key={i} className="border-t border-gray-100">
+                        {previewColumns.map((c) => (
+                          <td key={c} className="px-3 py-2 text-gray-900 truncate max-w-[200px]">{row[c]}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center justify-end gap-2 pt-3 mt-3 border-t border-gray-200">
+        {result ? (
+          <>
+            <button
+              onClick={reset}
+              className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-gray-700"
+            >
+              Clean another file
+            </button>
+            <button
+              onClick={handleDownload}
+              className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 font-medium text-gray-700"
+            >
+              <Download className="w-4 h-4" />
+              Download CSV
+            </button>
+            <button
+              onClick={() => setShowHubSpotModal(true)}
+              className="px-4 py-2 text-sm bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2 font-medium"
+            >
+              <ArrowRight className="w-4 h-4" />
+              Send to HubSpot
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={handlePreview}
+            disabled={!file || isProcessing}
+            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-medium transition-colors"
+          >
+            {isProcessing ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Cleaning...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4" />
+                Clean List
+              </>
+            )}
+          </button>
+        )}
+      </div>
+
+      {result && (
+        <SendToHubSpotModal
+          isOpen={showHubSpotModal}
+          onClose={() => setShowHubSpotModal(false)}
+          contacts={result.preview_rows}
+        />
+      )}
+    </div>
+  )
+}
+
+const CheckOption = ({
+  checked,
+  onChange,
+  label,
+  hint,
+  className = '',
+}: {
+  checked: boolean
+  onChange: (v: boolean) => void
+  label: string
+  hint?: string
+  className?: string
+}) => (
+  <label className={`flex items-start gap-2 cursor-pointer ${className}`}>
+    <input
+      type="checkbox"
+      checked={checked}
+      onChange={(e) => onChange(e.target.checked)}
+      className="mt-0.5 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+    />
+    <span>
+      <span className="text-gray-900">{label}</span>
+      {hint && <span className="block text-xs text-gray-500 mt-0.5">{hint}</span>}
+    </span>
+  </label>
+)
+
+const formatElapsed = (seconds: number): string => {
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  return `${m}:${s.toString().padStart(2, '0')}`
+}
+
+const ProcessingPanel: React.FC<{
+  elapsedSeconds: number
+  apolloEnabled: boolean
+  fileSizeKb: number
+}> = ({ elapsedSeconds, apolloEnabled, fileSizeKb }) => {
+  // Visual estimate of stage progress based on elapsed time.
+  // Backend cleans synchronously in one request, so we don't have real progress —
+  // these are optimistic estimates so the user sees movement, not a frozen spinner.
+  const stages = PROCESSING_STAGES.filter(
+    (s) => apolloEnabled || s.id !== 'apollo'
+  )
+  const totalEstimate = stages.reduce((sum, s) => sum + s.estimatedSeconds, 0)
+
+  // Determine which stage we're "on" based on cumulative time
+  let cumulative = 0
+  let activeStageIdx = stages.length - 1
+  for (let i = 0; i < stages.length; i++) {
+    cumulative += stages[i].estimatedSeconds
+    if (elapsedSeconds < cumulative) {
+      activeStageIdx = i
+      break
+    }
+  }
+
+  // Capped percent for progress bar (don't fill 100% until actually done)
+  const pct = Math.min(95, Math.round((elapsedSeconds / totalEstimate) * 100))
+
+  return (
+    <div className="mt-4 border border-orange-200 bg-orange-50 rounded-lg p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Loader2 className="w-5 h-5 text-orange-500 animate-spin" />
+          <span className="text-sm font-semibold text-gray-900">Cleaning your list</span>
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-gray-600 font-mono">
+          <Clock className="w-3.5 h-3.5" />
+          {formatElapsed(elapsedSeconds)}
+        </div>
+      </div>
+
+      <div className="h-1.5 bg-orange-100 rounded-full overflow-hidden">
+        <div
+          className="h-full bg-orange-500 rounded-full transition-all duration-500 ease-out"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+
+      <ul className="space-y-1.5">
+        {stages.map((stage, i) => {
+          const isDone = i < activeStageIdx
+          const isActive = i === activeStageIdx
+          return (
+            <li key={stage.id} className="flex items-center gap-2 text-xs">
+              {isDone ? (
+                <CheckCircle className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
+              ) : isActive ? (
+                <Loader2 className="w-3.5 h-3.5 text-orange-500 animate-spin flex-shrink-0" />
+              ) : (
+                <div className="w-3.5 h-3.5 rounded-full border border-gray-300 flex-shrink-0" />
+              )}
+              <span
+                className={
+                  isDone
+                    ? 'text-gray-500 line-through'
+                    : isActive
+                    ? 'text-gray-900 font-medium'
+                    : 'text-gray-500'
+                }
+              >
+                {stage.label}
+              </span>
+            </li>
+          )
+        })}
+      </ul>
+
+      {apolloEnabled && (
+        <p className="text-xs text-gray-600 italic">
+          Apollo enrichment talks to an external service for each contact without a known email,
+          so this step can take 1–3 minutes on larger lists. You can switch tabs — progress is
+          saved.
+        </p>
+      )}
+      {!apolloEnabled && fileSizeKb > 500 && (
+        <p className="text-xs text-gray-600 italic">
+          Larger files take longer to upload and parse. You can switch tabs — progress is saved.
+        </p>
+      )}
+    </div>
+  )
+}
+
+const Stat = ({ label, value, highlight = false }: { label: string; value: number; highlight?: boolean }) => (
+  <div
+    className={`rounded-lg p-3 border ${
+      highlight ? 'bg-orange-50 border-orange-200' : 'bg-gray-50 border-gray-200'
+    }`}
+  >
+    <div className={`text-2xl font-semibold ${highlight ? 'text-orange-700' : 'text-gray-900'}`}>
+      {value}
+    </div>
+    <div className="text-xs text-gray-600 mt-0.5">{label}</div>
+  </div>
+)

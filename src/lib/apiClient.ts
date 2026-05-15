@@ -367,19 +367,23 @@ export const api = {
       
       return apiClient.get(`/signals/signal-counts?${searchParams.toString()}`)
     },
-    getApprovedSignals: (params: { product_id: string; min_score: number; search?: string; date_filter?: string; limit?: number; offset?: number }) => {
+    getApprovedSignals: (params: { product_id: string; min_score: number; search?: string; date_filter?: string; sdr_owner?: string; limit?: number; offset?: number }) => {
       const searchParams = new URLSearchParams({
         product_id: params.product_id,
         min_score: params.min_score.toString(),
         limit: (params.limit || 50).toString(),
         offset: (params.offset || 0).toString()
       })
-      
+
       if (params.search) searchParams.append('search', params.search)
       if (params.date_filter) searchParams.append('date_filter', params.date_filter)
+      if (params.sdr_owner) searchParams.append('sdr_owner', params.sdr_owner)
 
       return apiClient.get(`/signals/approved?${searchParams.toString()}`)
     },
+    getSdrOwners: () => apiClient.get<string[]>('/signals/sdr-owners'),
+    setSdrOwner: (signalId: string, owner: string | null) =>
+      apiClient.post(`/signals/${signalId}/sdr-owner`, { owner }),
     // Company blocking
     blockCompany: (data: { companyId: string; companyName: string; reason?: string }) =>
       apiClient.post('/signals/block-company', data),
@@ -512,11 +516,56 @@ export const api = {
   // HubSpot Integration
   hubspot: {
     getAuthUrl: () => apiClient.get(endpoints.hubspot.authUrl),
-    callback: (code: string, state: string) => 
+    callback: (code: string, state: string) =>
       apiClient.post(`${endpoints.hubspot.callback}?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`),
     getStatus: () => apiClient.get(endpoints.hubspot.status),
     disconnect: () => apiClient.delete(endpoints.hubspot.disconnect),
     refreshToken: () => apiClient.post(endpoints.hubspot.refreshToken),
+
+    // Bulk operations (MVP-2)
+    bulkImportContacts: (data: {
+      contacts: Array<Record<string, any>>
+      campaign_name?: string
+      sender_email?: string
+      dry_run?: boolean
+      dont_overwrite?: boolean
+    }) => apiClient.postWithTimeout('/hubspot/bulk/import-contacts', data, 120000),
+
+    enrollSequence: (data: {
+      sequence_id: string
+      contacts: Array<{ hubspot_id?: string; email?: string }>
+      sender_mailbox?: string
+      daily_limit?: number
+    }) => apiClient.postWithTimeout('/hubspot/bulk/enroll-sequence', data, 120000),
+
+    pauseSequence: (data: {
+      contact_id: string
+      sequence_id?: string
+      reason?: string
+    }) => apiClient.post('/hubspot/bulk/pause-sequence', data),
+
+    getQuota: (mailbox?: string) =>
+      apiClient.get(`/hubspot/bulk/quota${mailbox ? `?mailbox=${encodeURIComponent(mailbox)}` : ''}`),
+
+    lifecycleStagePreflight: (data: {
+      contact_ids: string[]
+      required_fields?: string[]
+    }) => apiClient.post('/hubspot/bulk/lifecycle-stage/preflight', data),
+
+    setLifecycleStage: (data: {
+      contact_ids: string[]
+      stage: string
+      confirm_irreversible: boolean
+      required_fields?: string[]
+    }) => apiClient.post('/hubspot/bulk/lifecycle-stage', data),
+
+    getContactEngagement: (contactId: string) =>
+      apiClient.get(`/hubspot/bulk/engagement/${encodeURIComponent(contactId)}`),
+
+    reassignOwner: (data: {
+      contact_ids: string[]
+      new_owner_email: string
+    }) => apiClient.postWithTimeout('/hubspot/bulk/reassign-owner', data, 60000),
   },
 
   // Settings

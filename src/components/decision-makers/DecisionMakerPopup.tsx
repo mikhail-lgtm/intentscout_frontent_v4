@@ -97,6 +97,7 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
 
   // Track which decision makers are already imported
   const [importedDecisionMakers, setImportedDecisionMakers] = useState<Set<string>>(new Set())
+  const [importError, setImportError] = useState<string | null>(null)
 
   // Update imported decision makers when contacts change
   useEffect(() => {
@@ -265,6 +266,9 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
 
     } catch (err) {
       console.error('Failed to import decision maker:', err)
+      const message = err instanceof Error ? err.message : 'Could not import decision maker'
+      setImportError(message)
+      setTimeout(() => setImportError(null), 5000)
     } finally {
       setImportingIds(prev => {
         const newSet = new Set(prev)
@@ -300,6 +304,9 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
 
     } catch (err) {
       console.error('Failed to unimport decision maker:', err)
+      const message = err instanceof Error ? err.message : 'Could not remove contact'
+      setImportError(message)
+      setTimeout(() => setImportError(null), 5000)
     } finally {
       setImportingIds(prev => {
         const newSet = new Set(prev)
@@ -1251,6 +1258,12 @@ export const DecisionMakerPopup: React.FC<DecisionMakerPopupProps> = ({
   if (mode === 'inline') {
     return (
       <div className="animate-tab-fade-in">
+        {importError && (
+          <div className="mb-3 px-3 py-2 bg-red-50 border border-red-200 rounded text-sm text-red-700 flex items-center justify-between">
+            <span>{importError}</span>
+            <button onClick={() => setImportError(null)} className="text-red-500 hover:text-red-700 ml-2">×</button>
+          </div>
+        )}
         {renderContent()}
       </div>
     )

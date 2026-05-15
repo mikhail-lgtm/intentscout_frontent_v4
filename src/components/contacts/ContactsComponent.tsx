@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { Search, Loader2, CheckCircle, Users, Plus, ExternalLink, Trash2, Edit, Mail, MailCheck, Linkedin, UserCheck, MoreHorizontal, AlertCircle, Lightbulb, X, RotateCcw } from 'lucide-react'
+import { CsvCleanerPopup } from '../outreach/CsvCleanerPopup'
+import { HubSpotToolsPopup } from '../outreach/HubSpotToolsPopup'
 import { api } from '../../lib/apiClient'
 import { useDecisionMakers } from '../../hooks/useDecisionMakers'
 import { useEmailGeneration } from '../../hooks/useEmailGeneration'
@@ -15,7 +17,6 @@ import { AddContactPopup } from './AddContactPopup'
 import { ContactsListSkeleton } from './ContactSkeleton'
 import { ConfirmationModal } from '../ui/ConfirmationModal'
 import { ValuePropGenerationPopup } from '../outreach/ValuePropGenerationPopup'
-import { HubSpotSending } from '../outreach/HubSpotSending'
 import { SegmentControl, SegmentTab } from './SegmentControl'
 
 interface ContactsComponentProps {
@@ -399,11 +400,8 @@ export const ContactsComponent: React.FC<ContactsComponentProps> = ({
       label: 'DM Finder',
       status: isSearchInProgress ? 'in-progress' : hasResults ? 'completed' : hasFailed ? 'failed' : 'idle',
     },
-    {
-      id: 'find-emails',
-      label: 'Find Emails',
-      status: isEmailFinderInProgress ? 'in-progress' : hasEmailFinderResults ? 'completed' : hasEmailFinderFailed ? 'failed' : 'idle',
-    },
+    // 'find-emails' tab hidden — Serper-based pattern detection deprecated in favour of
+    // Apollo enrichment in Clean List. Component code kept (EmailFinderPopup) for now.
     {
       id: 'enrich-linkedin',
       label: 'Enrich LinkedIn',
@@ -419,6 +417,11 @@ export const ContactsComponent: React.FC<ContactsComponentProps> = ({
       label: 'HubSpot',
     },
     {
+      id: 'csv-cleaner',
+      label: 'Clean List',
+    },
+    // 'hubspot-tools' merged into 'hubspot' tab below
+    {
       id: 'add-contact',
       label: '+ Add',
     },
@@ -433,8 +436,14 @@ export const ContactsComponent: React.FC<ContactsComponentProps> = ({
   }
 
   const executeDeleteContact = async () => {
-    if (deleteConfirmation.contactId) {
-      await deleteContact(deleteConfirmation.contactId)
+    if (!deleteConfirmation.contactId) return
+    const ok = await deleteContact(deleteConfirmation.contactId)
+    if (!ok) {
+      setNotification({
+        type: 'error',
+        message: `Could not delete ${deleteConfirmation.contactName}. Please try again.`,
+      })
+      setTimeout(() => setNotification(null), 5000)
     }
   }
 
@@ -1002,6 +1011,20 @@ export const ContactsComponent: React.FC<ContactsComponentProps> = ({
               />
             )}
 
+            {activeTab === 'csv-cleaner' && (
+              <CsvCleanerPopup
+                isOpen={true}
+                onClose={() => setActiveTab('contacts')}
+              />
+            )}
+
+            {activeTab === 'hubspot-tools' && (
+              <HubSpotToolsPopup
+                isOpen={true}
+                onClose={() => setActiveTab('contacts')}
+              />
+            )}
+
             {activeTab === 'find-people' && (
               <DecisionMakerPopup
                 isOpen={true}
@@ -1084,12 +1107,12 @@ export const ContactsComponent: React.FC<ContactsComponentProps> = ({
             )}
 
             {activeTab === 'hubspot' && (
-              <div className="animate-tab-fade-in">
-                <HubSpotSending
-                  signalId={signalId}
-                  companyName={companyName}
-                />
-              </div>
+              <HubSpotToolsPopup
+                isOpen={true}
+                onClose={() => setActiveTab('contacts')}
+                signalId={signalId}
+                companyName={companyName}
+              />
             )}
           </div>
         </>

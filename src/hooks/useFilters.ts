@@ -5,6 +5,7 @@ export interface FilterOptions {
   minScore: number
   vertical: string
   hideApproved?: boolean
+  sdrOwner?: string
 }
 
 const STORAGE_KEY = 'intentscout-filters'
@@ -14,7 +15,8 @@ const DEFAULT_FILTERS: FilterOptions = {
   product: 'salesforce',
   minScore: 3,
   vertical: '',
-  hideApproved: true
+  hideApproved: true,
+  sdrOwner: ''
 }
 
 // Get yesterday's date as default

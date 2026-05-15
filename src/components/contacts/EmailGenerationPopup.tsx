@@ -100,10 +100,17 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
     isLoading,
     error,
     startGeneration,
+    refreshStatus,
     isGenerationInProgress,
     hasResults,
     hasFailed
   } = useEmailGeneration(signalId)
+
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+  const showToast = (type: 'success' | 'error', message: string) => {
+    setToast({ type, message })
+    setTimeout(() => setToast(null), 4000)
+  }
 
   // Use sequences hook to get available sequences
   const { sequences, isLoading: sequencesLoading } = useSequences()
@@ -292,11 +299,12 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
         throw new Error(response.error)
       }
 
-      // Refresh the generation status to show updated email
-      // The useEmailGeneration hook should handle this automatically
-      alert('Email regenerated successfully! Please refresh to see the changes.')
+      // Refetch the generation status to show updated email
+      await refreshStatus()
+      showToast('success', 'Email regenerated')
     } catch (err: any) {
       console.error('Failed to regenerate email:', err)
+      showToast('error', err?.message || 'Failed to regenerate email')
       throw err
     }
   }
@@ -398,12 +406,15 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
       }
 
       const result = response.data as any
-      alert(`Successfully regenerated emails for ${result.successful_regenerations} out of ${result.total_contacts} contacts!`)
+      const successCount = result?.successful_regenerations ?? 0
+      const totalCount = result?.total_contacts ?? 0
+      showToast('success', `Regenerated ${successCount} of ${totalCount} contacts`)
 
-      // Refresh to show updated emails
-      window.location.reload()
+      // Refetch the generation status — no full-page reload
+      await refreshStatus()
     } catch (err: any) {
       console.error('Failed to bulk regenerate emails:', err)
+      showToast('error', err?.message || 'Failed to regenerate emails')
       throw err
     }
   }
@@ -789,6 +800,16 @@ export const EmailGenerationPopup: React.FC<EmailGenerationPopupProps> = ({
     return (
       <>
         <div className="animate-tab-fade-in">
+          {toast && (
+            <div className={`mb-3 px-3 py-2 rounded text-sm flex items-center justify-between ${
+              toast.type === 'success'
+                ? 'bg-green-50 border border-green-200 text-green-800'
+                : 'bg-red-50 border border-red-200 text-red-700'
+            }`}>
+              <span>{toast.message}</span>
+              <button onClick={() => setToast(null)} className="ml-2 opacity-60 hover:opacity-100">×</button>
+            </div>
+          )}
           {renderContent()}
         </div>
 

@@ -11,6 +11,7 @@ export interface ApprovedSignal {
   jobsFoundCount: number
   calculationTimestamp: string
   decision?: string | null
+  sdrOwner?: string | null
 }
 
 interface ApprovedSignalsState {
@@ -28,6 +29,7 @@ interface UseApprovedSignalsParams {
   minScore: number
   search?: string
   dateFilter?: string
+  sdrOwner?: string
 }
 
 const INITIAL_LIMIT = 30
@@ -48,7 +50,7 @@ export const useApprovedSignals = (params: UseApprovedSignalsParams) => {
   const lastParamsRef = useRef<string>('')
 
   // Create a stable request key for deduplication
-  const requestKey = `${params.productId}-${params.minScore}-${params.search || ''}-${params.dateFilter || ''}`
+  const requestKey = `${params.productId}-${params.minScore}-${params.search || ''}-${params.dateFilter || ''}-${params.sdrOwner || ''}`
 
   const fetchSignals = useCallback(async (offset = 0, isLoadMore = false) => {
     if (!params.productId) return
@@ -72,6 +74,7 @@ export const useApprovedSignals = (params: UseApprovedSignalsParams) => {
         min_score: params.minScore,
         search: params.search,
         date_filter: params.dateFilter,
+        sdr_owner: params.sdrOwner,
         limit: offset === 0 ? INITIAL_LIMIT : LOAD_MORE_LIMIT,
         offset
       })
@@ -105,7 +108,7 @@ export const useApprovedSignals = (params: UseApprovedSignalsParams) => {
     } finally {
       currentRequestRef.current = null
     }
-  }, [requestKey, params.productId, params.minScore, params.search, params.dateFilter])
+  }, [requestKey, params.productId, params.minScore, params.search, params.dateFilter, params.sdrOwner])
 
   // Load more signals for pagination
   const loadMore = useCallback(async () => {

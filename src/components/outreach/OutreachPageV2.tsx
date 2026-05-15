@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { OutreachSidebar } from './OutreachSidebar'
 import { ApprovedSignal } from '../../hooks/useApprovedSignals'
 import { useSignalDetails } from '../../hooks/useSignalDetails'
@@ -7,7 +7,7 @@ import { ContactsComponent } from '../contacts/ContactsComponent'
 import { SequenceBuilder } from '../sequences/SequenceBuilder'
 import {
   Building2, Globe, Users, MapPin, Briefcase, ExternalLink,
-  ThumbsDown, ThumbsUp, Minus, ChevronDown, ChevronUp, Zap, Settings
+  ThumbsDown, ThumbsUp, Minus, ChevronDown, ChevronUp, Zap, Settings, User
 } from 'lucide-react'
 import { api } from '../../lib/apiClient'
 
@@ -17,6 +17,7 @@ export const OutreachPageV2 = () => {
   const [showDetails, setShowDetails] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
   const [showSequenceBuilder, setShowSequenceBuilder] = useState(false)
+  const [decisionError, setDecisionError] = useState<string | null>(null)
 
   const { signal: fullSignal, isLoading: isLoadingSignalDetails } = useSignalDetails({
     approvedSignal: selectedSignal,
@@ -37,13 +38,20 @@ export const OutreachPageV2 = () => {
   const handleDecision = async (action: 'approve' | 'reject' | 'remove') => {
     if (!selectedSignal || isUpdating) return
     setIsUpdating(true)
+    setDecisionError(null)
     try {
-      await api.signals.updateDecision(selectedSignal.id, action)
+      const response = await api.signals.updateDecision(selectedSignal.id, action)
+      if (response.error) {
+        throw new Error(response.error)
+      }
       if (action === 'reject' || action === 'remove') {
         setSelectedSignal(null)
       }
     } catch (err) {
       console.error('Failed to update decision:', err)
+      const message = err instanceof Error ? err.message : 'Could not update decision'
+      setDecisionError(message)
+      setTimeout(() => setDecisionError(null), 5000)
     } finally {
       setIsUpdating(false)
     }
@@ -57,6 +65,12 @@ export const OutreachPageV2 = () => {
 
   return (
     <div className="h-full bg-gray-50 overflow-hidden flex flex-col">
+      {decisionError && (
+        <div className="flex-shrink-0 mx-3 sm:mx-4 lg:mx-6 mt-2 px-3 py-2 bg-red-50 border border-red-200 rounded text-sm text-red-700 flex items-center justify-between">
+          <span>{decisionError}</span>
+          <button onClick={() => setDecisionError(null)} className="text-red-500 hover:text-red-700 ml-2">×</button>
+        </div>
+      )}
       {/* Top Title Bar */}
       <div className="flex-shrink-0 px-3 sm:px-4 lg:px-6 pt-3 pb-1">
         <div className="flex items-center justify-between">
@@ -141,6 +155,11 @@ export const OutreachPageV2 = () => {
                     {jobs.length > 0 && (
                       <span className="flex items-center gap-0.5"><Briefcase className="w-3 h-3" />{jobs.length} jobs</span>
                     )}
+                    <SdrOwnerBadge
+                      signalId={selectedSignal.id}
+                      initial={selectedSignal.sdrOwner}
+                      onChange={(owner) => setSelectedSignal((prev) => prev ? { ...prev, sdrOwner: owner } : prev)}
+                    />
                   </div>
                 </div>
 
@@ -282,5 +301,103 @@ export const OutreachPageV2 = () => {
         onClose={() => setShowSequenceBuilder(false)}
       />
     </div>
+  )
+}
+
+
+const SdrOwnerBadge: React.FC<{
+  signalId: string
+  initial?: string | null
+  onChange?: (owner: string | null) => void
+}> = ({ signalId, initial, onChange }) => {
+  const [owner, setOwner] = useState<string | null>(initial ?? null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [draft, setDraft] = useState<string>(initial ?? '')
+  const [saving, setSaving] = useState(false)
+  const [owners, setOwners] = useState<string[]>([])
+
+  useEffect(() => {
+    setOwner(initial ?? null)
+  }, [initial, signalId])
+
+  useEffect(() => {
+    if (!isEditing) return
+    let cancelled = false
+    api.signals.getSdrOwners()
+      .then((resp) => {
+        if (!cancelled && Array.isArray(resp.data)) setOwners(resp.data as string[])
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [isEditing])
+
+  const save = async (next: string) => {
+    setSaving(true)
+    const trimmed = next.trim()
+    const payload = trimmed === '' ? null : trimmed
+    try {
+      const resp = await api.signals.setSdrOwner(signalId, payload)
+      if (resp.error) throw new Error(resp.error)
+      setOwner(payload)
+      onChange?.(payload)
+    } catch (err) {
+      console.error('Failed to set SDR owner:', err)
+    } finally {
+      setSaving(false)
+      setIsEditing(false)
+    }
+  }
+
+  if (isEditing) {
+    return (
+      <span className="inline-flex items-center gap-1">
+        <User className="w-3 h-3 text-gray-500" />
+        <input
+          list={`sdr-owners-${signalId}`}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') save(draft)
+            if (e.key === 'Escape') setIsEditing(false)
+          }}
+          autoFocus
+          placeholder="SDR name"
+          className="text-xs px-1.5 py-0.5 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500 w-28"
+          disabled={saving}
+        />
+        <datalist id={`sdr-owners-${signalId}`}>
+          {owners.map((o) => <option key={o} value={o} />)}
+        </datalist>
+        <button
+          onClick={() => save(draft)}
+          disabled={saving}
+          className="text-xs text-blue-600 hover:underline disabled:opacity-50"
+        >
+          Save
+        </button>
+        <button
+          onClick={() => { setDraft(owner ?? ''); setIsEditing(false) }}
+          disabled={saving}
+          className="text-xs text-gray-500 hover:text-gray-700"
+        >
+          Cancel
+        </button>
+      </span>
+    )
+  }
+
+  return (
+    <button
+      onClick={() => { setDraft(owner ?? ''); setIsEditing(true) }}
+      className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs transition-colors ${
+        owner
+          ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+      }`}
+      title={owner ? `SDR owner: ${owner}` : 'Assign SDR owner'}
+    >
+      <User className="w-3 h-3" />
+      {owner || 'Assign SDR'}
+    </button>
   )
 }
