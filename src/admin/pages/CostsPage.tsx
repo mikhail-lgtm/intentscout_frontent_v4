@@ -62,6 +62,7 @@ const PROVIDER_COLORS: Record<string, string> = {
   fireworks: '#3b82f6',
   serper: '#8b5cf6',
   brightdata: '#ef4444',
+  apollo: '#0ea5e9',
 }
 
 export const CostsPage = () => {
@@ -283,6 +284,21 @@ export const CostsPage = () => {
             </p>
           </div>
         )}
+
+        {(() => {
+          const apollo = summary?.by_provider?.find((p: CostByProviderEntry) => p._id === 'apollo')
+          const credits = apollo?.total_requests ?? 0
+          const cost = apollo?.total_cost ?? 0
+          return (
+            <div className="rounded-xl border border-sky-200 bg-sky-50 p-5 shadow-sm">
+              <p className="text-xs font-medium text-sky-600 uppercase tracking-wide">Apollo Credits Used</p>
+              <p className="mt-2 text-2xl font-bold text-sky-700">{credits.toLocaleString()}</p>
+              <p className="mt-1 text-xs text-sky-500">
+                Est. spend: {formatCurrency(cost)} · {days}d
+              </p>
+            </div>
+          )
+        })()}
       </section>
 
       {/* Daily costs chart */}
