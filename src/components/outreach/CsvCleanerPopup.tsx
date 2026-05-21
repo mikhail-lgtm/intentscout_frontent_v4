@@ -1,5 +1,5 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
-import { Upload, Loader2, CheckCircle, AlertCircle, Download, FileSpreadsheet, Sparkles, ArrowRight, Clock } from 'lucide-react'
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
+import { Upload, Loader2, CheckCircle, AlertCircle, Download, FileSpreadsheet, Sparkles, ArrowRight, Clock, Search, ArrowUp, ArrowDown, ChevronDown } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { buildApiUrl } from '../../lib/config'
 import { SendToHubSpotModal } from './SendToHubSpotModal'
@@ -14,6 +14,7 @@ interface CleanStats {
   rows_out: number
   duplicates_removed: number
   names_cleaned: number
+  last_names_cleaned: number
   full_names_cleaned: number
   companies_cleaned: number
   companies_merged: number
@@ -39,6 +40,7 @@ interface PreviewResponse {
 
 interface CleanOptions {
   clean_first_names: boolean
+  clean_last_names: boolean
   clean_full_names: boolean
   clean_companies: boolean
   dedup_emails: boolean
@@ -56,6 +58,7 @@ interface CleanOptions {
 
 const DEFAULT_OPTIONS: CleanOptions = {
   clean_first_names: true,
+  clean_last_names: true,
   clean_full_names: true,
   clean_companies: true,
   dedup_emails: true,
@@ -117,8 +120,82 @@ export const CsvCleanerPopup: React.FC<CsvCleanerPopupProps> = ({ isOpen }) => {
   const [isDragging, setIsDragging] = useState(false)
   const [showHubSpotModal, setShowHubSpotModal] = useState(false)
   const [processingElapsed, setProcessingElapsed] = useState(0)
+  const [previewSearch, setPreviewSearch] = useState('')
+  const [previewSort, setPreviewSort] = useState<{ col: string; dir: 'asc' | 'desc' } | null>(null)
+  const [previewSourceFilter, setPreviewSourceFilter] = useState<string>('all')
+  const [downloadMenuOpen, setDownloadMenuOpen] = useState(false)
+  const [estimate, setEstimate] = useState<{
+    total_rows: number
+    missing_emails: number
+    estimated_apollo_credits: number
+    estimated_cost_usd: number
+  } | null>(null)
+  const [streamProgress, setStreamProgress] = useState<{
+    stage: string
+    current?: number
+    total?: number
+    extras?: Record<string, number>
+  } | null>(null)
+  const [presets, setPresets] = useState<Array<{
+    id: string
+    name: string
+    options: Partial<CleanOptions>
+    instructions: string
+  }>>([])
+  const [selectedPresetId, setSelectedPresetId] = useState<string>('')
+  const [showSavePresetModal, setShowSavePresetModal] = useState(false)
+  const [newPresetName, setNewPresetName] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const processingStartRef = useRef<number | null>(null)
+
+  // Fetch presets on mount
+  useEffect(() => {
+    if (!isOpen) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const headers = await requestHeaders()
+        const r = await fetch(buildApiUrl('/csv-cleaner/presets'), { headers })
+        if (!r.ok) return
+        const data = await r.json()
+        if (!cancelled) setPresets(data || [])
+      } catch {
+        // ignore
+      }
+    })()
+    return () => { cancelled = true }
+  }, [isOpen])
+
+  const handleSavePreset = async () => {
+    if (!newPresetName.trim()) return
+    try {
+      const headers = await requestHeaders()
+      headers['Content-Type'] = 'application/json'
+      const r = await fetch(buildApiUrl('/csv-cleaner/presets'), {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          name: newPresetName.trim(),
+          options,
+          instructions,
+        }),
+      })
+      if (!r.ok) {
+        const data = await r.json().catch(() => ({}))
+        throw new Error(data.detail || `HTTP ${r.status}`)
+      }
+      const saved = await r.json()
+      setPresets((prev) => {
+        const filtered = prev.filter((p) => p.id !== saved.id)
+        return [saved, ...filtered]
+      })
+      setSelectedPresetId(saved.id)
+      setShowSavePresetModal(false)
+      setNewPresetName('')
+    } catch (e: any) {
+      setError(e?.message || 'Save preset failed')
+    }
+  }
 
   // Persist state to module-level cache on every change
   useEffect(() => {
@@ -173,6 +250,8 @@ export const CsvCleanerPopup: React.FC<CsvCleanerPopupProps> = ({ isOpen }) => {
     setError(null)
     setResult(null)
     setFile(selected)
+    setEstimate(null)
+    fetchEstimate(selected)
   }
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -185,6 +264,7 @@ export const CsvCleanerPopup: React.FC<CsvCleanerPopupProps> = ({ isOpen }) => {
     const formData = new FormData()
     formData.append('file', file as File)
     formData.append('clean_first_names', String(options.clean_first_names))
+    formData.append('clean_last_names', String(options.clean_last_names))
     formData.append('clean_companies', String(options.clean_companies))
     formData.append('dedup_emails', String(options.dedup_emails))
     formData.append('dedup_linkedin', String(options.dedup_linkedin))
@@ -212,14 +292,38 @@ export const CsvCleanerPopup: React.FC<CsvCleanerPopupProps> = ({ isOpen }) => {
     return headers
   }
 
+  // Quick estimate of Apollo cost before user kicks off real cleaning.
+  // Called whenever a new file is selected.
+  const fetchEstimate = useCallback(async (selectedFile: File) => {
+    try {
+      const headers = await requestHeaders()
+      const fd = new FormData()
+      fd.append('file', selectedFile)
+      const resp = await fetch(buildApiUrl('/csv-cleaner/estimate'), {
+        method: 'POST',
+        headers,
+        body: fd,
+      })
+      if (!resp.ok) {
+        setEstimate(null)
+        return
+      }
+      setEstimate(await resp.json())
+    } catch {
+      setEstimate(null)
+    }
+  }, [])
+
   const handlePreview = async () => {
     if (!file) return
     setIsProcessing(true)
     setError(null)
     setResult(null)
+    setStreamProgress(null)
+
     try {
       const headers = await requestHeaders()
-      const response = await fetch(buildApiUrl('/csv-cleaner/preview'), {
+      const response = await fetch(buildApiUrl('/csv-cleaner/preview-stream'), {
         method: 'POST',
         headers,
         body: buildFormData(),
@@ -228,8 +332,38 @@ export const CsvCleanerPopup: React.FC<CsvCleanerPopupProps> = ({ isOpen }) => {
         const data = await response.json().catch(() => ({}))
         throw new Error(data.detail || `HTTP ${response.status}`)
       }
-      const data: PreviewResponse = await response.json()
-      setResult(data)
+      if (!response.body) throw new Error('Streaming not supported')
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+      while (true) {
+        const { value, done } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        // SSE messages are separated by double-newline. Process complete events only.
+        const parts = buffer.split('\n\n')
+        buffer = parts.pop() || ''
+        for (const part of parts) {
+          const line = part.trim()
+          if (!line.startsWith('data:')) continue
+          let payload: any
+          try {
+            payload = JSON.parse(line.slice(5).trim())
+          } catch {
+            continue
+          }
+          if (payload.stage === 'error') {
+            throw new Error(payload.message || 'Cleaning failed')
+          }
+          if (payload.stage === 'result') {
+            setResult(payload as PreviewResponse)
+            setStreamProgress({ stage: 'result' })
+          } else {
+            setStreamProgress(payload)
+          }
+        }
+      }
     } catch (err: any) {
       setError(err.message || 'Cleaning failed')
     } finally {
@@ -237,24 +371,100 @@ export const CsvCleanerPopup: React.FC<CsvCleanerPopupProps> = ({ isOpen }) => {
     }
   }
 
-  const handleDownload = () => {
-    if (!result || !file) return
-    const csv = atob(result.cleaned_csv_base64)
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+  const downloadBlob = (blob: Blob, filename: string) => {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    const baseName = file.name.replace(/\.[^.]+$/, '')
-    link.download = `${baseName} - cleaned.csv`
+    link.download = filename
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
   }
 
+  const handleDownloadCsv = () => {
+    if (!result || !file) return
+    // cleaned_csv_base64 already contains UTF-8 BOM, so Excel reads accents correctly
+    const binary = atob(result.cleaned_csv_base64)
+    const bytes = new Uint8Array(binary.length)
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+    const blob = new Blob([bytes], { type: 'text/csv;charset=utf-8' })
+    const baseName = file.name.replace(/\.[^.]+$/, '')
+    downloadBlob(blob, `${baseName} - cleaned.csv`)
+  }
+
+  const handleDownloadXlsx = async () => {
+    if (!result || !file) return
+    try {
+      const headers = await requestHeaders()
+      headers['Content-Type'] = 'application/json'
+      const baseName = file.name.replace(/\.[^.]+$/, '')
+      const response = await fetch(buildApiUrl('/csv-cleaner/to-xlsx'), {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          csv_base64: result.cleaned_csv_base64,
+          filename: `${baseName} - cleaned.xlsx`,
+        }),
+      })
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.detail || `HTTP ${response.status}`)
+      }
+      const blob = await response.blob()
+      downloadBlob(blob, `${baseName} - cleaned.xlsx`)
+    } catch (err: any) {
+      setError(err?.message || 'Excel export failed')
+    }
+  }
+
   if (!isOpen) return null
 
   const previewColumns = result?.preview_rows[0] ? Object.keys(result.preview_rows[0]) : []
+
+  // Filter + sort preview rows (computed every render — preview is capped at 100)
+  const visiblePreviewRows = useMemo(() => {
+    if (!result?.preview_rows) return []
+    let rows = result.preview_rows
+    if (previewSourceFilter !== 'all') {
+      rows = rows.filter((r) => {
+        const src = String(r['Email Source'] || '').toLowerCase()
+        if (previewSourceFilter === 'empty') return src === ''
+        return src === previewSourceFilter
+      })
+    }
+    if (previewSearch.trim()) {
+      const needle = previewSearch.trim().toLowerCase()
+      rows = rows.filter((r) =>
+        Object.values(r).some((v) => String(v ?? '').toLowerCase().includes(needle))
+      )
+    }
+    if (previewSort) {
+      const { col, dir } = previewSort
+      rows = [...rows].sort((a, b) => {
+        const av = String(a[col] ?? '')
+        const bv = String(b[col] ?? '')
+        const an = Number(av)
+        const bn = Number(bv)
+        let cmp = 0
+        if (!isNaN(an) && !isNaN(bn) && av && bv) {
+          cmp = an - bn
+        } else {
+          cmp = av.localeCompare(bv)
+        }
+        return dir === 'asc' ? cmp : -cmp
+      })
+    }
+    return rows
+  }, [result?.preview_rows, previewSourceFilter, previewSearch, previewSort])
+
+  const toggleSort = (col: string) => {
+    setPreviewSort((prev) => {
+      if (!prev || prev.col !== col) return { col, dir: 'asc' }
+      if (prev.dir === 'asc') return { col, dir: 'desc' }
+      return null
+    })
+  }
 
   return (
     <div className="animate-tab-fade-in flex flex-col h-full">
@@ -306,6 +516,76 @@ export const CsvCleanerPopup: React.FC<CsvCleanerPopupProps> = ({ isOpen }) => {
                   onChange={(e) => handleFileSelect(e.target.files?.[0])}
                 />
               </div>
+
+              {estimate && file && (
+                <div className="mt-3 flex items-start gap-2 p-2.5 rounded-md bg-sky-50 border border-sky-200 text-xs text-sky-900">
+                  <Sparkles className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <strong>{estimate.total_rows.toLocaleString()}</strong> contacts loaded ·{' '}
+                    <strong>{estimate.missing_emails.toLocaleString()}</strong> missing emails
+                    {options.enrich_via_apollo && (
+                      <>
+                        {' '}→ Apollo will use up to{' '}
+                        <strong>{estimate.estimated_apollo_credits.toLocaleString()}</strong> credits
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Preset section */}
+            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Preset
+              </label>
+              <div className="flex items-center gap-2 flex-wrap">
+                <select
+                  value={selectedPresetId}
+                  onChange={(e) => {
+                    const id = e.target.value
+                    setSelectedPresetId(id)
+                    if (!id) return
+                    const p = presets.find((x) => x.id === id)
+                    if (p) {
+                      setOptions({ ...DEFAULT_OPTIONS, ...p.options } as CleanOptions)
+                      setInstructions(p.instructions || '')
+                    }
+                  }}
+                  className="flex-1 min-w-[180px] px-3 py-1.5 text-sm border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                >
+                  <option value="">Default settings</option>
+                  {presets.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => { setNewPresetName(''); setShowSavePresetModal(true) }}
+                  className="px-3 py-1.5 text-xs border border-gray-300 rounded-md hover:bg-white text-gray-700"
+                >
+                  Save as preset...
+                </button>
+                {selectedPresetId && (
+                  <button
+                    onClick={async () => {
+                      const id = selectedPresetId
+                      const headers = await requestHeaders()
+                      headers['Content-Type'] = 'application/json'
+                      const r = await fetch(buildApiUrl(`/csv-cleaner/presets/${id}`), { method: 'DELETE', headers })
+                      if (r.ok) {
+                        setPresets((prev) => prev.filter((x) => x.id !== id))
+                        setSelectedPresetId('')
+                      }
+                    }}
+                    className="px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 rounded-md"
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Save the current options + instructions to reuse on future cleanings.
+              </p>
             </div>
 
             {/* Instructions section */}
@@ -340,6 +620,11 @@ export const CsvCleanerPopup: React.FC<CsvCleanerPopupProps> = ({ isOpen }) => {
                   checked={options.clean_first_names}
                   onChange={(v) => setOptions({ ...options, clean_first_names: v })}
                   label="Clean first names"
+                />
+                <CheckOption
+                  checked={options.clean_last_names}
+                  onChange={(v) => setOptions({ ...options, clean_last_names: v })}
+                  label="Clean last names"
                 />
                 <CheckOption
                   checked={options.clean_full_names}
@@ -407,6 +692,7 @@ export const CsvCleanerPopup: React.FC<CsvCleanerPopupProps> = ({ isOpen }) => {
             elapsedSeconds={processingElapsed}
             apolloEnabled={options.enrich_via_apollo}
             fileSizeKb={file ? Math.round(file.size / 1024) : 0}
+            progress={streamProgress}
           />
         )}
 
@@ -442,6 +728,7 @@ export const CsvCleanerPopup: React.FC<CsvCleanerPopupProps> = ({ isOpen }) => {
               )}
               <Stat label="Titles normalized" value={result.stats.titles_normalized} />
               <Stat label="First names cleaned" value={result.stats.names_cleaned} />
+              <Stat label="Last names cleaned" value={result.stats.last_names_cleaned ?? 0} />
               <Stat label="Full names cleaned" value={result.stats.full_names_cleaned} />
               <Stat label="Companies cleaned" value={result.stats.companies_cleaned} />
             </div>
@@ -449,8 +736,35 @@ export const CsvCleanerPopup: React.FC<CsvCleanerPopupProps> = ({ isOpen }) => {
             {result.issues.length > 0 && (
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm">
                 <div className="font-medium text-yellow-900 mb-1">Notes</div>
-                <ul className="list-disc ml-5 text-gray-700 space-y-0.5">
-                  {result.issues.map((iss, i) => <li key={i}>{iss}</li>)}
+                <ul className="text-gray-700 space-y-0.5">
+                  {result.issues.map((iss, i) => {
+                    const lower = iss.toLowerCase()
+                    const looksLikeMissing = lower.includes('missing email')
+                    const looksLikeInvalid = lower.includes('invalid email')
+                    const looksLikeInfo = lower.startsWith('combined ')
+                    const looksLikeApolloSkip = lower.includes('apollo enrichment skipped')
+
+                    let icon = '·'
+                    let cls = 'text-gray-700'
+                    if (looksLikeMissing) { icon = '⚠'; cls = 'text-yellow-800' }
+                    else if (looksLikeInvalid) { icon = '⚠'; cls = 'text-yellow-800' }
+                    else if (looksLikeApolloSkip) { icon = '⚠'; cls = 'text-yellow-800' }
+                    else if (looksLikeInfo) { icon = 'ℹ'; cls = 'text-blue-700' }
+
+                    const clickable = looksLikeMissing
+                    return (
+                      <li key={i} className={`flex items-start gap-2 ${cls} ${clickable ? 'cursor-pointer hover:underline' : ''}`}
+                        onClick={() => {
+                          if (looksLikeMissing && previewColumns.includes('Email Source')) {
+                            setPreviewSourceFilter('empty')
+                          }
+                        }}
+                      >
+                        <span className="font-mono text-xs">{icon}</span>
+                        <span>{iss}</span>
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
             )}
@@ -494,24 +808,93 @@ export const CsvCleanerPopup: React.FC<CsvCleanerPopupProps> = ({ isOpen }) => {
             )}
 
             <div>
-              <h4 className="font-medium text-sm text-gray-700 mb-2">Preview <span className="font-normal text-gray-500">(first 20 rows)</span></h4>
-              <div className="border border-gray-200 rounded-lg overflow-auto max-h-64 text-xs bg-white">
+              <h4 className="font-medium text-sm text-gray-700 mb-2">
+                Preview <span className="font-normal text-gray-500">
+                  ({visiblePreviewRows.length} of {result.preview_rows.length} {result.preview_rows.length === 1 ? 'row' : 'rows'})
+                </span>
+              </h4>
+
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <div className="relative flex-1 min-w-[180px]">
+                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={previewSearch}
+                    onChange={(e) => setPreviewSearch(e.target.value)}
+                    placeholder="Search preview..."
+                    className="w-full pl-7 pr-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  />
+                </div>
+                {previewColumns.includes('Email Source') && (
+                  <select
+                    value={previewSourceFilter}
+                    onChange={(e) => setPreviewSourceFilter(e.target.value)}
+                    className="px-2 py-1.5 text-xs border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  >
+                    <option value="all">All email sources</option>
+                    <option value="original">Original</option>
+                    <option value="apollo">Apollo</option>
+                    <option value="pattern">Pattern guess</option>
+                    <option value="empty">Empty (no email)</option>
+                  </select>
+                )}
+                {(previewSearch || previewSourceFilter !== 'all' || previewSort) && (
+                  <button
+                    onClick={() => {
+                      setPreviewSearch('')
+                      setPreviewSourceFilter('all')
+                      setPreviewSort(null)
+                    }}
+                    className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1.5"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              <div className="border border-gray-200 rounded-lg overflow-auto max-h-80 text-xs bg-white">
                 <table className="w-full">
                   <thead className="bg-gray-50 sticky top-0">
                     <tr>
-                      {previewColumns.map((c) => (
-                        <th key={c} className="text-left px-3 py-2 font-medium text-gray-700 whitespace-nowrap">{c}</th>
-                      ))}
+                      {previewColumns.map((c) => {
+                        const isSorted = previewSort?.col === c
+                        return (
+                          <th
+                            key={c}
+                            onClick={() => toggleSort(c)}
+                            className="text-left px-3 py-2 font-medium text-gray-700 whitespace-nowrap cursor-pointer select-none hover:bg-gray-100"
+                          >
+                            <span className="inline-flex items-center gap-1">
+                              {c}
+                              {isSorted && previewSort?.dir === 'asc' && <ArrowUp className="w-3 h-3" />}
+                              {isSorted && previewSort?.dir === 'desc' && <ArrowDown className="w-3 h-3" />}
+                            </span>
+                          </th>
+                        )
+                      })}
                     </tr>
                   </thead>
                   <tbody>
-                    {result.preview_rows.map((row, i) => (
-                      <tr key={i} className="border-t border-gray-100">
-                        {previewColumns.map((c) => (
-                          <td key={c} className="px-3 py-2 text-gray-900 truncate max-w-[200px]">{row[c]}</td>
-                        ))}
+                    {visiblePreviewRows.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={previewColumns.length}
+                          className="px-3 py-6 text-center text-gray-400"
+                        >
+                          No rows match the current filter
+                        </td>
                       </tr>
-                    ))}
+                    ) : (
+                      visiblePreviewRows.map((row, i) => (
+                        <tr key={i} className="border-t border-gray-100">
+                          {previewColumns.map((c) => (
+                            <td key={c} className="px-3 py-2 text-gray-900 truncate max-w-[200px]">
+                              {row[c]}
+                            </td>
+                          ))}
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -529,13 +912,37 @@ export const CsvCleanerPopup: React.FC<CsvCleanerPopupProps> = ({ isOpen }) => {
             >
               Clean another file
             </button>
-            <button
-              onClick={handleDownload}
-              className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 font-medium text-gray-700"
-            >
-              <Download className="w-4 h-4" />
-              Download CSV
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setDownloadMenuOpen((v) => !v)}
+                className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 font-medium text-gray-700"
+              >
+                <Download className="w-4 h-4" />
+                Download
+                <ChevronDown className="w-3.5 h-3.5" />
+              </button>
+              {downloadMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setDownloadMenuOpen(false)} />
+                  <div className="absolute right-0 bottom-full mb-1 z-20 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden min-w-[160px]">
+                    <button
+                      onClick={() => { setDownloadMenuOpen(false); handleDownloadCsv() }}
+                      className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+                    >
+                      <FileSpreadsheet className="w-4 h-4 text-blue-500" />
+                      Download CSV
+                    </button>
+                    <button
+                      onClick={() => { setDownloadMenuOpen(false); handleDownloadXlsx() }}
+                      className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+                    >
+                      <FileSpreadsheet className="w-4 h-4 text-green-600" />
+                      Download Excel (.xlsx)
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
             <button
               onClick={() => setShowHubSpotModal(true)}
               className="px-4 py-2 text-sm bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2 font-medium"
@@ -572,6 +979,44 @@ export const CsvCleanerPopup: React.FC<CsvCleanerPopupProps> = ({ isOpen }) => {
           contacts={result.preview_rows}
         />
       )}
+
+      {showSavePresetModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-5">
+            <h3 className="text-base font-semibold text-gray-900 mb-3">Save preset</h3>
+            <p className="text-sm text-gray-600 mb-3">
+              Save the current cleaning options and instructions for quick reuse.
+            </p>
+            <input
+              type="text"
+              autoFocus
+              value={newPresetName}
+              onChange={(e) => setNewPresetName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSavePreset()
+                if (e.key === 'Escape') setShowSavePresetModal(false)
+              }}
+              placeholder="e.g. ITSM full clean"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm mb-4"
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowSavePresetModal(false)}
+                className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 font-medium text-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSavePreset}
+                disabled={!newPresetName.trim()}
+                className="px-4 py-2 text-sm bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 font-medium"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -603,6 +1048,15 @@ const CheckOption = ({
   </label>
 )
 
+const activeStageIndexFallback = (elapsedSeconds: number, stages: ProcessingStage[]): number => {
+  let cumulative = 0
+  for (let i = 0; i < stages.length; i++) {
+    cumulative += stages[i].estimatedSeconds
+    if (elapsedSeconds < cumulative) return i
+  }
+  return stages.length - 1
+}
+
 const formatElapsed = (seconds: number): string => {
   const m = Math.floor(seconds / 60)
   const s = seconds % 60
@@ -613,28 +1067,62 @@ const ProcessingPanel: React.FC<{
   elapsedSeconds: number
   apolloEnabled: boolean
   fileSizeKb: number
-}> = ({ elapsedSeconds, apolloEnabled, fileSizeKb }) => {
-  // Visual estimate of stage progress based on elapsed time.
-  // Backend cleans synchronously in one request, so we don't have real progress —
-  // these are optimistic estimates so the user sees movement, not a frozen spinner.
+  progress?: { stage: string; current?: number; total?: number } | null
+}> = ({ elapsedSeconds, apolloEnabled, fileSizeKb, progress }) => {
   const stages = PROCESSING_STAGES.filter(
     (s) => apolloEnabled || s.id !== 'apollo'
   )
   const totalEstimate = stages.reduce((sum, s) => sum + s.estimatedSeconds, 0)
 
-  // Determine which stage we're "on" based on cumulative time
-  let cumulative = 0
-  let activeStageIdx = stages.length - 1
-  for (let i = 0; i < stages.length; i++) {
-    cumulative += stages[i].estimatedSeconds
-    if (elapsedSeconds < cumulative) {
-      activeStageIdx = i
-      break
-    }
+  // Real-time stage from streaming progress (if available), otherwise estimate by elapsed time
+  const stageIdxByEvent: Record<string, number> = {
+    start: 0,
+    first_names: 1,
+    last_names: 1,
+    full_names: 1,
+    companies: 2,
+    titles: 3,
+    apollo: 4,
+    apollo_done: 4,
+    pattern_guess: 5,
+    done: stages.length - 1,
+    result: stages.length - 1,
   }
 
-  // Capped percent for progress bar (don't fill 100% until actually done)
-  const pct = Math.min(95, Math.round((elapsedSeconds / totalEstimate) * 100))
+  let activeStageIdx: number
+  let pct: number
+  let apolloDetail: string | null = null
+
+  if (progress) {
+    const eventStage = progress.stage
+    // Map "apollo" with parsing offset to step 4 (or adjusted if Apollo skipped)
+    const apolloPos = stages.findIndex((s) => s.id === 'apollo')
+    let idx = stageIdxByEvent[eventStage] ?? activeStageIndexFallback(elapsedSeconds, stages)
+    if (eventStage === 'apollo' && apolloPos === -1) {
+      // Apollo wasn't planned but emitted -> defensive
+      idx = stages.length - 2
+    }
+    activeStageIdx = Math.min(idx, stages.length - 1)
+
+    if (progress.stage === 'apollo' && progress.total) {
+      const apolloPct = Math.round(((progress.current || 0) / progress.total) * 100)
+      apolloDetail = `${progress.current || 0} / ${progress.total} contacts (${apolloPct}%)`
+    }
+    if (progress.stage === 'result' || progress.stage === 'done') {
+      pct = 100
+    } else {
+      const stagesDone = activeStageIdx
+      const stageProgress = progress.stage === 'apollo' && progress.total
+        ? Math.min(0.99, (progress.current || 0) / progress.total)
+        : 0.5
+      const completedTime = stages.slice(0, stagesDone).reduce((s, x) => s + x.estimatedSeconds, 0)
+      const partial = (stages[stagesDone]?.estimatedSeconds || 0) * stageProgress
+      pct = Math.min(95, Math.round(((completedTime + partial) / totalEstimate) * 100))
+    }
+  } else {
+    activeStageIdx = activeStageIndexFallback(elapsedSeconds, stages)
+    pct = Math.min(95, Math.round((elapsedSeconds / totalEstimate) * 100))
+  }
 
   return (
     <div className="mt-4 border border-orange-200 bg-orange-50 rounded-lg p-4 space-y-3">
@@ -679,6 +1167,9 @@ const ProcessingPanel: React.FC<{
                 }
               >
                 {stage.label}
+                {isActive && stage.id === 'apollo' && apolloDetail && (
+                  <span className="ml-2 text-orange-700 font-mono">{apolloDetail}</span>
+                )}
               </span>
             </li>
           )
