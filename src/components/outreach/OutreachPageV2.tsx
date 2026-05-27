@@ -5,9 +5,10 @@ import { useSignalDetails } from '../../hooks/useSignalDetails'
 import { useFilters } from '../../hooks/useFilters'
 import { ContactsComponent } from '../contacts/ContactsComponent'
 import { SequenceBuilder } from '../sequences/SequenceBuilder'
+import { CsvCleanerPopup } from './CsvCleanerPopup'
 import {
   Building2, Globe, Users, MapPin, Briefcase, ExternalLink,
-  ThumbsDown, ThumbsUp, Minus, ChevronDown, ChevronUp, Zap, Settings, User
+  ThumbsDown, ThumbsUp, Minus, ChevronDown, ChevronUp, Zap, Settings, User, Sparkles
 } from 'lucide-react'
 import { api } from '../../lib/apiClient'
 
@@ -17,6 +18,7 @@ export const OutreachPageV2 = () => {
   const [showDetails, setShowDetails] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
   const [showSequenceBuilder, setShowSequenceBuilder] = useState(false)
+  const [showCsvCleaner, setShowCsvCleaner] = useState(false)
   const [decisionError, setDecisionError] = useState<string | null>(null)
 
   const { signal: fullSignal, isLoading: isLoadingSignalDetails } = useSignalDetails({
@@ -75,13 +77,22 @@ export const OutreachPageV2 = () => {
       <div className="flex-shrink-0 px-3 sm:px-4 lg:px-6 pt-3 pb-1">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-bold text-gray-900">Outreach Management</h1>
-          <button
-            onClick={() => setShowSequenceBuilder(true)}
-            className="inline-flex items-center gap-2 px-3 py-1.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium text-sm"
-          >
-            <Settings className="w-4 h-4" />
-            Sequence Builder
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowCsvCleaner(true)}
+              className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm"
+            >
+              <Sparkles className="w-4 h-4 text-purple-600" />
+              Clean CSV
+            </button>
+            <button
+              onClick={() => setShowSequenceBuilder(true)}
+              className="inline-flex items-center gap-2 px-3 py-1.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium text-sm"
+            >
+              <Settings className="w-4 h-4" />
+              Sequence Builder
+            </button>
+          </div>
         </div>
       </div>
 
@@ -300,6 +311,33 @@ export const OutreachPageV2 = () => {
         isOpen={showSequenceBuilder}
         onClose={() => setShowSequenceBuilder(false)}
       />
+
+      {/* CSV Cleaner Popup */}
+      {showCsvCleaner && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200 flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-purple-600" />
+                <h2 className="text-base font-semibold text-gray-900">Clean CSV</h2>
+              </div>
+              <button
+                onClick={() => setShowCsvCleaner(false)}
+                className="text-gray-400 hover:text-gray-600 text-2xl leading-none px-2"
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden p-4">
+              <CsvCleanerPopup
+                isOpen={showCsvCleaner}
+                onClose={() => setShowCsvCleaner(false)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
