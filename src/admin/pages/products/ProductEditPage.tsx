@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, FileText, Save, Trash2 } from 'lucide-react'
 import { adminApi } from '../../../lib/api/admin'
 import type {
@@ -50,6 +50,7 @@ export const ProductEditPage = () => {
   const { productId } = useParams()
   const isEdit = Boolean(productId)
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const toast = useToast()
 
   const [form, setForm] = useState<ProductPayload>(emptyPayload())
@@ -97,6 +98,9 @@ export const ProductEditPage = () => {
         } else if (pRes.error) {
           setError(pRes.error)
         }
+      } else {
+        const orgParam = searchParams.get('org')
+        if (orgParam) setForm((f) => ({ ...f, organization_id: orgParam }))
       }
       setLoading(false)
     }

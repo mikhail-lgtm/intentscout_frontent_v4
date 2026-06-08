@@ -3,7 +3,7 @@ import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts'
-import { Activity, CreditCard, Plus, Receipt, RefreshCw, Trash2, Users, Wallet } from 'lucide-react'
+import { Activity, Bot, CreditCard, Plus, Receipt, RefreshCw, Trash2, Users, Wallet } from 'lucide-react'
 import { adminApi } from '../../lib/api/admin'
 import type {
   CostSummaryResponse,
@@ -15,6 +15,7 @@ import type {
   ManualExpenseRequest,
   UsageLogEntry,
   OpenRouterCreditsResponse,
+  ApifyUsage,
 } from '../../types/admin'
 import {
   Badge,
@@ -69,7 +70,10 @@ const PROVIDER_COLORS: Record<string, string> = {
   serper: '#8b5cf6',
   brightdata: '#ef4444',
   apollo: '#0ea5e9',
+  apify: '#0d9488',
 }
+
+const KNOWN_PROVIDERS = ['openrouter', 'openai', 'serper', 'fireworks', 'brightdata', 'apollo', 'apify']
 
 const emptyExpense = (): ManualExpenseRequest => ({
   date: new Date().toISOString().split('T')[0],
@@ -85,6 +89,7 @@ export const CostsPage = () => {
   const toast = useToast()
   const [summary, setSummary] = useState<CostSummaryResponse | null>(null)
   const [openrouterCredits, setOpenrouterCredits] = useState<OpenRouterCreditsResponse | null>(null)
+  const [apify, setApify] = useState<ApifyUsage | null>(null)
   const [manualExpenses, setManualExpenses] = useState<ManualExpense[]>([])
   const [usageLogs, setUsageLogs] = useState<UsageLogEntry[]>([])
   const [days, setDays] = useState(30)
@@ -101,17 +106,19 @@ export const CostsPage = () => {
     setLoading(true)
     setError(null)
     try {
-      const [summaryRes, creditsRes, expensesRes, logsRes] = await Promise.all([
+      const [summaryRes, creditsRes, expensesRes, logsRes, apifyRes] = await Promise.all([
         adminApi.costs.summary(days),
         adminApi.costs.billing.openrouterCredits(),
         adminApi.costs.manual.list(days),
         adminApi.costs.logs(50),
+        adminApi.costs.billing.apify(),
       ])
       if (!summaryRes.data) throw new Error(summaryRes.error || 'Failed to load cost summary')
       setSummary(summaryRes.data)
       setOpenrouterCredits(creditsRes.data ?? null)
       setManualExpenses(expensesRes.data ?? [])
       setUsageLogs(logsRes.data ?? [])
+      setApify(apifyRes.data ?? null)
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'Failed to load costs data')
     } finally {
@@ -222,7 +229,7 @@ export const CostsPage = () => {
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <StatCard label="API costs" value={formatCurrency(summary?.total_api_cost_usd ?? 0)} hint={`${days} days`} icon={<Activity className="h-5 w-5" />} />
             <StatCard label="Manual expenses" value={formatCurrency(summary?.total_manual_cost_usd ?? 0)} hint="infra, proxies" icon={<Receipt className="h-5 w-5" />} />
             <StatCard label="Total costs" value={formatCurrency(summary?.total_cost_usd ?? 0)} hint={`${days} days combined`} icon={<Wallet className="h-5 w-5" />} tone="accent" />
@@ -238,6 +245,12 @@ export const CostsPage = () => {
               value={(apollo?.total_requests ?? 0).toLocaleString()}
               hint={`est. ${formatCurrency(apollo?.total_cost ?? 0)} · ${days}d`}
               icon={<Users className="h-5 w-5" />}
+            />
+            <StatCard
+              label="Apify (cycle)"
+              value={apify?.usage_usd != null ? formatCurrency(apify.usage_usd) : '-'}
+              hint={apify?.status === 'error' ? 'not connected' : 'IntentTracker scraping'}
+              icon={<Bot className="h-5 w-5" />}
             />
           </div>
 
@@ -319,6 +332,40 @@ export const CostsPage = () => {
               </CardBody>
             </Card>
           </div>
+
+          <Card>
+            <CardHeader title="All services" description="Every known cost source - shown even at $0 so nothing is missing" />
+            <Table>
+              <THead>
+                <TR>
+                  <TH>Service</TH>
+                  <TH className="text-right">Requests</TH>
+                  <TH className="text-right">Spend ({days}d)</TH>
+                </TR>
+              </THead>
+              <TBody>
+                {KNOWN_PROVIDERS.map((name) => {
+                  const row = summary?.by_provider?.find((p) => p._id === name)
+                  const isApify = name === 'apify'
+                  const spend = isApify ? (apify?.usage_usd ?? 0) : (row?.total_cost ?? 0)
+                  return (
+                    <TR key={name}>
+                      <TD className="capitalize text-slate-700">
+                        <span
+                          className="mr-2 inline-block h-2 w-2 rounded-full"
+                          style={{ backgroundColor: PROVIDER_COLORS[name] || '#94a3b8' }}
+                        />
+                        {name}
+                        {isApify && <span className="ml-2 text-xs text-slate-400">(cycle)</span>}
+                      </TD>
+                      <TD className="text-right text-slate-600">{isApify ? '-' : formatNumber(row?.total_requests ?? 0)}</TD>
+                      <TD className="text-right font-medium text-slate-900">{formatCurrency(spend)}</TD>
+                    </TR>
+                  )
+                })}
+              </TBody>
+            </Table>
+          </Card>
 
           <Card>
             <CardHeader title="By service" />

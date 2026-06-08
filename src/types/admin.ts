@@ -430,3 +430,24 @@ export interface MonitoringTrend {
   threshold: number
   trend: MonitoringTrendPoint[]
 }
+
+// Accounts (organization management) + Apify billing
+
+export interface OrgCreatePayload {
+  name: string
+  state?: string
+}
+
+export interface OrgUpdatePayload {
+  name?: string
+  state?: string
+}
+
+export interface ApifyUsage {
+  status: string
+  usage_usd?: number
+  cycle_start?: string | null
+  cycle_end?: string | null
+  error?: string | null
+  fetched_at?: string
+}

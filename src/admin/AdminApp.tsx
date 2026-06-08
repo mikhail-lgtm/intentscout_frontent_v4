@@ -10,6 +10,8 @@ import { CostsPage } from './pages/CostsPage'
 import { ProductsPage } from './pages/products/ProductsPage'
 import { ProductEditPage } from './pages/products/ProductEditPage'
 import { CompaniesPage } from './pages/companies/CompaniesPage'
+import { AccountsPage } from './pages/accounts/AccountsPage'
+import { AccountDetailPage } from './pages/accounts/AccountDetailPage'
 import { PeoplePage } from './pages/people/PeoplePage'
 
 export const AdminApp = () => {
@@ -24,7 +26,9 @@ export const AdminApp = () => {
           <Route path="products" element={<ProductsPage />} />
           <Route path="products/new" element={<ProductEditPage />} />
           <Route path="products/:productId" element={<ProductEditPage />} />
-          <Route path="companies" element={<CompaniesPage />} />
+          <Route path="accounts" element={<AccountsPage />} />
+          <Route path="accounts/:accountId" element={<AccountDetailPage />} />
+          <Route path="scraping-pool" element={<CompaniesPage />} />
           <Route path="people" element={<PeoplePage />} />
           <Route path="activity" element={<ActivityPage />} />
           <Route path="pipeline" element={<PipelinePage />} />

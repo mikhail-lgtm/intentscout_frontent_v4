@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   Boxes,
   Building2,
+  Database,
   Users,
   PlayCircle,
   DollarSign,
@@ -17,8 +18,9 @@ import { cn } from '../../utils/cn'
 const navItems = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/admin/monitoring', label: 'Monitoring', icon: Activity, end: false },
+  { to: '/admin/accounts', label: 'Accounts', icon: Building2, end: false },
   { to: '/admin/products', label: 'Products', icon: Boxes, end: false },
-  { to: '/admin/companies', label: 'Companies', icon: Building2, end: false },
+  { to: '/admin/scraping-pool', label: 'Scraping pool', icon: Database, end: false },
   { to: '/admin/people', label: 'People', icon: Users, end: false },
   { to: '/admin/activity', label: 'Activity', icon: ScrollText, end: false },
   { to: '/admin/pipeline', label: 'Pipeline', icon: PlayCircle, end: false },

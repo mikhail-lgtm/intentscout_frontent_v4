@@ -38,6 +38,7 @@ import type {
 } from '../../types/admin'
 
 import type { MonitoringSummary, MonitoringTrend } from '../../types/admin'
+import type { OrgCreatePayload, OrgUpdatePayload, ApifyUsage } from '../../types/admin'
 
 const buildQueryString = (params: Record<string, string | number | undefined>): string => {
   const searchParams = new URLSearchParams()
@@ -110,6 +111,12 @@ export const adminApi = {
       apiClient.get<AdminActivityLog[]>(`/admin/organizations/${organizationId}/activity${buildQueryString({ limit })}`),
     usage: (organizationId: string) =>
       apiClient.get<AdminOrganizationUsage>(`/admin/organizations/${organizationId}/usage`),
+    members: (organizationId: string) =>
+      apiClient.get<AdminUserSummary[]>(`/admin/organizations/${organizationId}/members`),
+    create: (payload: OrgCreatePayload) =>
+      apiClient.post<AdminOrganizationSummary>('/admin/organizations', payload),
+    update: (organizationId: string, payload: OrgUpdatePayload) =>
+      apiClient.put<AdminOrganizationSummary>(`/admin/organizations/${organizationId}`, payload),
   },
   analytics: {
     overview: () => apiClient.get<AdminAnalyticsOverview>('/admin/analytics/overview'),
@@ -202,6 +209,7 @@ export const adminApi = {
         apiClient.get<OpenRouterCreditsResponse>('/admin/costs/billing/openrouter/credits'),
       openaiCosts: (days = 7) =>
         apiClient.get<OpenAICostsResponse>(`/admin/costs/billing/openai/costs${buildQueryString({ days })}`),
+      apify: () => apiClient.get<ApifyUsage>('/admin/costs/billing/apify'),
     },
     manual: {
       list: (days = 30, category?: string) =>
