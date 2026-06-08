@@ -1,5 +1,13 @@
 import { apiClient } from '../apiClient'
 import type {
+  AdminProduct,
+  ProductPayload,
+  PromptTemplateSummary,
+  PromptTemplateContent,
+  AdminCompany,
+  CompanyPayload,
+  CompanyListResponse,
+  CompanyImportResult,
   AdminCheckResponse,
   AdminProfile,
   AdminUserSummary,
@@ -28,6 +36,8 @@ import type {
   OpenAICostsResponse,
   BillingSnapshotResponse,
 } from '../../types/admin'
+
+import type { MonitoringSummary, MonitoringTrend } from '../../types/admin'
 
 const buildQueryString = (params: Record<string, string | number | undefined>): string => {
   const searchParams = new URLSearchParams()
@@ -61,6 +71,32 @@ export const adminApi = {
       apiClient.get<AdminActivityLog[]>(`/admin/users/${userId}/activity${buildQueryString({ limit })}`),
     stats: (userId: string) =>
       apiClient.get<AdminUserStatsResponse>(`/admin/users/${userId}/stats`),
+    invite: (body: { email: string; role?: string | null; organization_id?: string; redirect_to?: string }) =>
+      apiClient.post<{ status: string; user_id?: string; email: string }>('/admin/users/invite', body),
+    createUser: (body: {
+      email: string
+      password?: string
+      role?: string | null
+      organization_id?: string
+      email_confirm?: boolean
+    }) => apiClient.post<{ status: string; user_id?: string; email: string }>('/admin/users', body),
+    setRole: (userId: string, role: string | null) =>
+      apiClient.put<{ status: string }>(`/admin/users/${userId}/role`, { role }),
+    setOrg: (userId: string, organizationId: string, action: 'add' | 'remove') =>
+      apiClient.post<{ status: string }>(`/admin/users/${userId}/organizations`, {
+        organization_id: organizationId,
+        action,
+      }),
+    setStatus: (userId: string, active: boolean) =>
+      apiClient.put<{ status: string }>(`/admin/users/${userId}/status`, { active }),
+    recovery: (userId: string) => apiClient.post<{ status: string }>(`/admin/users/${userId}/recovery`, {}),
+    remove: (userId: string) => apiClient.delete<{ status: string }>(`/admin/users/${userId}`),
+    bulk: (userIds: string[], action: 'delete' | 'deactivate' | 'activate' | 'set_role', role?: string | null) =>
+      apiClient.post<{ status: string; succeeded: number; failed: number; errors: string[] }>('/admin/users/bulk', {
+        user_ids: userIds,
+        action,
+        role,
+      }),
   },
   organizations: {
     list: (page = 1, pageSize = 20) =>
@@ -181,9 +217,61 @@ export const adminApi = {
         apiClient.delete<{ id: string; status: string }>(`/admin/costs/manual/${expenseId}`),
     },
   },
+  products: {
+    list: (organizationId?: string, status?: string) =>
+      apiClient.get<AdminProduct[]>(`/admin/products${buildQueryString({
+        organization_id: organizationId,
+        status,
+      })}`),
+    detail: (id: string) => apiClient.get<AdminProduct>(`/admin/products/${id}`),
+    create: (payload: ProductPayload) => apiClient.post<AdminProduct>('/admin/products', payload),
+    update: (id: string, payload: ProductPayload) =>
+      apiClient.put<AdminProduct>(`/admin/products/${id}`, payload),
+    remove: (id: string) => apiClient.delete<{ id: string; status: string }>(`/admin/products/${id}`),
+    templates: () => apiClient.get<PromptTemplateSummary[]>('/admin/products/prompt-templates'),
+    template: (name: string) =>
+      apiClient.get<PromptTemplateContent>(`/admin/products/prompt-templates/${encodeURIComponent(name)}`),
+  },
+  companies: {
+    list: (
+      params: {
+        search?: string
+        target_organizations?: string
+        hq_country?: string
+        page?: number
+        page_size?: number
+      } = {},
+    ) => apiClient.get<CompanyListResponse>(`/admin/companies${buildQueryString({ ...params })}`),
+    detail: (id: string) => apiClient.get<AdminCompany>(`/admin/companies/${id}`),
+    create: (payload: CompanyPayload) => apiClient.post<AdminCompany>('/admin/companies', payload),
+    update: (id: string, payload: CompanyPayload) =>
+      apiClient.put<AdminCompany>(`/admin/companies/${id}`, payload),
+    remove: (id: string) => apiClient.delete<{ id: string; status: string }>(`/admin/companies/${id}`),
+    import: (csv: string, targetOrganizations?: string) =>
+      apiClient.post<CompanyImportResult>('/admin/companies/import', {
+        csv,
+        target_organizations: targetOrganizations,
+      }),
+  },
+  monitoring: {
+    summary: (date?: string, threshold?: number) =>
+      apiClient.get<MonitoringSummary>(`/admin/monitoring/summary${buildQueryString({ date, threshold })}`),
+    trend: (days = 14, threshold?: number, end?: string) =>
+      apiClient.get<MonitoringTrend>(`/admin/monitoring/trend${buildQueryString({ days, threshold, end })}`),
+  },
 }
 
 export type {
+  MonitoringSummary,
+  MonitoringTrend,
+  AdminProduct,
+  ProductPayload,
+  PromptTemplateSummary,
+  PromptTemplateContent,
+  AdminCompany,
+  CompanyPayload,
+  CompanyListResponse,
+  CompanyImportResult,
   AdminCheckResponse,
   AdminProfile,
   AdminUserSummary,

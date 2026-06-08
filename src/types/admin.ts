@@ -274,3 +274,159 @@ export interface BillingSnapshotResponse {
   openai: OpenAICostsResponse
   total_balance_usd: number
 }
+
+// Products (UI-managed scoring products)
+
+export type ProductFilterMode = 'all' | 'target_organizations' | 'country_revenue'
+
+export interface ProductCompanyFilter {
+  mode: ProductFilterMode
+  target_organizations?: string | null
+  allowed_countries: string[]
+  min_revenue_usd?: number | null
+  include_null_revenue: boolean
+}
+
+export interface ProductScrapeSource {
+  type: string
+  company_filter: ProductCompanyFilter
+}
+
+export interface ProductPayload {
+  product_id: string
+  name: string
+  organization_id: string
+  status: 'active' | 'paused'
+  prompt: string
+  query: string
+  scrape_source: ProductScrapeSource
+  intent_model?: string | null
+  stage2_enabled: boolean
+  max_results: number
+  notes: string
+}
+
+export interface AdminProduct extends ProductPayload {
+  id: string
+  created_by?: string | null
+  created_at?: string | null
+  updated_at?: string | null
+}
+
+export interface PromptTemplateSummary {
+  name: string
+  has_query: boolean
+}
+
+export interface PromptTemplateContent {
+  name: string
+  prompt: string
+  query: string
+}
+
+// Companies (scraping pool)
+
+export interface CompanyPayload {
+  company_name: string
+  company_id?: number | null
+  company_url?: string | null
+  website?: string | null
+  industry?: string | null
+  company_size?: string | null
+  headquarters?: string | null
+  hq_country?: string | null
+  est_rev_high_usd?: number | null
+  est_rev_low_usd?: number | null
+  type?: string | null
+  founded?: number | null
+  specialties?: string | null
+  about_us?: string | null
+  target_organizations: string[]
+}
+
+export interface AdminCompany extends CompanyPayload {
+  id: string
+  created_at?: string | null
+  updated_at?: string | null
+}
+
+export interface CompanyListResponse {
+  companies: AdminCompany[]
+  page: number
+  page_size: number
+  total: number
+}
+
+export interface CompanyImportResult {
+  inserted: number
+  skipped: number
+  errors: number
+  total_rows: number
+  messages: string[]
+}
+
+// Monitoring (daily pipeline report)
+
+export interface MonitoringRunStep {
+  name?: string | null
+  status?: string | null
+  duration_sec?: number | null
+  error?: string | null
+}
+
+export interface MonitoringRun {
+  run_id?: string | null
+  status?: string | null
+  organization?: string | null
+  started_at?: string | null
+  finished_at?: string | null
+  duration_sec?: number | null
+  exit_code?: number | null
+  jobs_scraped?: number | null
+  intent_stored?: number | null
+  error_count: number
+  warning_count: number
+  steps: MonitoringRunStep[]
+}
+
+export interface MonitoringProductRow {
+  product_id: string
+  name: string
+  total: number
+  signals: number
+}
+
+export interface MonitoringOrgRow {
+  organization_id: string
+  name: string
+  total: number
+  signals: number
+}
+
+export interface MonitoringTier {
+  score: number
+  count: number
+}
+
+export interface MonitoringSummary {
+  date: string
+  threshold: number
+  total: number
+  signals: number
+  by_product: MonitoringProductRow[]
+  by_org: MonitoringOrgRow[]
+  by_tier: MonitoringTier[]
+  latest_run: MonitoringRun | null
+}
+
+export interface MonitoringTrendPoint {
+  date: string
+  total: number
+  signals: number
+}
+
+export interface MonitoringTrend {
+  days: number
+  threshold: number
+  trend: MonitoringTrendPoint[]
+}

@@ -1,13 +1,28 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Search, Cpu, Brain, ChevronRight } from 'lucide-react'
-import {
-  BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-} from 'recharts'
+import { Search, Cpu, Brain, ChevronRight, RefreshCw, Play, Square } from 'lucide-react'
+import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { adminApi } from '../../lib/api/admin'
-
-/* ------------------------------------------------------------------ */
-/*  Types                                                             */
-/* ------------------------------------------------------------------ */
+import type { BadgeTone } from '../ui'
+import {
+  Badge,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  ConfirmDialog,
+  Field,
+  Input,
+  Modal,
+  PageHeader,
+  Select,
+  Spinner,
+  Table,
+  TBody,
+  TD,
+  TH,
+  THead,
+  TR,
+} from '../ui'
 
 interface PipelineStatus {
   status: 'idle' | 'running' | 'stopping' | 'failed' | 'completed'
@@ -33,16 +48,19 @@ interface PipelineRun {
   error: string | null
 }
 
-/* ------------------------------------------------------------------ */
-/*  Constants                                                         */
-/* ------------------------------------------------------------------ */
-
-const statusColors: Record<string, string> = {
-  idle: 'bg-slate-200 text-slate-600',
-  running: 'bg-emerald-100 text-emerald-700',
-  stopping: 'bg-amber-100 text-amber-700',
-  failed: 'bg-red-100 text-red-700',
-  completed: 'bg-blue-100 text-blue-700',
+const statusTone = (s?: string): BadgeTone => {
+  switch (s) {
+    case 'running':
+      return 'success'
+    case 'completed':
+      return 'info'
+    case 'failed':
+      return 'danger'
+    case 'stopping':
+      return 'warning'
+    default:
+      return 'neutral'
+  }
 }
 
 const PIPELINE_STAGES = [
@@ -53,63 +71,41 @@ const PIPELINE_STAGES = [
 
 type StageStatus = 'pending' | 'running' | 'completed' | 'failed'
 
-/* ------------------------------------------------------------------ */
-/*  Helper: derive stage statuses from pipeline state                 */
-/* ------------------------------------------------------------------ */
-
 function deriveStageStatuses(status: PipelineStatus | null): StageStatus[] {
   if (!status) return ['pending', 'pending', 'pending']
-
   if (status.status === 'idle') return ['pending', 'pending', 'pending']
   if (status.status === 'completed') return ['completed', 'completed', 'completed']
 
-  // Parse "Step X/3" from current_step
   let activeIndex = -1
   if (status.current_step) {
     const match = status.current_step.match(/Step\s+(\d+)\/3/i)
-    if (match) {
-      activeIndex = parseInt(match[1], 10) - 1 // 0-based
-    }
+    if (match) activeIndex = parseInt(match[1], 10) - 1
   }
 
   if (status.status === 'failed') {
     if (activeIndex < 0) return ['failed', 'pending', 'pending']
-    return PIPELINE_STAGES.map((_, i) => {
-      if (i < activeIndex) return 'completed'
-      if (i === activeIndex) return 'failed'
-      return 'pending'
-    }) as StageStatus[]
+    return PIPELINE_STAGES.map((_, i) => (i < activeIndex ? 'completed' : i === activeIndex ? 'failed' : 'pending')) as StageStatus[]
   }
-
-  // running / stopping
   if (activeIndex < 0) return ['running', 'pending', 'pending']
-  return PIPELINE_STAGES.map((_, i) => {
-    if (i < activeIndex) return 'completed'
-    if (i === activeIndex) return 'running'
-    return 'pending'
-  }) as StageStatus[]
+  return PIPELINE_STAGES.map((_, i) => (i < activeIndex ? 'completed' : i === activeIndex ? 'running' : 'pending')) as StageStatus[]
 }
-
-/* ------------------------------------------------------------------ */
-/*  Sub-components                                                    */
-/* ------------------------------------------------------------------ */
 
 const stageStyles: Record<StageStatus, { border: string; bg: string; icon: string; label: string; labelText: string }> = {
-  pending:   { border: 'border-slate-200', bg: 'bg-slate-50',    icon: 'text-slate-300',   label: 'Pending',    labelText: 'text-slate-400' },
-  running:   { border: 'border-orange-400 ring-2 ring-orange-200 animate-pulse', bg: 'bg-orange-50', icon: 'text-orange-500', label: 'Running...', labelText: 'text-orange-600' },
-  completed: { border: 'border-emerald-400', bg: 'bg-emerald-50', icon: 'text-emerald-500', label: 'Done',       labelText: 'text-emerald-600' },
-  failed:    { border: 'border-red-400',    bg: 'bg-red-50',     icon: 'text-red-500',     label: 'Failed',     labelText: 'text-red-600' },
+  pending: { border: 'border-slate-200', bg: 'bg-slate-50', icon: 'text-slate-300', label: 'Pending', labelText: 'text-slate-400' },
+  running: { border: 'border-orange-400 ring-2 ring-orange-200 animate-pulse', bg: 'bg-orange-50', icon: 'text-orange-500', label: 'Running...', labelText: 'text-orange-600' },
+  completed: { border: 'border-emerald-400', bg: 'bg-emerald-50', icon: 'text-emerald-500', label: 'Done', labelText: 'text-emerald-600' },
+  failed: { border: 'border-red-400', bg: 'bg-red-50', icon: 'text-red-500', label: 'Failed', labelText: 'text-red-600' },
 }
 
-function StageNode({ stage, stageStatus }: { stage: typeof PIPELINE_STAGES[number]; stageStatus: StageStatus }) {
+function StageNode({ stage, stageStatus }: { stage: (typeof PIPELINE_STAGES)[number]; stageStatus: StageStatus }) {
   const s = stageStyles[stageStatus]
   const Icon = stage.icon
   return (
     <div className={`w-48 rounded-xl border-2 p-5 text-center transition-all ${s.border} ${s.bg}`}>
-      <Icon className={`h-8 w-8 mx-auto ${s.icon}`} />
-      <p className="text-sm font-semibold mt-2">{stage.name}</p>
-      <p className="text-xs text-slate-500 mt-1">{stage.description}</p>
-      <p className={`text-xs font-medium mt-2 ${s.labelText}`}>{s.label}</p>
+      <Icon className={`mx-auto h-8 w-8 ${s.icon}`} />
+      <p className="mt-2 text-sm font-semibold">{stage.name}</p>
+      <p className="mt-1 text-xs text-slate-500">{stage.description}</p>
+      <p className={`mt-2 text-xs font-medium ${s.labelText}`}>{s.label}</p>
     </div>
   )
 }
@@ -117,10 +113,7 @@ function StageNode({ stage, stageStatus }: { stage: typeof PIPELINE_STAGES[numbe
 function Connector({ leftStatus, rightStatus }: { leftStatus: StageStatus; rightStatus: StageStatus }) {
   let color = 'text-slate-200'
   let lineColor = 'bg-slate-200'
-  if (leftStatus === 'completed' && (rightStatus === 'completed' || rightStatus === 'running')) {
-    color = 'text-emerald-400'
-    lineColor = 'bg-emerald-400'
-  } else if (leftStatus === 'completed' && rightStatus === 'failed') {
+  if (leftStatus === 'completed' && (rightStatus === 'completed' || rightStatus === 'running' || rightStatus === 'failed')) {
     color = 'text-emerald-400'
     lineColor = 'bg-emerald-400'
   } else if (leftStatus === 'running') {
@@ -128,16 +121,12 @@ function Connector({ leftStatus, rightStatus }: { leftStatus: StageStatus; right
     lineColor = 'bg-orange-400'
   }
   return (
-    <div className="flex-1 flex items-center px-2">
-      <div className={`flex-1 h-0.5 transition-colors ${lineColor}`} />
-      <ChevronRight className={`h-4 w-4 -ml-1 ${color}`} />
+    <div className="flex flex-1 items-center px-2">
+      <div className={`h-0.5 flex-1 transition-colors ${lineColor}`} />
+      <ChevronRight className={`-ml-1 h-4 w-4 ${color}`} />
     </div>
   )
 }
-
-/* ------------------------------------------------------------------ */
-/*  Main Component                                                    */
-/* ------------------------------------------------------------------ */
 
 export const PipelinePage = () => {
   const [status, setStatus] = useState<PipelineStatus | null>(null)
@@ -145,29 +134,23 @@ export const PipelinePage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
+  const [confirmAction, setConfirmAction] = useState<'start' | 'stop' | null>(null)
   const mountedRef = useRef(true)
 
-  // Form state
   const [organization, setOrganization] = useState<'all' | 'customertimes' | 'intentscout'>('all')
   const [skipScraping, setSkipScraping] = useState(false)
   const [skipEmbedding, setSkipEmbedding] = useState(false)
   const [testMode, setTestMode] = useState(false)
   const [limit, setLimit] = useState(50)
 
-  // Logs viewer state
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null)
   const [runLogs, setRunLogs] = useState<{ timestamp: string; line: string }[]>([])
   const [logsLoading, setLogsLoading] = useState(false)
 
-  /* ---- data loading ---- */
-
   const loadData = useCallback(async () => {
     setError(null)
     try {
-      const [statusRes, runsRes] = await Promise.all([
-        adminApi.pipeline.status(),
-        adminApi.pipeline.runs(),
-      ])
+      const [statusRes, runsRes] = await Promise.all([adminApi.pipeline.status(), adminApi.pipeline.runs()])
       if (!mountedRef.current) return
       if (statusRes.data) setStatus(statusRes.data as PipelineStatus)
       if (runsRes.data) setRuns(runsRes.data as PipelineRun[])
@@ -191,76 +174,50 @@ export const PipelinePage = () => {
     }
   }, [loadData])
 
-  /* ---- actions ---- */
-
-  const handleStart = async () => {
-    if (!confirm('Are you sure you want to start the pipeline?')) return
+  const doStart = async () => {
+    setConfirmAction(null)
     setActionLoading(true)
     setError(null)
-    try {
-      const res = await adminApi.pipeline.start({
-        organization,
-        skip_scraping: skipScraping,
-        skip_embedding: skipEmbedding,
-        limit: testMode ? limit : undefined,
-        continue_on_fail: false,
-      })
-      if (res.error) setError(res.error)
-      else await loadData()
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to start pipeline')
-    } finally {
-      setActionLoading(false)
-    }
+    const res = await adminApi.pipeline.start({
+      organization,
+      skip_scraping: skipScraping,
+      skip_embedding: skipEmbedding,
+      limit: testMode ? limit : undefined,
+      continue_on_fail: false,
+    })
+    if (res.error) setError(res.error)
+    else await loadData()
+    setActionLoading(false)
   }
 
-  const handleStop = async () => {
-    if (!confirm('Are you sure you want to stop the pipeline?')) return
+  const doStop = async () => {
+    setConfirmAction(null)
     setActionLoading(true)
     setError(null)
-    try {
-      const res = await adminApi.pipeline.stop()
-      if (res.error) setError(res.error)
-      else await loadData()
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to stop pipeline')
-    } finally {
-      setActionLoading(false)
-    }
+    const res = await adminApi.pipeline.stop()
+    if (res.error) setError(res.error)
+    else await loadData()
+    setActionLoading(false)
   }
 
   const loadRunLogs = async (runId: string) => {
     setLogsLoading(true)
     setSelectedRunId(runId)
-    try {
-      const res = await adminApi.pipeline.runLogs(runId, 1000)
-      if (res.data) setRunLogs(res.data as { timestamp: string; line: string }[])
-    } catch (e) {
-      console.error('Failed to load logs:', e)
-    } finally {
-      setLogsLoading(false)
-    }
+    const res = await adminApi.pipeline.runLogs(runId, 1000)
+    if (res.data) setRunLogs(res.data as { timestamp: string; line: string }[])
+    setLogsLoading(false)
   }
 
-  const handleModalKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      setSelectedRunId(null)
-      setRunLogs([])
-    }
-  }, [])
-
-  /* ---- derived data ---- */
-
   const stageStatuses = useMemo(() => deriveStageStatuses(status), [status])
-
   const output = status?.recent_output ?? []
+  const isRunning = status?.status === 'running'
 
   const runChartData = useMemo(() => {
     return runs
-      .filter(run => run.finished_at)
+      .filter((run) => run.finished_at)
       .slice(0, 10)
       .reverse()
-      .map(run => {
+      .map((run) => {
         const durationMin = (new Date(run.finished_at!).getTime() - new Date(run.started_at).getTime()) / 60000
         return {
           name: new Date(run.started_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
@@ -270,365 +227,270 @@ export const PipelinePage = () => {
       })
   }, [runs])
 
-  /* ---- helpers ---- */
-
   const formatDuration = (startedAt: string, finishedAt: string) => {
     const ms = new Date(finishedAt).getTime() - new Date(startedAt).getTime()
     const totalMin = Math.floor(ms / 60000)
     const sec = Math.floor((ms % 60000) / 1000)
-    if (totalMin < 1) return `${sec}s`
-    return `${totalMin}m ${sec}s`
+    return totalMin < 1 ? `${sec}s` : `${totalMin}m ${sec}s`
   }
-
-  /* ---- loading state ---- */
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm text-slate-500">Loading pipeline status...</p>
-        </div>
+      <div className="py-16">
+        <Spinner label="Loading pipeline status..." />
       </div>
     )
   }
 
-  /* ---- render ---- */
-
   return (
-    <div className="space-y-6">
-
-      {/* ============================================================ */}
-      {/* Section 1: Header                                            */}
-      {/* ============================================================ */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-slate-900">Pipeline</h2>
-          <p className="text-sm text-slate-500 mt-1">Control the IntentSpy data processing pipeline.</p>
-        </div>
-        <button
-          onClick={() => void loadData()}
-          className="px-3 py-1.5 text-sm text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50"
-        >
-          Refresh
-        </button>
-      </div>
+    <div>
+      <PageHeader
+        title="Pipeline"
+        description="Control the IntentSpy data processing pipeline."
+        actions={
+          <Button variant="secondary" leftIcon={<RefreshCw className="h-4 w-4" />} onClick={() => void loadData()}>
+            Refresh
+          </Button>
+        }
+      />
 
       {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+        <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
           <p className="font-semibold">Error</p>
-          <p className="text-sm mt-1">{error}</p>
+          <p className="mt-1 text-sm">{error}</p>
         </div>
       )}
 
-      {/* ============================================================ */}
-      {/* Section 2: Pipeline Flow Diagram                             */}
-      {/* ============================================================ */}
-      <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h3 className="text-lg font-semibold text-slate-900 mb-6">Pipeline Flow</h3>
-        <div className="flex items-center justify-center">
-          {PIPELINE_STAGES.map((stage, i) => (
-            <div key={stage.id} className="contents">
-              <StageNode stage={stage} stageStatus={stageStatuses[i]} />
-              {i < PIPELINE_STAGES.length - 1 && (
-                <Connector leftStatus={stageStatuses[i]} rightStatus={stageStatuses[i + 1]} />
+      <div className="space-y-6">
+        <Card>
+          <CardHeader title="Pipeline flow" />
+          <CardBody>
+            <div className="flex items-center justify-center">
+              {PIPELINE_STAGES.map((stage, i) => (
+                <div key={stage.id} className="contents">
+                  <StageNode stage={stage} stageStatus={stageStatuses[i]} />
+                  {i < PIPELINE_STAGES.length - 1 && <Connector leftStatus={stageStatuses[i]} rightStatus={stageStatuses[i + 1]} />}
+                </div>
+              ))}
+            </div>
+          </CardBody>
+        </Card>
+
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <Card>
+            <CardHeader title="Status" actions={<Badge tone={statusTone(status?.status)}>{status?.status ?? 'unknown'}</Badge>} />
+            <CardBody className="space-y-2 text-sm text-slate-600">
+              {status?.pid != null && <p>PID: {status.pid}</p>}
+              {status?.started_at && <p>Started: {new Date(status.started_at).toLocaleString()}</p>}
+              {status?.uptime_seconds != null && (
+                <p>
+                  Uptime: {Math.floor(status.uptime_seconds / 60)}m {Math.floor(status.uptime_seconds % 60)}s
+                </p>
               )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ============================================================ */}
-      {/* Section 3: Status + Controls (2-column)                      */}
-      {/* ============================================================ */}
-      <div className="grid gap-4 lg:grid-cols-2">
-
-        {/* Left card -- Status */}
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">Pipeline Status</p>
-          <div className="flex items-center gap-3 mb-4">
-            <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${statusColors[status?.status || 'idle']}`}>
-              {status?.status || 'unknown'}
-            </span>
-            {status?.pid && (
-              <span className="text-sm text-slate-500">PID: {status.pid}</span>
-            )}
-          </div>
-          {status?.started_at && (
-            <div className="space-y-1 text-sm text-slate-600">
-              <p>Started: {new Date(status.started_at).toLocaleString()}</p>
-              {status.uptime_seconds != null && (
-                <p>Uptime: {Math.floor(status.uptime_seconds / 60)}m {Math.floor(status.uptime_seconds % 60)}s</p>
-              )}
-            </div>
-          )}
-          {status?.current_step && (
-            <div className="mt-4 pt-4 border-t border-slate-100">
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Current Step</p>
-              <p className="text-sm font-medium mt-1">{status.current_step}</p>
-            </div>
-          )}
-        </div>
-
-        {/* Right card -- Controls */}
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">Pipeline Controls</p>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Organization</label>
-              <select
-                value={organization}
-                onChange={(e) => setOrganization(e.target.value as typeof organization)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                disabled={status?.status === 'running'}
-              >
-                <option value="all">All Organizations</option>
-                <option value="customertimes">Customertimes</option>
-                <option value="intentscout">IntentScout</option>
-              </select>
-            </div>
-
-            <div className="flex flex-wrap gap-x-6 gap-y-2">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={skipScraping}
-                  onChange={(e) => setSkipScraping(e.target.checked)}
-                  disabled={status?.status === 'running'}
-                  className="rounded border-slate-300"
-                />
-                <span className="text-sm text-slate-700">Skip Scraping</span>
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={skipEmbedding}
-                  onChange={(e) => setSkipEmbedding(e.target.checked)}
-                  disabled={status?.status === 'running'}
-                  className="rounded border-slate-300"
-                />
-                <span className="text-sm text-slate-700">Skip Embedding</span>
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={testMode}
-                  onChange={(e) => setTestMode(e.target.checked)}
-                  disabled={status?.status === 'running'}
-                  className="rounded border-slate-300"
-                />
-                <span className="text-sm text-slate-700">Test Mode</span>
-              </label>
-            </div>
-
-            {testMode && (
-              <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">Limit</label>
-                <input
-                  type="number"
-                  value={limit}
-                  onChange={(e) => setLimit(parseInt(e.target.value) || 50)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  placeholder="Limit"
-                  min={1}
-                  max={1000}
-                  disabled={status?.status === 'running'}
-                />
-              </div>
-            )}
-
-            <div>
-              {status?.status === 'running' ? (
-                <button
-                  type="button"
-                  onClick={() => { void handleStop() }}
-                  disabled={actionLoading}
-                  className="w-full rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50"
-                >
-                  {actionLoading ? 'Stopping...' : 'Stop Pipeline'}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => { void handleStart() }}
-                  disabled={actionLoading}
-                  className="w-full rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50"
-                >
-                  {actionLoading ? 'Starting...' : 'Start Pipeline'}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ============================================================ */}
-      {/* Section 4: Run Duration Chart                                */}
-      {/* ============================================================ */}
-      <section>
-        <h3 className="text-lg font-semibold text-slate-900 mb-4">Run Duration</h3>
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          {runChartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={runChartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#64748b' }} tickLine={false} axisLine={{ stroke: '#e2e8f0' }} />
-                <YAxis tick={{ fontSize: 12, fill: '#64748b' }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}m`} />
-                <Tooltip formatter={(v) => [`${Number(v)} min`, 'Duration']} contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0' }} />
-                <Bar dataKey="duration" radius={[6, 6, 0, 0]}>
-                  {runChartData.map((entry, i) => (
-                    <Cell key={i} fill={entry.status === 'completed' ? '#10b981' : entry.status === 'failed' ? '#ef4444' : '#f97316'} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <p className="text-sm text-slate-500 text-center py-8">No completed runs yet</p>
-          )}
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* Section 5: Live Output Terminal                              */}
-      {/* ============================================================ */}
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-slate-200 bg-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className={`h-2 w-2 rounded-full ${status?.status === 'running' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-500'}`} />
-            <h4 className="text-sm font-semibold text-white">Live Output</h4>
-          </div>
-          <span className="text-xs text-slate-400">{output.length} lines</span>
-        </div>
-        <div className="p-4 max-h-[400px] overflow-y-auto font-mono text-xs bg-slate-900 text-slate-100">
-          {output.length > 0 ? (
-            output.map((line, i) => (
-              <div key={i} className={`py-0.5 ${line.includes('ERROR') ? 'text-red-400' : line.includes('WARNING') ? 'text-yellow-400' : line.includes('Step') ? 'text-green-400 font-bold' : ''}`}>
-                {line}
-              </div>
-            ))
-          ) : (
-            <p className="text-slate-500 text-center py-6">
-              {status?.status === 'running' ? 'Waiting for output...' : 'No output available'}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* ============================================================ */}
-      {/* Section 6: Run History Table                                 */}
-      {/* ============================================================ */}
-      <section>
-        <h3 className="text-lg font-semibold text-slate-900 mb-4">Run History</h3>
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Run ID</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Organization</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Started</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Duration</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {runs.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-sm text-slate-500 text-center">No pipeline runs yet</td>
-                </tr>
-              ) : (
-                runs.slice(0, 20).map((run) => (
-                  <tr key={run.run_id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-4 py-3 text-sm font-medium text-slate-900 whitespace-nowrap">
-                      {run.run_id}
-                      {run.limit != null && (
-                        <span className="ml-2 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-700">
-                          test: {run.limit}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-slate-600 whitespace-nowrap">{run.organization}</td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusColors[run.status] || statusColors.idle}`}>
-                        {run.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-slate-600 whitespace-nowrap">
-                      {new Date(run.started_at).toLocaleString()}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-slate-600 whitespace-nowrap">
-                      {run.finished_at ? formatDuration(run.started_at, run.finished_at) : 'In progress...'}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <button
-                        type="button"
-                        onClick={() => { void loadRunLogs(run.run_id) }}
-                        className="text-xs text-orange-600 hover:text-orange-700 font-medium"
-                      >
-                        View Logs
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* Logs Modal                                                   */}
-      {/* ============================================================ */}
-      {selectedRunId && (
-        <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onKeyDown={handleModalKeyDown}
-        >
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[80vh] flex flex-col">
-            <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold text-slate-900">Pipeline Logs</h3>
-                <p className="text-xs text-slate-500">Run: {selectedRunId}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => { setSelectedRunId(null); setRunLogs([]) }}
-                className="text-slate-400 hover:text-slate-600 text-xl font-bold"
-                aria-label="Close"
-              >
-                &times;
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 bg-slate-900">
-              {logsLoading ? (
-                <div className="text-center text-slate-400 py-8">Loading logs...</div>
-              ) : runLogs.length === 0 ? (
-                <div className="text-center text-slate-400 py-8">No logs found for this run</div>
-              ) : (
-                <div className="font-mono text-xs text-slate-100 space-y-0.5">
-                  {runLogs.map((log, i) => (
-                    <div key={i} className={`${log.line.includes('ERROR') ? 'text-red-400' : log.line.includes('WARNING') ? 'text-yellow-400' : log.line.includes('Step') ? 'text-green-400 font-bold' : ''}`}>
-                      <span className="text-slate-500 mr-2">{new Date(log.timestamp).toLocaleTimeString()}</span>
-                      {log.line}
-                    </div>
-                  ))}
+              {status?.current_step && (
+                <div className="mt-3 border-t border-slate-100 pt-3">
+                  <p className="text-xs uppercase tracking-wide text-slate-400">Current step</p>
+                  <p className="mt-1 font-medium text-slate-700">{status.current_step}</p>
                 </div>
               )}
+              {!status?.started_at && !status?.current_step && <p className="text-slate-400">Pipeline is idle.</p>}
+            </CardBody>
+          </Card>
+
+          <Card>
+            <CardHeader title="Controls" />
+            <CardBody className="space-y-4">
+              <Field label="Organization">
+                <Select value={organization} onChange={(e) => setOrganization(e.target.value as typeof organization)} disabled={isRunning}>
+                  <option value="all">All organizations</option>
+                  <option value="customertimes">Customertimes</option>
+                  <option value="intentscout">IntentScout</option>
+                </Select>
+              </Field>
+
+              <div className="flex flex-wrap gap-x-6 gap-y-2">
+                {[
+                  { label: 'Skip scraping', value: skipScraping, set: setSkipScraping },
+                  { label: 'Skip embedding', value: skipEmbedding, set: setSkipEmbedding },
+                  { label: 'Test mode', value: testMode, set: setTestMode },
+                ].map((cb) => (
+                  <label key={cb.label} className="flex items-center gap-2 text-sm text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={cb.value}
+                      onChange={(e) => cb.set(e.target.checked)}
+                      disabled={isRunning}
+                      className="h-4 w-4 rounded border-slate-300 text-orange-500 focus:ring-orange-400"
+                    />
+                    {cb.label}
+                  </label>
+                ))}
+              </div>
+
+              {testMode && (
+                <Field label="Limit">
+                  <Input
+                    type="number"
+                    value={limit}
+                    onChange={(e) => setLimit(parseInt(e.target.value) || 50)}
+                    min={1}
+                    max={1000}
+                    disabled={isRunning}
+                  />
+                </Field>
+              )}
+
+              {isRunning ? (
+                <Button variant="danger" className="w-full" loading={actionLoading} leftIcon={<Square className="h-4 w-4" />} onClick={() => setConfirmAction('stop')}>
+                  Stop pipeline
+                </Button>
+              ) : (
+                <Button className="w-full" loading={actionLoading} leftIcon={<Play className="h-4 w-4" />} onClick={() => setConfirmAction('start')}>
+                  Start pipeline
+                </Button>
+              )}
+            </CardBody>
+          </Card>
+        </div>
+
+        <Card>
+          <CardHeader title="Run duration" description="Last 10 completed runs" />
+          <CardBody>
+            {runChartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={runChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#94a3b8' }} tickLine={false} axisLine={false} />
+                  <YAxis tick={{ fontSize: 12, fill: '#94a3b8' }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}m`} />
+                  <Tooltip formatter={(v) => [`${Number(v)} min`, 'Duration']} contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }} cursor={{ fill: '#f8fafc' }} />
+                  <Bar dataKey="duration" radius={[6, 6, 0, 0]}>
+                    {runChartData.map((entry, i) => (
+                      <Cell key={i} fill={entry.status === 'completed' ? '#10b981' : entry.status === 'failed' ? '#ef4444' : '#f97316'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="py-8 text-center text-sm text-slate-400">No completed runs yet</p>
+            )}
+          </CardBody>
+        </Card>
+
+        <div className="overflow-hidden rounded-xl border border-slate-200 shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-700 bg-slate-800 px-4 py-3">
+            <div className="flex items-center gap-2">
+              <span className={`h-2 w-2 rounded-full ${isRunning ? 'animate-pulse bg-emerald-500' : 'bg-slate-500'}`} />
+              <h4 className="text-sm font-semibold text-white">Live output</h4>
             </div>
-            <div className="px-4 py-3 border-t border-slate-200 text-right">
-              <span className="text-xs text-slate-500 mr-4">{runLogs.length} lines</span>
-              <button
-                type="button"
-                onClick={() => { setSelectedRunId(null); setRunLogs([]) }}
-                className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200"
-              >
-                Close
-              </button>
-            </div>
+            <span className="text-xs text-slate-400">{output.length} lines</span>
+          </div>
+          <div className="max-h-[400px] overflow-y-auto bg-slate-900 p-4 font-mono text-xs text-slate-100">
+            {output.length > 0 ? (
+              output.map((line, i) => (
+                <div key={i} className={`py-0.5 ${line.includes('ERROR') ? 'text-red-400' : line.includes('WARNING') ? 'text-yellow-400' : line.includes('Step') ? 'font-bold text-green-400' : ''}`}>
+                  {line}
+                </div>
+              ))
+            ) : (
+              <p className="py-6 text-center text-slate-500">{isRunning ? 'Waiting for output...' : 'No output available'}</p>
+            )}
           </div>
         </div>
-      )}
+
+        <Card>
+          <CardHeader title="Run history" />
+          <Table>
+            <THead>
+              <TR>
+                <TH>Run ID</TH>
+                <TH>Organization</TH>
+                <TH>Status</TH>
+                <TH>Started</TH>
+                <TH>Duration</TH>
+                <TH className="text-right">Actions</TH>
+              </TR>
+            </THead>
+            <TBody>
+              {runs.length === 0 ? (
+                <TR>
+                  <TD className="text-center text-slate-400" colSpan={6}>
+                    No pipeline runs yet
+                  </TD>
+                </TR>
+              ) : (
+                runs.slice(0, 20).map((run) => (
+                  <TR key={run.run_id}>
+                    <TD className="whitespace-nowrap font-medium text-slate-900">
+                      {run.run_id}
+                      {run.limit != null && (
+                        <Badge tone="accent" className="ml-2">
+                          test: {run.limit}
+                        </Badge>
+                      )}
+                    </TD>
+                    <TD className="text-slate-600">{run.organization}</TD>
+                    <TD>
+                      <Badge tone={statusTone(run.status)}>{run.status}</Badge>
+                    </TD>
+                    <TD className="whitespace-nowrap text-slate-600">{new Date(run.started_at).toLocaleString()}</TD>
+                    <TD className="whitespace-nowrap text-slate-600">
+                      {run.finished_at ? formatDuration(run.started_at, run.finished_at) : 'In progress...'}
+                    </TD>
+                    <TD className="text-right">
+                      <Button variant="ghost" size="sm" onClick={() => void loadRunLogs(run.run_id)}>
+                        View logs
+                      </Button>
+                    </TD>
+                  </TR>
+                ))
+              )}
+            </TBody>
+          </Table>
+        </Card>
+      </div>
+
+      <Modal
+        open={selectedRunId !== null}
+        onClose={() => {
+          setSelectedRunId(null)
+          setRunLogs([])
+        }}
+        size="xl"
+        title="Pipeline logs"
+        description={selectedRunId ?? undefined}
+      >
+        <div className="max-h-[60vh] overflow-y-auto rounded-lg bg-slate-900 p-4">
+          {logsLoading ? (
+            <div className="py-8 text-center text-slate-400">Loading logs...</div>
+          ) : runLogs.length === 0 ? (
+            <div className="py-8 text-center text-slate-400">No logs found for this run</div>
+          ) : (
+            <div className="space-y-0.5 font-mono text-xs text-slate-100">
+              {runLogs.map((log, i) => (
+                <div key={i} className={log.line.includes('ERROR') ? 'text-red-400' : log.line.includes('WARNING') ? 'text-yellow-400' : log.line.includes('Step') ? 'font-bold text-green-400' : ''}>
+                  <span className="mr-2 text-slate-500">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                  {log.line}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </Modal>
+
+      <ConfirmDialog
+        open={confirmAction !== null}
+        onClose={() => setConfirmAction(null)}
+        onConfirm={confirmAction === 'start' ? doStart : doStop}
+        title={confirmAction === 'start' ? 'Start pipeline' : 'Stop pipeline'}
+        message={
+          confirmAction === 'start'
+            ? `Start the pipeline for "${organization}"${testMode ? ` (test mode, limit ${limit})` : ''}?`
+            : 'Stop the running pipeline?'
+        }
+        confirmLabel={confirmAction === 'start' ? 'Start' : 'Stop'}
+        tone={confirmAction === 'stop' ? 'danger' : 'primary'}
+        loading={actionLoading}
+      />
     </div>
   )
 }

@@ -25,7 +25,7 @@ const mapSnapshotFn = (value: unknown): AdminActivityLog[] => {
 const selectClasses = 'rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 focus:border-orange-500 focus:outline-none'
 const inputClasses = 'rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 focus:border-orange-500 focus:outline-none'
 
-export const LogsPage = () => {
+export const LogsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
   const [activeTab, setActiveTab] = useState<TabId>('api')
   const [autoScroll, setAutoScroll] = useState(true)
   const [token, setToken] = useState<string | null>(null)
@@ -93,19 +93,20 @@ export const LogsPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-slate-900">Real-time Logs</h2>
-          <p className="text-sm text-slate-500 mt-1">
-            Stream of product activity and IntentSpy pipeline logs.
-          </p>
+      {!embedded && (
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">Real-time Logs</h2>
+            <p className="text-sm text-slate-500 mt-1">
+              Stream of product activity and IntentSpy pipeline logs.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`h-2 w-2 rounded-full ${connected ? 'bg-emerald-500' : 'bg-red-500'}`} />
+            <span className="text-xs text-slate-500">{connected ? 'Connected' : 'Disconnected'}</span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className={`h-2 w-2 rounded-full ${connected ? 'bg-emerald-500' : 'bg-red-500'}`} />
-          <span className="text-xs text-slate-500">{connected ? 'Connected' : 'Disconnected'}</span>
-        </div>
-      </div>
+      )}
 
       {/* Tabs + Filters */}
       <div className="flex items-center justify-between flex-wrap gap-3">
