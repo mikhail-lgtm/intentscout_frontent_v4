@@ -230,6 +230,7 @@ export const CsvCleanerPopup: React.FC<CsvCleanerPopupProps> = ({ isOpen }) => {
       .join('')
   }
 
+  const historyLoadedRef = useRef(false)
   const loadHistory = useCallback(async () => {
     setHistoryLoading(true)
     try {
@@ -242,15 +243,18 @@ export const CsvCleanerPopup: React.FC<CsvCleanerPopupProps> = ({ isOpen }) => {
       setError(e?.message || 'Failed to load history')
     } finally {
       setHistoryLoading(false)
+      historyLoadedRef.current = true
     }
   }, [])
 
-  // Lazy-load history when user switches to History tab
+  // Lazy-load history once when user first opens the History tab. Refire
+  // happens only via the explicit Reload button -- otherwise an /history 500
+  // would put us in a useEffect loop (items stays empty -> effect refires).
   useEffect(() => {
-    if (viewMode === 'history' && historyItems.length === 0 && !historyLoading) {
+    if (viewMode === 'history' && !historyLoadedRef.current && !historyLoading) {
       loadHistory()
     }
-  }, [viewMode, historyItems.length, historyLoading, loadHistory])
+  }, [viewMode, historyLoading, loadHistory])
 
   const openHistoryEntry = async (id: string) => {
     setError(null)

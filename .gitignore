@@ -60,6 +60,9 @@ web_modules/
 .env.test.local
 .env.production.local
 .env.local
+# mode-specific env files hold real Supabase keys - never commit (keep .env.example only)
+.env.staging
+.env.production
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
