@@ -33,7 +33,7 @@ Required environment variables:
 npm run dev
 ```
 
-Visit `http://localhost:5173`
+Visit `http://localhost:3000`
 
 ### Production Build
 
@@ -141,7 +141,8 @@ Update Supabase settings in your project dashboard:
 
 ```bash
 npm run lint        # Lint code
-npm run build       # Type check + build
+npx tsc --noEmit    # Type check
+npm run build       # Build production bundle
 ```
 
 ## 📄 License

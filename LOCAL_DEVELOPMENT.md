@@ -17,8 +17,8 @@
    ```
 
 3. **Open in browser:**
-   - Frontend: `http://localhost:5173`
-   - USG Demo page: `http://localhost:5173/usg-demo`
+   - Frontend: `http://localhost:3000`
+   - USG Demo page: `http://localhost:3000/usg-demo`
 
 ## Backend Setup (for USG Demo)
 
@@ -44,7 +44,7 @@
 
 ## Development Notes
 
-- Frontend runs on port 5173 (Vite default)
+- Frontend runs on port 3000 (`vite.config.ts`)
 - Backend API on port 5060 (main api_v4)
 - USG demo backend on port 8081
 - Hot reload enabled for both frontend and backend changes
